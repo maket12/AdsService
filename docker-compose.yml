@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: ads_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:6
+    container_name: ads_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  authservice:
+    build:
+      context: .
+      dockerfile: authservice/Dockerfile
+    container_name: ads_auth
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: auth_user
+      DB_PASSWORD: password
+      DB_NAME: auth_db
+    ports:
+      - "50051:50051"
+
+  userservice:
+    build:
+      context: .
+      dockerfile: userservice/Dockerfile
+    container_name: ads_user
+    depends_on:
+      - postgres
+      - mongo
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: auth_user
+      DB_PASSWORD: password
+      DB_NAME: auth_db
+      MONGO_URI: mongodb://mongo:27017
+    ports:
+      - "50052:50052"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: infra/gateway/Dockerfile
+    container_name: ads_gateway
+    depends_on:
+      - authservice
+      - userservice
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
+  mongodata:
