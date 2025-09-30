@@ -1,0 +1,15 @@
+schema:
+  - infrastructure/graphql/schema.graphqls
+
+exec:
+  filename: app/resolvers/generated.go
+  package: resolvers
+
+model:
+  filename: app/resolvers/models_gen.go
+  package: resolvers
+
+resolver:
+  layout: follow-schema
+  dir: app/resolvers
+  package: resolvers

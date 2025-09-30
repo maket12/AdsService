@@ -1,18 +1,17 @@
-FROM golang:1.24-alpine AS builder
-
+FROM golang:1.24 AS builder
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 COPY . .
 
-RUN go build -o userservice ./userservice
+WORKDIR /app/userservice
+RUN CGO_ENABLED=0 GOOS=linux go build -o /userservice ./cmd/server.go
 
-FROM alpine:latest
+FROM alpine:3.20
 WORKDIR /app
-COPY --from=builder /app/userservice .
+COPY --from=builder /userservice .
 
 EXPOSE 50052
-
 CMD ["./userservice"]

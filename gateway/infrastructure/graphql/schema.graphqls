@@ -1,0 +1,109 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+# ===== Scalars =====
+scalar Time
+scalar Upload
+
+# ===== Types =====
+type AuthPayload {
+    access_token: String!
+    refresh_token: String!
+}
+
+type User {
+    user_id: ID!
+    email: String!
+    role: String!
+}
+
+type UserProfile {
+    user_id: ID!
+    name: String
+    phone: String
+    photo_id: String
+    notifications_enabled: Boolean!
+    subscriptions: [String!]!
+    updated_at: Time
+}
+
+type AssignRoleResult {
+    user_id: ID!
+    assigned: Boolean!
+}
+
+type AdminBanResult {
+    banned: Boolean!
+}
+
+type AdminUnbanResult {
+    unbanned: Boolean!
+}
+
+type ProfilesList {
+    profiles: [UserProfile!]!
+}
+
+# ===== Inputs =====
+input UpdateProfileInput {
+    name: String
+    phone: String
+}
+
+input ChangeSettingsInput {
+    notifications_enabled: Boolean!
+}
+
+input ChangeSubscriptionsInput {
+    subscriptions: [String!]!
+}
+
+# ===== Queries =====
+type Query {
+    # user-service.GetProfile (через токен)
+    me: UserProfile!
+
+    # userservice.GetUser
+    user(user_id: ID!): User!
+
+    # userservice.AdminGetProfile (admin)
+    adminGetProfile(user_id: ID!): UserProfile!
+
+    # userservice.AdminGetProfilesList (admin)
+    adminGetProfiles(limit: Int!, offset: Int!): ProfilesList!
+}
+
+# ===== Mutations =====
+type Mutation {
+    # authservice.Register
+    register(email: String!, password: String!): AuthPayload!
+
+    # authservice.Login
+    login(email: String!, password: String!): AuthPayload!
+
+    # userservice.AddProfile (если профиля ещё нет)
+    addProfile(name: String!, phone: String!): UserProfile!
+
+    # userservice.UpdateProfile
+    updateProfile(input: UpdateProfileInput!): UserProfile!
+
+    # userservice.UploadPhoto -> вернём photo_id
+    uploadMyPhoto(file: Upload!): String!
+
+    # userservice.ChangeSettings
+    changeSettings(input: ChangeSettingsInput!): UserProfile!
+
+    # userservice.ChangeSubscriptions
+    changeSubscriptions(input: ChangeSubscriptionsInput!): UserProfile!
+
+    # userservice.AssignRole (у тебя в proto только user_id → считаем, что назначаем admin)
+    assignUserAsAdmin(user_id: ID!): AssignRoleResult!
+
+    # userservice.AdminBanUser (admin)
+    adminBanUser(user_id: ID!): AdminBanResult!
+
+    # userservice.AdminUnbanUser (admin)
+    adminUnbanUser(user_id: ID!): AdminUnbanResult!
+}
