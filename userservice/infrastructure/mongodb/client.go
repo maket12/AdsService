@@ -1,12 +1,11 @@
 package mongodb
 
 import (
+	"AdsService/userservice/config"
 	"context"
-	"log"
-	"os"
-
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"log/slog"
 )
 
 var (
@@ -15,37 +14,28 @@ var (
 	Bucket *mongo.GridFSBucket
 )
 
-func InitMongoDB() {
-	uri := os.Getenv("MONGODB_URI")
-	if uri == "" {
-		log.Fatal("MONGODB_URI is not set")
-	}
+func InitMongoDB(cfg *config.Config, logger *slog.Logger) error {
+	logger.Info("connecting to MongoDB...",
+		slog.String("uri", cfg.MongoURI),
+		slog.String("database", cfg.MongoDB),
+	)
 
 	var err error
-	Client, err = mongo.Connect(options.Client().ApplyURI(uri))
+	Client, err = mongo.Connect(options.Client().ApplyURI(cfg.MongoURI))
 	if err != nil {
-		log.Fatalf("failed to connect to mongodb: %v", err)
+		return err
 	}
 
-	dbName := os.Getenv("MONGODB_DB_NAME")
-	if dbName == "" {
-		log.Fatal("MONGODB_DB_NAME is not set")
-	}
+	DB = Client.Database(cfg.MongoDB)
+	Bucket = DB.GridFSBucket(options.GridFSBucket().SetName(cfg.MongoBucket))
 
-	bucketName := os.Getenv("MONGODB_BUCKET_NAME")
-	if bucketName == "" {
-		log.Fatal("MONGODB_BUCKET_NAME is not set")
-	}
-
-	DB = Client.Database(dbName)
-	Bucket = DB.GridFSBucket(options.GridFSBucket().SetName(bucketName))
-
-	log.Println("MongoDB connected successfully")
+	logger.Info("✅ MongoDB connected successfully")
+	return nil
 }
 
-func CloseMongoDB() {
+func CloseMongoDB(logger *slog.Logger) {
 	if Client != nil {
 		_ = Client.Disconnect(context.Background())
-		log.Println("MongoDB connection closed")
+		logger.Info("MongoDB connection closed")
 	}
 }

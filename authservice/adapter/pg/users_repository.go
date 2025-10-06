@@ -5,12 +5,20 @@ import (
 	"AdsService/authservice/domain/port"
 	"errors"
 	"gorm.io/gorm"
-	"log"
+	"log/slog"
 )
 
-type UsersRepo struct{ db *gorm.DB }
+type UsersRepo struct {
+	db     *gorm.DB
+	logger *slog.Logger
+}
 
-func NewUsersRepo(db *gorm.DB) port.UserRepository { return &UsersRepo{db: db} }
+func NewUsersRepo(db *gorm.DB, logger *slog.Logger) port.UserRepository {
+	return &UsersRepo{
+		db:     db,
+		logger: logger,
+	}
+}
 
 func (r *UsersRepo) CheckUserExist(email string) (bool, error) {
 	var u entity.User
@@ -30,16 +38,16 @@ func (r *UsersRepo) AddUser(user *entity.User) error {
 		return err
 	}
 	if exists {
-		log.Printf("User with email %s already exists", user.Email)
+		r.logger.Error("User with email %s already exists", user.Email)
 		return nil
 	}
 
 	if err := r.db.Create(user).Error; err != nil {
-		log.Printf("Error while adding user: %v", err)
+		r.logger.Error("Error while adding user: %v", err)
 		return err
 	}
 
-	log.Printf("Successfully added user = %v", user.ID)
+	r.logger.Info("Successfully added user = %v", user.ID)
 	return nil
 }
 

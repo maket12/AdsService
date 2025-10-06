@@ -1,36 +1,41 @@
 package postgres
 
 import (
+	"AdsService/userservice/config"
+	"AdsService/userservice/domain/entity"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
-	"os"
-
-	"AdsService/userservice/domain/entity"
+	"log/slog"
 )
 
 var DB *gorm.DB
 
-func InitDB() {
+func InitDB(cfg *config.Config, logger *slog.Logger) error {
+	logger.Info("connecting to PostgreSQL...",
+		slog.String("host", cfg.DBHost),
+		slog.Int("port", cfg.DBPort),
+		slog.String("database", cfg.DBName),
+	)
+
 	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"))
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Error while connecting to database: %v.", err)
-		return
+		return err
 	}
-
-	log.Println("Successfully connected to database!")
 
 	if err := (DB.AutoMigrate(&entity.Profile{})); err != nil {
-		log.Fatalf("Error while migrate database.")
+		return err
 	}
+
+	logger.Info("✅ PostgreSQL connected successfully")
+	return nil
 }

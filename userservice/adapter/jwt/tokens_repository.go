@@ -2,11 +2,10 @@ package jwt
 
 import (
 	"errors"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	
+
 	"AdsService/userservice/domain/entity"
 	"AdsService/userservice/domain/port"
 )
@@ -16,15 +15,13 @@ type TokenRepository struct {
 	refreshSecret []byte
 }
 
-func NewTokenRepository() port.TokenRepository {
-	access := os.Getenv("JWT_ACCESS_SECRET")
-	refresh := os.Getenv("JWT_REFRESH_SECRET")
-	if access == "" || refresh == "" {
+func NewTokenRepository(jwtAccess, jwtRefresh string) port.TokenRepository {
+	if jwtAccess == "" || jwtRefresh == "" {
 		panic("JWT secrets are not set in env")
 	}
 	return &TokenRepository{
-		accessSecret:  []byte(access),
-		refreshSecret: []byte(refresh),
+		accessSecret:  []byte(jwtAccess),
+		refreshSecret: []byte(jwtRefresh),
 	}
 }
 

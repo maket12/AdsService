@@ -7,24 +7,23 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"io"
-	"log"
+	"log/slog"
 	"time"
 )
 
 type PhotoRepo struct {
 	Bucket *mongo.GridFSBucket
+	logger *slog.Logger
 }
 
-func NewPhotoRepo(bucket *mongo.GridFSBucket) port.PhotoRepository {
-	return &PhotoRepo{Bucket: bucket}
+func NewPhotoRepo(bucket *mongo.GridFSBucket, logger *slog.Logger) port.PhotoRepository {
+	return &PhotoRepo{
+		Bucket: bucket,
+		logger: logger,
+	}
 }
 
 func (r *PhotoRepo) UploadPhoto(userID uint64, title, contentType string, rdr io.Reader, size int64) (string, error) {
-	if r.Bucket == nil {
-		log.Fatalf("Bucket is not initialized.")
-		return "", nil
-	}
-
 	photo := entity.Photo{
 		Title:       title,
 		ContentType: contentType,
@@ -41,9 +40,11 @@ func (r *PhotoRepo) UploadPhoto(userID uint64, title, contentType string, rdr io
 		uploadOpts,
 	)
 	if err != nil {
-		log.Fatalf("Error while uploading photo: %v", err)
 		return "", err
 	}
 
-	return objectID.Hex(), nil
+	hexID := objectID.Hex()
+	r.logger.Info("Successfully uploaded photo of user[%v] with hexID[%v]", userID, hexID)
+
+	return hexID, nil
 }

@@ -4,17 +4,30 @@ import (
 	"AdsService/authservice/domain/entity"
 	"AdsService/authservice/domain/port"
 	"gorm.io/gorm"
+	"log/slog"
 	"time"
 )
 
-type SessionsRepo struct{ db *gorm.DB }
+type SessionsRepo struct {
+	db     *gorm.DB
+	logger *slog.Logger
+}
 
-func NewSessionsRepo(db *gorm.DB) port.SessionRepository {
-	return &SessionsRepo{db: db}
+func NewSessionsRepo(db *gorm.DB, logger *slog.Logger) port.SessionRepository {
+	return &SessionsRepo{
+		db:     db,
+		logger: logger,
+	}
 }
 
 func (r *SessionsRepo) InsertSession(s *entity.Session) error {
-	return r.db.Create(s).Error
+	result := r.db.Create(s).Error
+	if result != nil {
+		r.logger.Error("Error while insert session: %w", result)
+		return result
+	}
+	r.logger.Info("Inserted session for user[id=%v]", s.UserID)
+	return nil
 }
 
 func (r *SessionsRepo) GetSessionByJTI(jti string) (*entity.Session, error) {
