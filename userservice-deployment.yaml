@@ -15,8 +15,30 @@ spec:
       containers:
         - name: userservice
           image: userservice:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 50052
+          env:
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "auth_user"
+            - name: DB_PASSWORD
+              value: "vovavova"
+            - name: DB_NAME
+              value: "auth_db"
+            - name: MONGODB_URI
+              value: "mongodb://mongo:27017"
+            - name: MONGODB_DB_NAME
+              value: "ads_service"
+            - name: MONGODB_BUCKET_NAME
+              value: "photos"
+            - name: JWT_ACCESS_SECRET
+              value: "super-secret-key"
+            - name: JWT_REFRESH_SECRET
+              value: "super-secret-key-1234321"
 ---
 apiVersion: v1
 kind: Service

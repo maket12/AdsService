@@ -100,12 +100,3 @@ func (r *ProfilesRepo) GetProfile(userID uint64) (*entity.Profile, error) {
 	}
 	return &p, nil
 }
-
-func (r *ProfilesRepo) GetAllProfiles() ([]entity.Profile, error) {
-	var profiles []entity.Profile
-	result := r.db.Find(&profiles)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return profiles, nil
-}

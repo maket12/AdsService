@@ -30,7 +30,7 @@ func InitDB() {
 
 	log.Println("Successfully connected to database!")
 
-	if err := (DB.AutoMigrate(&entity.User{}, &entity.Profile{})); err != nil {
+	if err := (DB.AutoMigrate(&entity.Profile{})); err != nil {
 		log.Fatalf("Error while migrate database.")
 	}
 }

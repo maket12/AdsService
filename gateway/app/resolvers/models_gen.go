@@ -6,28 +6,34 @@ import (
 	"time"
 )
 
+// Результат блокировки
 type AdminBanResult struct {
 	Banned bool `json:"banned"`
 }
 
+// Результат разблокировки
 type AdminUnbanResult struct {
 	Unbanned bool `json:"unbanned"`
 }
 
+// Результат назначения роли
 type AssignRoleResult struct {
 	UserID   string `json:"user_id"`
 	Assigned bool   `json:"assigned"`
 }
 
+// Ответ аутентификации
 type AuthPayload struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
+// Изменение настроек
 type ChangeSettingsInput struct {
 	NotificationsEnabled bool `json:"notifications_enabled"`
 }
 
+// Изменение подписок
 type ChangeSubscriptionsInput struct {
 	Subscriptions []string `json:"subscriptions"`
 }
@@ -35,6 +41,7 @@ type ChangeSubscriptionsInput struct {
 type Mutation struct {
 }
 
+// Список профилей пользователей
 type ProfilesList struct {
 	Profiles []*UserProfile `json:"profiles"`
 }
@@ -42,17 +49,20 @@ type ProfilesList struct {
 type Query struct {
 }
 
+// Изменение профиля
 type UpdateProfileInput struct {
 	Name  *string `json:"name,omitempty"`
 	Phone *string `json:"phone,omitempty"`
 }
 
+// Пользователь без профиля
 type User struct {
 	UserID string `json:"user_id"`
 	Email  string `json:"email"`
 	Role   string `json:"role"`
 }
 
+// Профиль пользователя
 type UserProfile struct {
 	UserID               string     `json:"user_id"`
 	Name                 *string    `json:"name,omitempty"`
@@ -61,4 +71,10 @@ type UserProfile struct {
 	NotificationsEnabled bool       `json:"notifications_enabled"`
 	Subscriptions        []string   `json:"subscriptions"`
 	UpdatedAt            *time.Time `json:"updated_at,omitempty"`
+}
+
+// Результат проверки токена
+type ValidateTokenResult struct {
+	UserID *string `json:"user_id,omitempty"`
+	Valid  bool    `json:"valid"`
 }

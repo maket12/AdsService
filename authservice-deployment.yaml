@@ -15,8 +15,24 @@ spec:
       containers:
         - name: authservice
           image: authservice:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 50051
+          env:
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "auth_user"
+            - name: DB_PASSWORD
+              value: "vovavova"
+            - name: DB_NAME
+              value: "auth_db"
+            - name: JWT_ACCESS_SECRET
+              value: "super-secret-key"
+            - name: JWT_REFRESH_SECRET
+              value: "super-secret-key-1234321"
 ---
 apiVersion: v1
 kind: Service

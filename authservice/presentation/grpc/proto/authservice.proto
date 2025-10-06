@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package authservice.v1;
 
-option go_package = "AdsService/authservice/presentation/grpc/pb;pb";
+option go_package = "authservice/presentation/grpc/pb;pb";
 
 service AuthService {
   rpc Register (RegisterRequest) returns (AuthResponse);

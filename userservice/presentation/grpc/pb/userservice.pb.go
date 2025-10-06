@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v6.31.1
-// source: userservice.proto
+// source: userservice/presentation/grpc/proto/userservice.proto
 
 package pb
 
@@ -23,206 +23,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type AssignRolRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AssignRolRequest) Reset() {
-	*x = AssignRolRequest{}
-	mi := &file_userservice_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AssignRolRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AssignRolRequest) ProtoMessage() {}
-
-func (x *AssignRolRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AssignRolRequest.ProtoReflect.Descriptor instead.
-func (*AssignRolRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *AssignRolRequest) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-type AssignRoleResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Assigned      bool                   `protobuf:"varint,2,opt,name=assigned,proto3" json:"assigned,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AssignRoleResponse) Reset() {
-	*x = AssignRoleResponse{}
-	mi := &file_userservice_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AssignRoleResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AssignRoleResponse) ProtoMessage() {}
-
-func (x *AssignRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AssignRoleResponse.ProtoReflect.Descriptor instead.
-func (*AssignRoleResponse) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *AssignRoleResponse) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-func (x *AssignRoleResponse) GetAssigned() bool {
-	if x != nil {
-		return x.Assigned
-	}
-	return false
-}
-
-type GetUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserRequest) Reset() {
-	*x = GetUserRequest{}
-	mi := &file_userservice_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserRequest) ProtoMessage() {}
-
-func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
-func (*GetUserRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetUserRequest) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-type GetUserResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserResponse) Reset() {
-	*x = GetUserResponse{}
-	mi := &file_userservice_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserResponse) ProtoMessage() {}
-
-func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserResponse.ProtoReflect.Descriptor instead.
-func (*GetUserResponse) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *GetUserResponse) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-func (x *GetUserResponse) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *GetUserResponse) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
 type Profile struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	UserId               uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -238,7 +38,7 @@ type Profile struct {
 
 func (x *Profile) Reset() {
 	*x = Profile{}
-	mi := &file_userservice_proto_msgTypes[4]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -250,7 +50,7 @@ func (x *Profile) String() string {
 func (*Profile) ProtoMessage() {}
 
 func (x *Profile) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[4]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -263,7 +63,7 @@ func (x *Profile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Profile.ProtoReflect.Descriptor instead.
 func (*Profile) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{4}
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Profile) GetUserId() uint64 {
@@ -325,7 +125,7 @@ type AddProfileRequest struct {
 
 func (x *AddProfileRequest) Reset() {
 	*x = AddProfileRequest{}
-	mi := &file_userservice_proto_msgTypes[5]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -337,7 +137,7 @@ func (x *AddProfileRequest) String() string {
 func (*AddProfileRequest) ProtoMessage() {}
 
 func (x *AddProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[5]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -350,7 +150,7 @@ func (x *AddProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProfileRequest.ProtoReflect.Descriptor instead.
 func (*AddProfileRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{5}
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AddProfileRequest) GetName() string {
@@ -377,7 +177,7 @@ type UpdateProfileRequest struct {
 
 func (x *UpdateProfileRequest) Reset() {
 	*x = UpdateProfileRequest{}
-	mi := &file_userservice_proto_msgTypes[6]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -389,7 +189,7 @@ func (x *UpdateProfileRequest) String() string {
 func (*UpdateProfileRequest) ProtoMessage() {}
 
 func (x *UpdateProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[6]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -402,7 +202,7 @@ func (x *UpdateProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProfileRequest.ProtoReflect.Descriptor instead.
 func (*UpdateProfileRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{6}
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UpdateProfileRequest) GetName() string {
@@ -430,7 +230,7 @@ type UploadPhotoRequest struct {
 
 func (x *UploadPhotoRequest) Reset() {
 	*x = UploadPhotoRequest{}
-	mi := &file_userservice_proto_msgTypes[7]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -442,7 +242,7 @@ func (x *UploadPhotoRequest) String() string {
 func (*UploadPhotoRequest) ProtoMessage() {}
 
 func (x *UploadPhotoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[7]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +255,7 @@ func (x *UploadPhotoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadPhotoRequest.ProtoReflect.Descriptor instead.
 func (*UploadPhotoRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{7}
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UploadPhotoRequest) GetData() []byte {
@@ -488,7 +288,7 @@ type ChangeSettingsRequest struct {
 
 func (x *ChangeSettingsRequest) Reset() {
 	*x = ChangeSettingsRequest{}
-	mi := &file_userservice_proto_msgTypes[8]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -500,7 +300,7 @@ func (x *ChangeSettingsRequest) String() string {
 func (*ChangeSettingsRequest) ProtoMessage() {}
 
 func (x *ChangeSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[8]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -513,7 +313,7 @@ func (x *ChangeSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeSettingsRequest.ProtoReflect.Descriptor instead.
 func (*ChangeSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{8}
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ChangeSettingsRequest) GetNotificationsEnabled() bool {
@@ -532,7 +332,7 @@ type ChangeSubscriptionsRequest struct {
 
 func (x *ChangeSubscriptionsRequest) Reset() {
 	*x = ChangeSubscriptionsRequest{}
-	mi := &file_userservice_proto_msgTypes[9]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -544,7 +344,7 @@ func (x *ChangeSubscriptionsRequest) String() string {
 func (*ChangeSubscriptionsRequest) ProtoMessage() {}
 
 func (x *ChangeSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[9]
+	mi := &file_userservice_presentation_grpc_proto_userservice_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -557,7 +357,7 @@ func (x *ChangeSubscriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*ChangeSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{9}
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ChangeSubscriptionsRequest) GetSubscriptions() []string {
@@ -567,338 +367,11 @@ func (x *ChangeSubscriptionsRequest) GetSubscriptions() []string {
 	return nil
 }
 
-type AdminGetProfileRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
+var File_userservice_presentation_grpc_proto_userservice_proto protoreflect.FileDescriptor
 
-func (x *AdminGetProfileRequest) Reset() {
-	*x = AdminGetProfileRequest{}
-	mi := &file_userservice_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminGetProfileRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminGetProfileRequest) ProtoMessage() {}
-
-func (x *AdminGetProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminGetProfileRequest.ProtoReflect.Descriptor instead.
-func (*AdminGetProfileRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *AdminGetProfileRequest) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-type AdminGetProfilesListRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Limit         uint32                 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
-	Offset        uint32                 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminGetProfilesListRequest) Reset() {
-	*x = AdminGetProfilesListRequest{}
-	mi := &file_userservice_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminGetProfilesListRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminGetProfilesListRequest) ProtoMessage() {}
-
-func (x *AdminGetProfilesListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminGetProfilesListRequest.ProtoReflect.Descriptor instead.
-func (*AdminGetProfilesListRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *AdminGetProfilesListRequest) GetLimit() uint32 {
-	if x != nil {
-		return x.Limit
-	}
-	return 0
-}
-
-func (x *AdminGetProfilesListRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type AdminGetProfilesListResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Profiles      []*Profile             `protobuf:"bytes,1,rep,name=profiles,proto3" json:"profiles,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminGetProfilesListResponse) Reset() {
-	*x = AdminGetProfilesListResponse{}
-	mi := &file_userservice_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminGetProfilesListResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminGetProfilesListResponse) ProtoMessage() {}
-
-func (x *AdminGetProfilesListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminGetProfilesListResponse.ProtoReflect.Descriptor instead.
-func (*AdminGetProfilesListResponse) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *AdminGetProfilesListResponse) GetProfiles() []*Profile {
-	if x != nil {
-		return x.Profiles
-	}
-	return nil
-}
-
-type AdminBanUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminBanUserRequest) Reset() {
-	*x = AdminBanUserRequest{}
-	mi := &file_userservice_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminBanUserRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminBanUserRequest) ProtoMessage() {}
-
-func (x *AdminBanUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminBanUserRequest.ProtoReflect.Descriptor instead.
-func (*AdminBanUserRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *AdminBanUserRequest) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-type AdminBanUserResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Banned        bool                   `protobuf:"varint,1,opt,name=banned,proto3" json:"banned,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminBanUserResponse) Reset() {
-	*x = AdminBanUserResponse{}
-	mi := &file_userservice_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminBanUserResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminBanUserResponse) ProtoMessage() {}
-
-func (x *AdminBanUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminBanUserResponse.ProtoReflect.Descriptor instead.
-func (*AdminBanUserResponse) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *AdminBanUserResponse) GetBanned() bool {
-	if x != nil {
-		return x.Banned
-	}
-	return false
-}
-
-type AdminUnbanUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminUnbanUserRequest) Reset() {
-	*x = AdminUnbanUserRequest{}
-	mi := &file_userservice_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminUnbanUserRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminUnbanUserRequest) ProtoMessage() {}
-
-func (x *AdminUnbanUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminUnbanUserRequest.ProtoReflect.Descriptor instead.
-func (*AdminUnbanUserRequest) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *AdminUnbanUserRequest) GetUserId() uint64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-type AdminUnbanUserResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Unbanned      bool                   `protobuf:"varint,1,opt,name=unbanned,proto3" json:"unbanned,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminUnbanUserResponse) Reset() {
-	*x = AdminUnbanUserResponse{}
-	mi := &file_userservice_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminUnbanUserResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminUnbanUserResponse) ProtoMessage() {}
-
-func (x *AdminUnbanUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_userservice_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminUnbanUserResponse.ProtoReflect.Descriptor instead.
-func (*AdminUnbanUserResponse) Descriptor() ([]byte, []int) {
-	return file_userservice_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *AdminUnbanUserResponse) GetUnbanned() bool {
-	if x != nil {
-		return x.Unbanned
-	}
-	return false
-}
-
-var File_userservice_proto protoreflect.FileDescriptor
-
-const file_userservice_proto_rawDesc = "" +
+const file_userservice_presentation_grpc_proto_userservice_proto_rawDesc = "" +
 	"\n" +
-	"\x11userservice.proto\x12\x0euserservice.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"+\n" +
-	"\x10AssignRolRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"I\n" +
-	"\x12AssignRoleResponse\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1a\n" +
-	"\bassigned\x18\x02 \x01(\bR\bassigned\")\n" +
-	"\x0eGetUserRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"T\n" +
-	"\x0fGetUserResponse\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\"\xfd\x01\n" +
+	"5userservice/presentation/grpc/proto/userservice.proto\x12\x0euserservice.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xfd\x01\n" +
 	"\aProfile\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -921,26 +394,8 @@ const file_userservice_proto_rawDesc = "" +
 	"\x15ChangeSettingsRequest\x123\n" +
 	"\x15notifications_enabled\x18\x01 \x01(\bR\x14notificationsEnabled\"B\n" +
 	"\x1aChangeSubscriptionsRequest\x12$\n" +
-	"\rsubscriptions\x18\x01 \x03(\tR\rsubscriptions\"1\n" +
-	"\x16AdminGetProfileRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"K\n" +
-	"\x1bAdminGetProfilesListRequest\x12\x14\n" +
-	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x16\n" +
-	"\x06offset\x18\x02 \x01(\rR\x06offset\"S\n" +
-	"\x1cAdminGetProfilesListResponse\x123\n" +
-	"\bprofiles\x18\x01 \x03(\v2\x17.userservice.v1.ProfileR\bprofiles\".\n" +
-	"\x13AdminBanUserRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\".\n" +
-	"\x14AdminBanUserResponse\x12\x16\n" +
-	"\x06banned\x18\x01 \x01(\bR\x06banned\"0\n" +
-	"\x15AdminUnbanUserRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"4\n" +
-	"\x16AdminUnbanUserResponse\x12\x1a\n" +
-	"\bunbanned\x18\x01 \x01(\bR\bunbanned2\x83\b\n" +
-	"\vUserService\x12R\n" +
-	"\n" +
-	"AssignRole\x12 .userservice.v1.AssignRolRequest\x1a\".userservice.v1.AssignRoleResponse\x12J\n" +
-	"\aGetUser\x12\x1e.userservice.v1.GetUserRequest\x1a\x1f.userservice.v1.GetUserResponse\x12H\n" +
+	"\rsubscriptions\x18\x01 \x03(\tR\rsubscriptions2\xe1\x03\n" +
+	"\fUsersService\x12H\n" +
 	"\n" +
 	"AddProfile\x12!.userservice.v1.AddProfileRequest\x1a\x17.userservice.v1.Profile\x12=\n" +
 	"\n" +
@@ -948,100 +403,72 @@ const file_userservice_proto_rawDesc = "" +
 	"\rUpdateProfile\x12$.userservice.v1.UpdateProfileRequest\x1a\x17.userservice.v1.Profile\x12J\n" +
 	"\vUploadPhoto\x12\".userservice.v1.UploadPhotoRequest\x1a\x17.userservice.v1.Profile\x12P\n" +
 	"\x0eChangeSettings\x12%.userservice.v1.ChangeSettingsRequest\x1a\x17.userservice.v1.Profile\x12Z\n" +
-	"\x13ChangeSubscriptions\x12*.userservice.v1.ChangeSubscriptionsRequest\x1a\x17.userservice.v1.Profile\x12Y\n" +
-	"\fAdminBanUser\x12#.userservice.v1.AdminBanUserRequest\x1a$.userservice.v1.AdminBanUserResponse\x12_\n" +
-	"\x0eAdminUnbanUser\x12%.userservice.v1.AdminUnbanUserRequest\x1a&.userservice.v1.AdminUnbanUserResponse\x12R\n" +
-	"\x0fAdminGetProfile\x12&.userservice.v1.AdminGetProfileRequest\x1a\x17.userservice.v1.Profile\x12q\n" +
-	"\x14AdminGetProfilesList\x12+.userservice.v1.AdminGetProfilesListRequest\x1a,.userservice.v1.AdminGetProfilesListResponseB0Z.AdsService/userservice/presentation/grpc/pb;pbb\x06proto3"
+	"\x13ChangeSubscriptions\x12*.userservice.v1.ChangeSubscriptionsRequest\x1a\x17.userservice.v1.ProfileB%Z#userservice/presentation/grpc/pb;pbb\x06proto3"
 
 var (
-	file_userservice_proto_rawDescOnce sync.Once
-	file_userservice_proto_rawDescData []byte
+	file_userservice_presentation_grpc_proto_userservice_proto_rawDescOnce sync.Once
+	file_userservice_presentation_grpc_proto_userservice_proto_rawDescData []byte
 )
 
-func file_userservice_proto_rawDescGZIP() []byte {
-	file_userservice_proto_rawDescOnce.Do(func() {
-		file_userservice_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_userservice_proto_rawDesc), len(file_userservice_proto_rawDesc)))
+func file_userservice_presentation_grpc_proto_userservice_proto_rawDescGZIP() []byte {
+	file_userservice_presentation_grpc_proto_userservice_proto_rawDescOnce.Do(func() {
+		file_userservice_presentation_grpc_proto_userservice_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_userservice_presentation_grpc_proto_userservice_proto_rawDesc), len(file_userservice_presentation_grpc_proto_userservice_proto_rawDesc)))
 	})
-	return file_userservice_proto_rawDescData
+	return file_userservice_presentation_grpc_proto_userservice_proto_rawDescData
 }
 
-var file_userservice_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
-var file_userservice_proto_goTypes = []any{
-	(*AssignRolRequest)(nil),             // 0: userservice.v1.AssignRolRequest
-	(*AssignRoleResponse)(nil),           // 1: userservice.v1.AssignRoleResponse
-	(*GetUserRequest)(nil),               // 2: userservice.v1.GetUserRequest
-	(*GetUserResponse)(nil),              // 3: userservice.v1.GetUserResponse
-	(*Profile)(nil),                      // 4: userservice.v1.Profile
-	(*AddProfileRequest)(nil),            // 5: userservice.v1.AddProfileRequest
-	(*UpdateProfileRequest)(nil),         // 6: userservice.v1.UpdateProfileRequest
-	(*UploadPhotoRequest)(nil),           // 7: userservice.v1.UploadPhotoRequest
-	(*ChangeSettingsRequest)(nil),        // 8: userservice.v1.ChangeSettingsRequest
-	(*ChangeSubscriptionsRequest)(nil),   // 9: userservice.v1.ChangeSubscriptionsRequest
-	(*AdminGetProfileRequest)(nil),       // 10: userservice.v1.AdminGetProfileRequest
-	(*AdminGetProfilesListRequest)(nil),  // 11: userservice.v1.AdminGetProfilesListRequest
-	(*AdminGetProfilesListResponse)(nil), // 12: userservice.v1.AdminGetProfilesListResponse
-	(*AdminBanUserRequest)(nil),          // 13: userservice.v1.AdminBanUserRequest
-	(*AdminBanUserResponse)(nil),         // 14: userservice.v1.AdminBanUserResponse
-	(*AdminUnbanUserRequest)(nil),        // 15: userservice.v1.AdminUnbanUserRequest
-	(*AdminUnbanUserResponse)(nil),       // 16: userservice.v1.AdminUnbanUserResponse
-	(*timestamppb.Timestamp)(nil),        // 17: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),                // 18: google.protobuf.Empty
+var file_userservice_presentation_grpc_proto_userservice_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_userservice_presentation_grpc_proto_userservice_proto_goTypes = []any{
+	(*Profile)(nil),                    // 0: userservice.v1.Profile
+	(*AddProfileRequest)(nil),          // 1: userservice.v1.AddProfileRequest
+	(*UpdateProfileRequest)(nil),       // 2: userservice.v1.UpdateProfileRequest
+	(*UploadPhotoRequest)(nil),         // 3: userservice.v1.UploadPhotoRequest
+	(*ChangeSettingsRequest)(nil),      // 4: userservice.v1.ChangeSettingsRequest
+	(*ChangeSubscriptionsRequest)(nil), // 5: userservice.v1.ChangeSubscriptionsRequest
+	(*timestamppb.Timestamp)(nil),      // 6: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),              // 7: google.protobuf.Empty
 }
-var file_userservice_proto_depIdxs = []int32{
-	17, // 0: userservice.v1.Profile.updated_at:type_name -> google.protobuf.Timestamp
-	4,  // 1: userservice.v1.AdminGetProfilesListResponse.profiles:type_name -> userservice.v1.Profile
-	0,  // 2: userservice.v1.UserService.AssignRole:input_type -> userservice.v1.AssignRolRequest
-	2,  // 3: userservice.v1.UserService.GetUser:input_type -> userservice.v1.GetUserRequest
-	5,  // 4: userservice.v1.UserService.AddProfile:input_type -> userservice.v1.AddProfileRequest
-	18, // 5: userservice.v1.UserService.GetProfile:input_type -> google.protobuf.Empty
-	6,  // 6: userservice.v1.UserService.UpdateProfile:input_type -> userservice.v1.UpdateProfileRequest
-	7,  // 7: userservice.v1.UserService.UploadPhoto:input_type -> userservice.v1.UploadPhotoRequest
-	8,  // 8: userservice.v1.UserService.ChangeSettings:input_type -> userservice.v1.ChangeSettingsRequest
-	9,  // 9: userservice.v1.UserService.ChangeSubscriptions:input_type -> userservice.v1.ChangeSubscriptionsRequest
-	13, // 10: userservice.v1.UserService.AdminBanUser:input_type -> userservice.v1.AdminBanUserRequest
-	15, // 11: userservice.v1.UserService.AdminUnbanUser:input_type -> userservice.v1.AdminUnbanUserRequest
-	10, // 12: userservice.v1.UserService.AdminGetProfile:input_type -> userservice.v1.AdminGetProfileRequest
-	11, // 13: userservice.v1.UserService.AdminGetProfilesList:input_type -> userservice.v1.AdminGetProfilesListRequest
-	1,  // 14: userservice.v1.UserService.AssignRole:output_type -> userservice.v1.AssignRoleResponse
-	3,  // 15: userservice.v1.UserService.GetUser:output_type -> userservice.v1.GetUserResponse
-	4,  // 16: userservice.v1.UserService.AddProfile:output_type -> userservice.v1.Profile
-	4,  // 17: userservice.v1.UserService.GetProfile:output_type -> userservice.v1.Profile
-	4,  // 18: userservice.v1.UserService.UpdateProfile:output_type -> userservice.v1.Profile
-	4,  // 19: userservice.v1.UserService.UploadPhoto:output_type -> userservice.v1.Profile
-	4,  // 20: userservice.v1.UserService.ChangeSettings:output_type -> userservice.v1.Profile
-	4,  // 21: userservice.v1.UserService.ChangeSubscriptions:output_type -> userservice.v1.Profile
-	14, // 22: userservice.v1.UserService.AdminBanUser:output_type -> userservice.v1.AdminBanUserResponse
-	16, // 23: userservice.v1.UserService.AdminUnbanUser:output_type -> userservice.v1.AdminUnbanUserResponse
-	4,  // 24: userservice.v1.UserService.AdminGetProfile:output_type -> userservice.v1.Profile
-	12, // 25: userservice.v1.UserService.AdminGetProfilesList:output_type -> userservice.v1.AdminGetProfilesListResponse
-	14, // [14:26] is the sub-list for method output_type
-	2,  // [2:14] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+var file_userservice_presentation_grpc_proto_userservice_proto_depIdxs = []int32{
+	6, // 0: userservice.v1.Profile.updated_at:type_name -> google.protobuf.Timestamp
+	1, // 1: userservice.v1.UsersService.AddProfile:input_type -> userservice.v1.AddProfileRequest
+	7, // 2: userservice.v1.UsersService.GetProfile:input_type -> google.protobuf.Empty
+	2, // 3: userservice.v1.UsersService.UpdateProfile:input_type -> userservice.v1.UpdateProfileRequest
+	3, // 4: userservice.v1.UsersService.UploadPhoto:input_type -> userservice.v1.UploadPhotoRequest
+	4, // 5: userservice.v1.UsersService.ChangeSettings:input_type -> userservice.v1.ChangeSettingsRequest
+	5, // 6: userservice.v1.UsersService.ChangeSubscriptions:input_type -> userservice.v1.ChangeSubscriptionsRequest
+	0, // 7: userservice.v1.UsersService.AddProfile:output_type -> userservice.v1.Profile
+	0, // 8: userservice.v1.UsersService.GetProfile:output_type -> userservice.v1.Profile
+	0, // 9: userservice.v1.UsersService.UpdateProfile:output_type -> userservice.v1.Profile
+	0, // 10: userservice.v1.UsersService.UploadPhoto:output_type -> userservice.v1.Profile
+	0, // 11: userservice.v1.UsersService.ChangeSettings:output_type -> userservice.v1.Profile
+	0, // 12: userservice.v1.UsersService.ChangeSubscriptions:output_type -> userservice.v1.Profile
+	7, // [7:13] is the sub-list for method output_type
+	1, // [1:7] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_userservice_proto_init() }
-func file_userservice_proto_init() {
-	if File_userservice_proto != nil {
+func init() { file_userservice_presentation_grpc_proto_userservice_proto_init() }
+func file_userservice_presentation_grpc_proto_userservice_proto_init() {
+	if File_userservice_presentation_grpc_proto_userservice_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_userservice_proto_rawDesc), len(file_userservice_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_userservice_presentation_grpc_proto_userservice_proto_rawDesc), len(file_userservice_presentation_grpc_proto_userservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_userservice_proto_goTypes,
-		DependencyIndexes: file_userservice_proto_depIdxs,
-		MessageInfos:      file_userservice_proto_msgTypes,
+		GoTypes:           file_userservice_presentation_grpc_proto_userservice_proto_goTypes,
+		DependencyIndexes: file_userservice_presentation_grpc_proto_userservice_proto_depIdxs,
+		MessageInfos:      file_userservice_presentation_grpc_proto_userservice_proto_msgTypes,
 	}.Build()
-	File_userservice_proto = out.File
-	file_userservice_proto_goTypes = nil
-	file_userservice_proto_depIdxs = nil
+	File_userservice_presentation_grpc_proto_userservice_proto = out.File
+	file_userservice_presentation_grpc_proto_userservice_proto_goTypes = nil
+	file_userservice_presentation_grpc_proto_userservice_proto_depIdxs = nil
 }

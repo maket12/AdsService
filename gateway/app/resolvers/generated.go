@@ -86,6 +86,7 @@ type ComplexityRoot struct {
 		AdminGetProfiles func(childComplexity int, limit int, offset int) int
 		Me               func(childComplexity int) int
 		User             func(childComplexity int, userID string) int
+		ValidateToken    func(childComplexity int, accessToken string) int
 	}
 
 	User struct {
@@ -103,6 +104,11 @@ type ComplexityRoot struct {
 		UpdatedAt            func(childComplexity int) int
 		UserID               func(childComplexity int) int
 	}
+
+	ValidateTokenResult struct {
+		UserID func(childComplexity int) int
+		Valid  func(childComplexity int) int
+	}
 }
 
 type MutationResolver interface {
@@ -110,7 +116,7 @@ type MutationResolver interface {
 	Login(ctx context.Context, email string, password string) (*AuthPayload, error)
 	AddProfile(ctx context.Context, name string, phone string) (*UserProfile, error)
 	UpdateProfile(ctx context.Context, input UpdateProfileInput) (*UserProfile, error)
-	UploadMyPhoto(ctx context.Context, file graphql.Upload) (string, error)
+	UploadMyPhoto(ctx context.Context, file graphql.Upload) (*UserProfile, error)
 	ChangeSettings(ctx context.Context, input ChangeSettingsInput) (*UserProfile, error)
 	ChangeSubscriptions(ctx context.Context, input ChangeSubscriptionsInput) (*UserProfile, error)
 	AssignUserAsAdmin(ctx context.Context, userID string) (*AssignRoleResult, error)
@@ -122,6 +128,7 @@ type QueryResolver interface {
 	User(ctx context.Context, userID string) (*User, error)
 	AdminGetProfile(ctx context.Context, userID string) (*UserProfile, error)
 	AdminGetProfiles(ctx context.Context, limit int, offset int) (*ProfilesList, error)
+	ValidateToken(ctx context.Context, accessToken string) (*ValidateTokenResult, error)
 }
 
 type executableSchema struct {
@@ -355,6 +362,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.User(childComplexity, args["user_id"].(string)), true
 
+	case "Query.validateToken":
+		if e.complexity.Query.ValidateToken == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validateToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ValidateToken(childComplexity, args["access_token"].(string)), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -424,6 +443,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.UserProfile.UserID(childComplexity), true
+
+	case "ValidateTokenResult.user_id":
+		if e.complexity.ValidateTokenResult.UserID == nil {
+			break
+		}
+
+		return e.complexity.ValidateTokenResult.UserID(childComplexity), true
+
+	case "ValidateTokenResult.valid":
+		if e.complexity.ValidateTokenResult.Valid == nil {
+			break
+		}
+
+		return e.complexity.ValidateTokenResult.Valid(childComplexity), true
 
 	}
 	return 0, false
@@ -543,17 +576,21 @@ scalar Time
 scalar Upload
 
 # ===== Types =====
+
+"""Ответ аутентификации"""
 type AuthPayload {
     access_token: String!
     refresh_token: String!
 }
 
+"""Пользователь без профиля"""
 type User {
     user_id: ID!
     email: String!
     role: String!
 }
 
+"""Профиль пользователя"""
 type UserProfile {
     user_id: ID!
     name: String
@@ -564,53 +601,72 @@ type UserProfile {
     updated_at: Time
 }
 
+"""Результат назначения роли"""
 type AssignRoleResult {
     user_id: ID!
     assigned: Boolean!
 }
 
+"""Результат блокировки"""
 type AdminBanResult {
     banned: Boolean!
 }
 
+"""Результат разблокировки"""
 type AdminUnbanResult {
     unbanned: Boolean!
 }
 
+"""Список профилей пользователей"""
 type ProfilesList {
     profiles: [UserProfile!]!
 }
 
+"""Результат проверки токена"""
+type ValidateTokenResult {
+    user_id: ID
+    valid: Boolean!
+}
+
 # ===== Inputs =====
+
+"""Изменение профиля"""
 input UpdateProfileInput {
     name: String
     phone: String
 }
 
+"""Изменение настроек"""
 input ChangeSettingsInput {
     notifications_enabled: Boolean!
 }
 
+"""Изменение подписок"""
 input ChangeSubscriptionsInput {
     subscriptions: [String!]!
 }
 
 # ===== Queries =====
+
 type Query {
-    # user-service.GetProfile (через токен)
+    # userservice.GetProfile (по токену)
     me: UserProfile!
 
-    # userservice.GetUser
+    # adminservice.GetUser
     user(user_id: ID!): User!
 
-    # userservice.AdminGetProfile (admin)
+    # adminservice.GetProfile (админ)
     adminGetProfile(user_id: ID!): UserProfile!
 
-    # userservice.AdminGetProfilesList (admin)
+    # adminservice.GetProfilesList (админ)
     adminGetProfiles(limit: Int!, offset: Int!): ProfilesList!
+
+    # authservice.ValidateToken
+    validateToken(access_token: String!): ValidateTokenResult!
 }
 
 # ===== Mutations =====
+
 type Mutation {
     # authservice.Register
     register(email: String!, password: String!): AuthPayload!
@@ -618,14 +674,14 @@ type Mutation {
     # authservice.Login
     login(email: String!, password: String!): AuthPayload!
 
-    # userservice.AddProfile (если профиля ещё нет)
+    # userservice.AddProfile (если профиля нет)
     addProfile(name: String!, phone: String!): UserProfile!
 
     # userservice.UpdateProfile
     updateProfile(input: UpdateProfileInput!): UserProfile!
 
-    # userservice.UploadPhoto -> вернём photo_id
-    uploadMyPhoto(file: Upload!): String!
+    # userservice.UploadPhoto — возвращает photo_id
+    uploadMyPhoto(file: Upload!): UserProfile!
 
     # userservice.ChangeSettings
     changeSettings(input: ChangeSettingsInput!): UserProfile!
@@ -633,13 +689,13 @@ type Mutation {
     # userservice.ChangeSubscriptions
     changeSubscriptions(input: ChangeSubscriptionsInput!): UserProfile!
 
-    # userservice.AssignRole (у тебя в proto только user_id → считаем, что назначаем admin)
+    # adminservice.AssignRole (назначаем пользователя админом)
     assignUserAsAdmin(user_id: ID!): AssignRoleResult!
 
-    # userservice.AdminBanUser (admin)
+    # adminservice.BanUser
     adminBanUser(user_id: ID!): AdminBanResult!
 
-    # userservice.AdminUnbanUser (admin)
+    # adminservice.UnbanUser
     adminUnbanUser(user_id: ID!): AdminUnbanResult!
 }
 `, BuiltIn: false},
@@ -821,6 +877,17 @@ func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs m
 		return nil, err
 	}
 	args["user_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_validateToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "access_token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["access_token"] = arg0
 	return args, nil
 }
 
@@ -1430,9 +1497,9 @@ func (ec *executionContext) _Mutation_uploadMyPhoto(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_uploadMyPhoto(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1442,7 +1509,23 @@ func (ec *executionContext) fieldContext_Mutation_uploadMyPhoto(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "user_id":
+				return ec.fieldContext_UserProfile_user_id(ctx, field)
+			case "name":
+				return ec.fieldContext_UserProfile_name(ctx, field)
+			case "phone":
+				return ec.fieldContext_UserProfile_phone(ctx, field)
+			case "photo_id":
+				return ec.fieldContext_UserProfile_photo_id(ctx, field)
+			case "notifications_enabled":
+				return ec.fieldContext_UserProfile_notifications_enabled(ctx, field)
+			case "subscriptions":
+				return ec.fieldContext_UserProfile_subscriptions(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_UserProfile_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserProfile", field.Name)
 		},
 	}
 	defer func() {
@@ -2093,6 +2176,67 @@ func (ec *executionContext) fieldContext_Query_adminGetProfiles(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_validateToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_validateToken(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ValidateToken(rctx, fc.Args["access_token"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ValidateTokenResult)
+	fc.Result = res
+	return ec.marshalNValidateTokenResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐValidateTokenResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_validateToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "user_id":
+				return ec.fieldContext_ValidateTokenResult_user_id(ctx, field)
+			case "valid":
+				return ec.fieldContext_ValidateTokenResult_valid(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ValidateTokenResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_validateToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -2647,6 +2791,91 @@ func (ec *executionContext) fieldContext_UserProfile_updated_at(_ context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ValidateTokenResult_user_id(ctx context.Context, field graphql.CollectedField, obj *ValidateTokenResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ValidateTokenResult_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ValidateTokenResult_user_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ValidateTokenResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ValidateTokenResult_valid(ctx context.Context, field graphql.CollectedField, obj *ValidateTokenResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ValidateTokenResult_valid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Valid, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ValidateTokenResult_valid(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ValidateTokenResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5123,6 +5352,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "validateToken":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_validateToken(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -5237,6 +5488,47 @@ func (ec *executionContext) _UserProfile(ctx context.Context, sel ast.SelectionS
 			}
 		case "updated_at":
 			out.Values[i] = ec._UserProfile_updated_at(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var validateTokenResultImplementors = []string{"ValidateTokenResult"}
+
+func (ec *executionContext) _ValidateTokenResult(ctx context.Context, sel ast.SelectionSet, obj *ValidateTokenResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, validateTokenResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ValidateTokenResult")
+		case "user_id":
+			out.Values[i] = ec._ValidateTokenResult_user_id(ctx, field, obj)
+		case "valid":
+			out.Values[i] = ec._ValidateTokenResult_valid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5862,6 +6154,20 @@ func (ec *executionContext) marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋ
 	return ec._UserProfile(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNValidateTokenResult2AdsServiceᚋgatewayᚋappᚋresolversᚐValidateTokenResult(ctx context.Context, sel ast.SelectionSet, v ValidateTokenResult) graphql.Marshaler {
+	return ec._ValidateTokenResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNValidateTokenResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐValidateTokenResult(ctx context.Context, sel ast.SelectionSet, v *ValidateTokenResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ValidateTokenResult(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -6142,6 +6448,24 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = sel
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalID(*v)
 	return res
 }
 

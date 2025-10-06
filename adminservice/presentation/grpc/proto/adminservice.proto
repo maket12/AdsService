@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package adminservice.v1;
+
+option go_package = "adminservice/presentation/grpc/pb;pb";
+
+import "google/protobuf/timestamp.proto";
+
+service AdminService {
+  rpc BanUser (BanUserRequest) returns (BanUserResponse);
+  rpc UnbanUser (UnbanUserRequest) returns (UnbanUserResponse);
+  rpc AssignRole (AssignRoleRequest) returns (AssignRoleResponse);
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc GetProfile (GetProfileRequest) returns (Profile);
+  rpc GetProfilesList (GetProfilesListRequest) returns (GetProfilesListResponse);
+}
+
+message AssignRoleRequest {
+  uint64 user_id = 1;
+}
+
+message AssignRoleResponse {
+  uint64 user_id = 1;
+  bool assigned = 2;
+}
+
+message GetUserRequest {
+  uint64 user_id = 1;
+}
+
+message GetUserResponse {
+  uint64 user_id = 1;
+  string email = 2;
+  string role = 3;
+}
+
+message Profile {
+  uint64 user_id = 1;
+  string name = 2;
+  string phone = 3;
+  string photo_id = 4;
+  bool notifications_enabled = 5;
+  repeated string subscriptions = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetProfileRequest {
+  uint64 user_id = 1;
+}
+
+message GetProfilesListRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+}
+
+message GetProfilesListResponse {
+  repeated Profile profiles = 1;
+}
+
+message BanUserRequest {
+  uint64 user_id = 1;
+}
+
+message BanUserResponse {
+  bool banned = 1;
+}
+
+message UnbanUserRequest {
+  uint64 user_id = 1;
+}
+
+message UnbanUserResponse {
+  bool unbanned = 1;
+}

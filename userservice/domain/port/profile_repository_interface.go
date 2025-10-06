@@ -12,5 +12,4 @@ type ProfileRepository interface {
 	UpdateProfileSubscriptions(userID uint64, subscriptions []string) (*entity.Profile, error)
 	UpdateProfileTime(userID uint64) (*entity.Profile, error)
 	GetProfile(userID uint64) (*entity.Profile, error)
-	GetAllProfiles() ([]entity.Profile, error)
 }

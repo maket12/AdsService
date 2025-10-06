@@ -2,48 +2,18 @@ syntax = "proto3";
 
 package userservice.v1;
 
-option go_package = "AdsService/userservice/presentation/grpc/pb;pb";
+option go_package = "userservice/presentation/grpc/pb;pb";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-service UserService {
-  // User
-  rpc AssignRole (AssignRolRequest) returns (AssignRoleResponse);
-  rpc GetUser (GetUserRequest) returns (GetUserResponse);
-
-  // Profile
+service UsersService {
   rpc AddProfile (AddProfileRequest) returns (Profile);
   rpc GetProfile (google.protobuf.Empty) returns (Profile);
   rpc UpdateProfile (UpdateProfileRequest) returns (Profile);
   rpc UploadPhoto (UploadPhotoRequest) returns (Profile);
   rpc ChangeSettings (ChangeSettingsRequest) returns (Profile);
   rpc ChangeSubscriptions (ChangeSubscriptionsRequest) returns (Profile);
-
-  // Admin menu
-  rpc AdminBanUser (AdminBanUserRequest) returns (AdminBanUserResponse);
-  rpc AdminUnbanUser (AdminUnbanUserRequest) returns (AdminUnbanUserResponse);
-  rpc AdminGetProfile (AdminGetProfileRequest) returns (Profile);
-  rpc AdminGetProfilesList (AdminGetProfilesListRequest) returns (AdminGetProfilesListResponse);
-}
-
-message AssignRolRequest {
-  uint64 user_id = 1;
-}
-
-message AssignRoleResponse {
-  uint64 user_id = 1;
-  bool assigned = 2;
-}
-
-message GetUserRequest {
-  uint64 user_id = 1;
-}
-
-message GetUserResponse {
-  uint64 user_id = 1;
-  string email = 2;
-  string role = 3;
 }
 
 message Profile {
@@ -78,33 +48,4 @@ message ChangeSettingsRequest {
 
 message ChangeSubscriptionsRequest {
   repeated string subscriptions = 1;
-}
-
-message AdminGetProfileRequest {
-  uint64 user_id = 1;
-}
-
-message AdminGetProfilesListRequest {
-  uint32 limit = 1;
-  uint32 offset = 2;
-}
-
-message AdminGetProfilesListResponse {
-  repeated Profile profiles = 1;
-}
-
-message AdminBanUserRequest {
-  uint64 user_id = 1;
-}
-
-message AdminBanUserResponse {
-  bool banned = 1;
-}
-
-message AdminUnbanUserRequest {
-  uint64 user_id = 1;
-}
-
-message AdminUnbanUserResponse {
-  bool unbanned = 1;
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.31.1
-// source: userservice.proto
+// source: userservice/presentation/grpc/proto/userservice.proto
 
 package pb
 
@@ -20,527 +20,293 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_AssignRole_FullMethodName           = "/userservice.v1.UserService/AssignRole"
-	UserService_GetUser_FullMethodName              = "/userservice.v1.UserService/GetUser"
-	UserService_AddProfile_FullMethodName           = "/userservice.v1.UserService/AddProfile"
-	UserService_GetProfile_FullMethodName           = "/userservice.v1.UserService/GetProfile"
-	UserService_UpdateProfile_FullMethodName        = "/userservice.v1.UserService/UpdateProfile"
-	UserService_UploadPhoto_FullMethodName          = "/userservice.v1.UserService/UploadPhoto"
-	UserService_ChangeSettings_FullMethodName       = "/userservice.v1.UserService/ChangeSettings"
-	UserService_ChangeSubscriptions_FullMethodName  = "/userservice.v1.UserService/ChangeSubscriptions"
-	UserService_AdminBanUser_FullMethodName         = "/userservice.v1.UserService/AdminBanUser"
-	UserService_AdminUnbanUser_FullMethodName       = "/userservice.v1.UserService/AdminUnbanUser"
-	UserService_AdminGetProfile_FullMethodName      = "/userservice.v1.UserService/AdminGetProfile"
-	UserService_AdminGetProfilesList_FullMethodName = "/userservice.v1.UserService/AdminGetProfilesList"
+	UsersService_AddProfile_FullMethodName          = "/userservice.v1.UsersService/AddProfile"
+	UsersService_GetProfile_FullMethodName          = "/userservice.v1.UsersService/GetProfile"
+	UsersService_UpdateProfile_FullMethodName       = "/userservice.v1.UsersService/UpdateProfile"
+	UsersService_UploadPhoto_FullMethodName         = "/userservice.v1.UsersService/UploadPhoto"
+	UsersService_ChangeSettings_FullMethodName      = "/userservice.v1.UsersService/ChangeSettings"
+	UsersService_ChangeSubscriptions_FullMethodName = "/userservice.v1.UsersService/ChangeSubscriptions"
 )
 
-// UserServiceClient is the client API for UserService service.
+// UsersServiceClient is the client API for UsersService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type UserServiceClient interface {
-	// User
-	AssignRole(ctx context.Context, in *AssignRolRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error)
-	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
-	// Profile
+type UsersServiceClient interface {
 	AddProfile(ctx context.Context, in *AddProfileRequest, opts ...grpc.CallOption) (*Profile, error)
 	GetProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Profile, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Profile, error)
 	UploadPhoto(ctx context.Context, in *UploadPhotoRequest, opts ...grpc.CallOption) (*Profile, error)
 	ChangeSettings(ctx context.Context, in *ChangeSettingsRequest, opts ...grpc.CallOption) (*Profile, error)
 	ChangeSubscriptions(ctx context.Context, in *ChangeSubscriptionsRequest, opts ...grpc.CallOption) (*Profile, error)
-	// Admin menu
-	AdminBanUser(ctx context.Context, in *AdminBanUserRequest, opts ...grpc.CallOption) (*AdminBanUserResponse, error)
-	AdminUnbanUser(ctx context.Context, in *AdminUnbanUserRequest, opts ...grpc.CallOption) (*AdminUnbanUserResponse, error)
-	AdminGetProfile(ctx context.Context, in *AdminGetProfileRequest, opts ...grpc.CallOption) (*Profile, error)
-	AdminGetProfilesList(ctx context.Context, in *AdminGetProfilesListRequest, opts ...grpc.CallOption) (*AdminGetProfilesListResponse, error)
 }
 
-type userServiceClient struct {
+type usersServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
-	return &userServiceClient{cc}
+func NewUsersServiceClient(cc grpc.ClientConnInterface) UsersServiceClient {
+	return &usersServiceClient{cc}
 }
 
-func (c *userServiceClient) AssignRole(ctx context.Context, in *AssignRolRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AssignRoleResponse)
-	err := c.cc.Invoke(ctx, UserService_AssignRole_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserResponse)
-	err := c.cc.Invoke(ctx, UserService_GetUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) AddProfile(ctx context.Context, in *AddProfileRequest, opts ...grpc.CallOption) (*Profile, error) {
+func (c *usersServiceClient) AddProfile(ctx context.Context, in *AddProfileRequest, opts ...grpc.CallOption) (*Profile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_AddProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_AddProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) GetProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Profile, error) {
+func (c *usersServiceClient) GetProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Profile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_GetProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_GetProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Profile, error) {
+func (c *usersServiceClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Profile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_UpdateProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_UpdateProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) UploadPhoto(ctx context.Context, in *UploadPhotoRequest, opts ...grpc.CallOption) (*Profile, error) {
+func (c *usersServiceClient) UploadPhoto(ctx context.Context, in *UploadPhotoRequest, opts ...grpc.CallOption) (*Profile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_UploadPhoto_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_UploadPhoto_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) ChangeSettings(ctx context.Context, in *ChangeSettingsRequest, opts ...grpc.CallOption) (*Profile, error) {
+func (c *usersServiceClient) ChangeSettings(ctx context.Context, in *ChangeSettingsRequest, opts ...grpc.CallOption) (*Profile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_ChangeSettings_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_ChangeSettings_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) ChangeSubscriptions(ctx context.Context, in *ChangeSubscriptionsRequest, opts ...grpc.CallOption) (*Profile, error) {
+func (c *usersServiceClient) ChangeSubscriptions(ctx context.Context, in *ChangeSubscriptionsRequest, opts ...grpc.CallOption) (*Profile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_ChangeSubscriptions_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_ChangeSubscriptions_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) AdminBanUser(ctx context.Context, in *AdminBanUserRequest, opts ...grpc.CallOption) (*AdminBanUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminBanUserResponse)
-	err := c.cc.Invoke(ctx, UserService_AdminBanUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) AdminUnbanUser(ctx context.Context, in *AdminUnbanUserRequest, opts ...grpc.CallOption) (*AdminUnbanUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminUnbanUserResponse)
-	err := c.cc.Invoke(ctx, UserService_AdminUnbanUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) AdminGetProfile(ctx context.Context, in *AdminGetProfileRequest, opts ...grpc.CallOption) (*Profile, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Profile)
-	err := c.cc.Invoke(ctx, UserService_AdminGetProfile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) AdminGetProfilesList(ctx context.Context, in *AdminGetProfilesListRequest, opts ...grpc.CallOption) (*AdminGetProfilesListResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminGetProfilesListResponse)
-	err := c.cc.Invoke(ctx, UserService_AdminGetProfilesList_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// UserServiceServer is the server API for UserService service.
-// All implementations must embed UnimplementedUserServiceServer
+// UsersServiceServer is the server API for UsersService service.
+// All implementations must embed UnimplementedUsersServiceServer
 // for forward compatibility.
-type UserServiceServer interface {
-	// User
-	AssignRole(context.Context, *AssignRolRequest) (*AssignRoleResponse, error)
-	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
-	// Profile
+type UsersServiceServer interface {
 	AddProfile(context.Context, *AddProfileRequest) (*Profile, error)
 	GetProfile(context.Context, *emptypb.Empty) (*Profile, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*Profile, error)
 	UploadPhoto(context.Context, *UploadPhotoRequest) (*Profile, error)
 	ChangeSettings(context.Context, *ChangeSettingsRequest) (*Profile, error)
 	ChangeSubscriptions(context.Context, *ChangeSubscriptionsRequest) (*Profile, error)
-	// Admin menu
-	AdminBanUser(context.Context, *AdminBanUserRequest) (*AdminBanUserResponse, error)
-	AdminUnbanUser(context.Context, *AdminUnbanUserRequest) (*AdminUnbanUserResponse, error)
-	AdminGetProfile(context.Context, *AdminGetProfileRequest) (*Profile, error)
-	AdminGetProfilesList(context.Context, *AdminGetProfilesListRequest) (*AdminGetProfilesListResponse, error)
-	mustEmbedUnimplementedUserServiceServer()
+	mustEmbedUnimplementedUsersServiceServer()
 }
 
-// UnimplementedUserServiceServer must be embedded to have
+// UnimplementedUsersServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedUserServiceServer struct{}
+type UnimplementedUsersServiceServer struct{}
 
-func (UnimplementedUserServiceServer) AssignRole(context.Context, *AssignRolRequest) (*AssignRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AssignRole not implemented")
-}
-func (UnimplementedUserServiceServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
-}
-func (UnimplementedUserServiceServer) AddProfile(context.Context, *AddProfileRequest) (*Profile, error) {
+func (UnimplementedUsersServiceServer) AddProfile(context.Context, *AddProfileRequest) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddProfile not implemented")
 }
-func (UnimplementedUserServiceServer) GetProfile(context.Context, *emptypb.Empty) (*Profile, error) {
+func (UnimplementedUsersServiceServer) GetProfile(context.Context, *emptypb.Empty) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*Profile, error) {
+func (UnimplementedUsersServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
-func (UnimplementedUserServiceServer) UploadPhoto(context.Context, *UploadPhotoRequest) (*Profile, error) {
+func (UnimplementedUsersServiceServer) UploadPhoto(context.Context, *UploadPhotoRequest) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadPhoto not implemented")
 }
-func (UnimplementedUserServiceServer) ChangeSettings(context.Context, *ChangeSettingsRequest) (*Profile, error) {
+func (UnimplementedUsersServiceServer) ChangeSettings(context.Context, *ChangeSettingsRequest) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangeSettings not implemented")
 }
-func (UnimplementedUserServiceServer) ChangeSubscriptions(context.Context, *ChangeSubscriptionsRequest) (*Profile, error) {
+func (UnimplementedUsersServiceServer) ChangeSubscriptions(context.Context, *ChangeSubscriptionsRequest) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangeSubscriptions not implemented")
 }
-func (UnimplementedUserServiceServer) AdminBanUser(context.Context, *AdminBanUserRequest) (*AdminBanUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AdminBanUser not implemented")
-}
-func (UnimplementedUserServiceServer) AdminUnbanUser(context.Context, *AdminUnbanUserRequest) (*AdminUnbanUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AdminUnbanUser not implemented")
-}
-func (UnimplementedUserServiceServer) AdminGetProfile(context.Context, *AdminGetProfileRequest) (*Profile, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AdminGetProfile not implemented")
-}
-func (UnimplementedUserServiceServer) AdminGetProfilesList(context.Context, *AdminGetProfilesListRequest) (*AdminGetProfilesListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AdminGetProfilesList not implemented")
-}
-func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
-func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
+func (UnimplementedUsersServiceServer) mustEmbedUnimplementedUsersServiceServer() {}
+func (UnimplementedUsersServiceServer) testEmbeddedByValue()                      {}
 
-// UnsafeUserServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to UserServiceServer will
+// UnsafeUsersServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UsersServiceServer will
 // result in compilation errors.
-type UnsafeUserServiceServer interface {
-	mustEmbedUnimplementedUserServiceServer()
+type UnsafeUsersServiceServer interface {
+	mustEmbedUnimplementedUsersServiceServer()
 }
 
-func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
-	// If the following call pancis, it indicates UnimplementedUserServiceServer was
+func RegisterUsersServiceServer(s grpc.ServiceRegistrar, srv UsersServiceServer) {
+	// If the following call pancis, it indicates UnimplementedUsersServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&UserService_ServiceDesc, srv)
+	s.RegisterService(&UsersService_ServiceDesc, srv)
 }
 
-func _UserService_AssignRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AssignRolRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).AssignRole(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_AssignRole_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AssignRole(ctx, req.(*AssignRolRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GetUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_GetUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetUser(ctx, req.(*GetUserRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_AddProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_AddProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).AddProfile(ctx, in)
+		return srv.(UsersServiceServer).AddProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_AddProfile_FullMethodName,
+		FullMethod: UsersService_AddProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AddProfile(ctx, req.(*AddProfileRequest))
+		return srv.(UsersServiceServer).AddProfile(ctx, req.(*AddProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).GetProfile(ctx, in)
+		return srv.(UsersServiceServer).GetProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_GetProfile_FullMethodName,
+		FullMethod: UsersService_GetProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetProfile(ctx, req.(*emptypb.Empty))
+		return srv.(UsersServiceServer).GetProfile(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).UpdateProfile(ctx, in)
+		return srv.(UsersServiceServer).UpdateProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_UpdateProfile_FullMethodName,
+		FullMethod: UsersService_UpdateProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdateProfile(ctx, req.(*UpdateProfileRequest))
+		return srv.(UsersServiceServer).UpdateProfile(ctx, req.(*UpdateProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_UploadPhoto_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_UploadPhoto_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UploadPhotoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).UploadPhoto(ctx, in)
+		return srv.(UsersServiceServer).UploadPhoto(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_UploadPhoto_FullMethodName,
+		FullMethod: UsersService_UploadPhoto_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UploadPhoto(ctx, req.(*UploadPhotoRequest))
+		return srv.(UsersServiceServer).UploadPhoto(ctx, req.(*UploadPhotoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_ChangeSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_ChangeSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChangeSettingsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).ChangeSettings(ctx, in)
+		return srv.(UsersServiceServer).ChangeSettings(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_ChangeSettings_FullMethodName,
+		FullMethod: UsersService_ChangeSettings_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).ChangeSettings(ctx, req.(*ChangeSettingsRequest))
+		return srv.(UsersServiceServer).ChangeSettings(ctx, req.(*ChangeSettingsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_ChangeSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_ChangeSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChangeSubscriptionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).ChangeSubscriptions(ctx, in)
+		return srv.(UsersServiceServer).ChangeSubscriptions(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_ChangeSubscriptions_FullMethodName,
+		FullMethod: UsersService_ChangeSubscriptions_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).ChangeSubscriptions(ctx, req.(*ChangeSubscriptionsRequest))
+		return srv.(UsersServiceServer).ChangeSubscriptions(ctx, req.(*ChangeSubscriptionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_AdminBanUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminBanUserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).AdminBanUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_AdminBanUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AdminBanUser(ctx, req.(*AdminBanUserRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_AdminUnbanUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminUnbanUserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).AdminUnbanUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_AdminUnbanUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AdminUnbanUser(ctx, req.(*AdminUnbanUserRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_AdminGetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminGetProfileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).AdminGetProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_AdminGetProfile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AdminGetProfile(ctx, req.(*AdminGetProfileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_AdminGetProfilesList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminGetProfilesListRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).AdminGetProfilesList(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_AdminGetProfilesList_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AdminGetProfilesList(ctx, req.(*AdminGetProfilesListRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
+// UsersService_ServiceDesc is the grpc.ServiceDesc for UsersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var UserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "userservice.v1.UserService",
-	HandlerType: (*UserServiceServer)(nil),
+var UsersService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "userservice.v1.UsersService",
+	HandlerType: (*UsersServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AssignRole",
-			Handler:    _UserService_AssignRole_Handler,
-		},
-		{
-			MethodName: "GetUser",
-			Handler:    _UserService_GetUser_Handler,
-		},
-		{
 			MethodName: "AddProfile",
-			Handler:    _UserService_AddProfile_Handler,
+			Handler:    _UsersService_AddProfile_Handler,
 		},
 		{
 			MethodName: "GetProfile",
-			Handler:    _UserService_GetProfile_Handler,
+			Handler:    _UsersService_GetProfile_Handler,
 		},
 		{
 			MethodName: "UpdateProfile",
-			Handler:    _UserService_UpdateProfile_Handler,
+			Handler:    _UsersService_UpdateProfile_Handler,
 		},
 		{
 			MethodName: "UploadPhoto",
-			Handler:    _UserService_UploadPhoto_Handler,
+			Handler:    _UsersService_UploadPhoto_Handler,
 		},
 		{
 			MethodName: "ChangeSettings",
-			Handler:    _UserService_ChangeSettings_Handler,
+			Handler:    _UsersService_ChangeSettings_Handler,
 		},
 		{
 			MethodName: "ChangeSubscriptions",
-			Handler:    _UserService_ChangeSubscriptions_Handler,
-		},
-		{
-			MethodName: "AdminBanUser",
-			Handler:    _UserService_AdminBanUser_Handler,
-		},
-		{
-			MethodName: "AdminUnbanUser",
-			Handler:    _UserService_AdminUnbanUser_Handler,
-		},
-		{
-			MethodName: "AdminGetProfile",
-			Handler:    _UserService_AdminGetProfile_Handler,
-		},
-		{
-			MethodName: "AdminGetProfilesList",
-			Handler:    _UserService_AdminGetProfilesList_Handler,
+			Handler:    _UsersService_ChangeSubscriptions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "userservice.proto",
+	Metadata: "userservice/presentation/grpc/proto/userservice.proto",
 }

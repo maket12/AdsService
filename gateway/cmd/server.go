@@ -27,13 +27,13 @@ func main() {
 	userAddr := getenv("USER_GRPC_ADDR", "userservice:50052")
 
 	// gRPC connections
-	authConn, err := grpc.Dial(authAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	authConn, err := grpc.NewClient(authAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to authservice: %v", err)
 	}
 	defer authConn.Close()
 
-	userConn, err := grpc.Dial(userAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(userAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to userservice: %v", err)
 	}
@@ -41,7 +41,7 @@ func main() {
 
 	// gRPC clients
 	authClient := authpb.NewAuthServiceClient(authConn)
-	userClient := userpb.NewUserServiceClient(userConn)
+	userClient := userpb.NewUsersServiceClient(userConn)
 
 	// GraphQL resolver
 	resolver := &resolvers.Resolver{

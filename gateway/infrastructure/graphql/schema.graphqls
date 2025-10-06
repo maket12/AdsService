@@ -8,17 +8,21 @@ scalar Time
 scalar Upload
 
 # ===== Types =====
+
+"""Ответ аутентификации"""
 type AuthPayload {
     access_token: String!
     refresh_token: String!
 }
 
+"""Пользователь без профиля"""
 type User {
     user_id: ID!
     email: String!
     role: String!
 }
 
+"""Профиль пользователя"""
 type UserProfile {
     user_id: ID!
     name: String
@@ -29,53 +33,72 @@ type UserProfile {
     updated_at: Time
 }
 
+"""Результат назначения роли"""
 type AssignRoleResult {
     user_id: ID!
     assigned: Boolean!
 }
 
+"""Результат блокировки"""
 type AdminBanResult {
     banned: Boolean!
 }
 
+"""Результат разблокировки"""
 type AdminUnbanResult {
     unbanned: Boolean!
 }
 
+"""Список профилей пользователей"""
 type ProfilesList {
     profiles: [UserProfile!]!
 }
 
+"""Результат проверки токена"""
+type ValidateTokenResult {
+    user_id: ID
+    valid: Boolean!
+}
+
 # ===== Inputs =====
+
+"""Изменение профиля"""
 input UpdateProfileInput {
     name: String
     phone: String
 }
 
+"""Изменение настроек"""
 input ChangeSettingsInput {
     notifications_enabled: Boolean!
 }
 
+"""Изменение подписок"""
 input ChangeSubscriptionsInput {
     subscriptions: [String!]!
 }
 
 # ===== Queries =====
+
 type Query {
-    # user-service.GetProfile (через токен)
+    # userservice.GetProfile (по токену)
     me: UserProfile!
 
-    # userservice.GetUser
+    # adminservice.GetUser
     user(user_id: ID!): User!
 
-    # userservice.AdminGetProfile (admin)
+    # adminservice.GetProfile (админ)
     adminGetProfile(user_id: ID!): UserProfile!
 
-    # userservice.AdminGetProfilesList (admin)
+    # adminservice.GetProfilesList (админ)
     adminGetProfiles(limit: Int!, offset: Int!): ProfilesList!
+
+    # authservice.ValidateToken
+    validateToken(access_token: String!): ValidateTokenResult!
 }
 
 # ===== Mutations =====
+
 type Mutation {
     # authservice.Register
     register(email: String!, password: String!): AuthPayload!
@@ -83,14 +106,14 @@ type Mutation {
     # authservice.Login
     login(email: String!, password: String!): AuthPayload!
 
-    # userservice.AddProfile (если профиля ещё нет)
+    # userservice.AddProfile (если профиля нет)
     addProfile(name: String!, phone: String!): UserProfile!
 
     # userservice.UpdateProfile
     updateProfile(input: UpdateProfileInput!): UserProfile!
 
-    # userservice.UploadPhoto -> вернём photo_id
-    uploadMyPhoto(file: Upload!): String!
+    # userservice.UploadPhoto — возвращает photo_id
+    uploadMyPhoto(file: Upload!): UserProfile!
 
     # userservice.ChangeSettings
     changeSettings(input: ChangeSettingsInput!): UserProfile!
@@ -98,12 +121,12 @@ type Mutation {
     # userservice.ChangeSubscriptions
     changeSubscriptions(input: ChangeSubscriptionsInput!): UserProfile!
 
-    # userservice.AssignRole (у тебя в proto только user_id → считаем, что назначаем admin)
+    # adminservice.AssignRole (назначаем пользователя админом)
     assignUserAsAdmin(user_id: ID!): AssignRoleResult!
 
-    # userservice.AdminBanUser (admin)
+    # adminservice.BanUser
     adminBanUser(user_id: ID!): AdminBanResult!
 
-    # userservice.AdminUnbanUser (admin)
+    # adminservice.UnbanUser
     adminUnbanUser(user_id: ID!): AdminUnbanResult!
 }
