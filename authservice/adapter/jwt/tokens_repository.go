@@ -3,7 +3,7 @@ package jwt
 import (
 	"errors"
 	"fmt"
-	"os"
+	"log/slog"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,17 +16,14 @@ import (
 type TokenRepository struct {
 	accessSecret  []byte
 	refreshSecret []byte
+	logger        *slog.Logger
 }
 
-func NewTokenRepository() port.TokenRepository {
-	access := os.Getenv("JWT_ACCESS_SECRET")
-	refresh := os.Getenv("JWT_REFRESH_SECRET")
-	if access == "" || refresh == "" {
-		panic("JWT secrets are not set in env")
-	}
+func NewTokenRepository(accessSecret, refreshSecret string, logger *slog.Logger) port.TokenRepository {
 	return &TokenRepository{
-		accessSecret:  []byte(access),
-		refreshSecret: []byte(refresh),
+		accessSecret:  []byte(accessSecret),
+		refreshSecret: []byte(refreshSecret),
+		logger:        logger,
 	}
 }
 
@@ -43,6 +40,9 @@ func (s *TokenRepository) GenerateAccessToken(userID uint64, email, role string)
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
+
+	s.logger.Info("Generated access token for user[id=%v]", userID)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.accessSecret)
 }
@@ -57,6 +57,9 @@ func (s *TokenRepository) GenerateRefreshToken(userID uint64) (string, error) {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
+
+	s.logger.Info("Generated refresh token for user[id=%v]", userID)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.refreshSecret)
 }

@@ -4,14 +4,20 @@ import (
 	"AdsService/authservice/domain/entity"
 	"AdsService/authservice/domain/port"
 	"gorm.io/gorm"
-	"log"
+	"log/slog"
 	"time"
 )
 
-type ProfilesRepo struct{ db *gorm.DB }
+type ProfilesRepo struct {
+	db     *gorm.DB
+	logger *slog.Logger
+}
 
-func NewProfilesRepo(db *gorm.DB) port.ProfileRepository {
-	return &ProfilesRepo{db: db}
+func NewProfilesRepo(db *gorm.DB, logger *slog.Logger) port.ProfileRepository {
+	return &ProfilesRepo{
+		db:     db,
+		logger: logger,
+	}
 }
 
 func (r *ProfilesRepo) AddProfile(userID uint64, name, phone string) (*entity.Profile, error) {
@@ -21,6 +27,6 @@ func (r *ProfilesRepo) AddProfile(userID uint64, name, phone string) (*entity.Pr
 		Phone:     phone,
 		UpdatedAt: time.Now().UTC(),
 	}
-	log.Printf("Created new profile: %v", userID)
+	r.logger.Info("Created new profile: %v", userID)
 	return &p, r.db.Create(&p).Error
 }

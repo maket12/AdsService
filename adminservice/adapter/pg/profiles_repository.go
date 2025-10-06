@@ -4,12 +4,19 @@ import (
 	"AdsService/adminservice/domain/entity"
 	"errors"
 	"gorm.io/gorm"
+	"log/slog"
 )
 
-type ProfilesRepo struct{ db *gorm.DB }
+type ProfilesRepo struct {
+	db     *gorm.DB
+	logger *slog.Logger
+}
 
-func NewProfilesRepo(db *gorm.DB) *ProfilesRepo {
-	return &ProfilesRepo{db: db}
+func NewProfilesRepo(db *gorm.DB, logger *slog.Logger) *ProfilesRepo {
+	return &ProfilesRepo{
+		db:     db,
+		logger: logger,
+	}
 }
 
 func (r *ProfilesRepo) GetProfile(userID uint64) (*entity.Profile, error) {
