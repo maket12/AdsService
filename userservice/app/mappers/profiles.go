@@ -1,12 +1,12 @@
 package mappers
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/domain/entity"
+	"ads/userservice/app/dto"
+	"ads/userservice/domain/entity"
 )
 
-func MapIntoProfileDTO(profile *entity.Profile) dto.ProfileResponseDTO {
-	return dto.ProfileResponseDTO{
+func MapIntoProfileDTO(profile *entity.Profile) dto.ProfileResponse {
+	return dto.ProfileResponse{
 		UserID:               profile.UserID,
 		Name:                 profile.Name,
 		Phone:                profile.Phone,
@@ -17,10 +17,10 @@ func MapIntoProfileDTO(profile *entity.Profile) dto.ProfileResponseDTO {
 	}
 }
 
-func MapIntoProfilesDTO(profiles []entity.Profile) dto.ProfilesResponseDTO {
-	out := make([]dto.ProfileResponseDTO, 0, len(profiles))
+func MapIntoProfilesDTO(profiles []entity.Profile) dto.ProfilesResponse {
+	out := make([]dto.ProfileResponse, 0, len(profiles))
 	for _, p := range profiles {
 		out = append(out, MapIntoProfileDTO(&p))
 	}
-	return dto.ProfilesResponseDTO{Profiles: out}
+	return dto.ProfilesResponse{Profiles: out}
 }

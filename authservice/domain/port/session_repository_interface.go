@@ -1,12 +1,15 @@
 package port
 
-import "AdsService/authservice/domain/entity"
+import (
+	"ads/authservice/domain/entity"
+	"context"
+)
 
 type SessionRepository interface {
-	InsertSession(s *entity.Session) error
-	GetSessionByJTI(jti string) (*entity.Session, error)
-	RevokeByJTI(jti string) error
-	RevokeAllByUser(userID uint64) error
-	CleanupExpired() error
-	RotateSession(oldJTI string, newS *entity.Session) error
+	CreateSession(ctx context.Context, session *entity.Session) error
+	GetSessionByJTI(ctx context.Context, jti string) (*entity.Session, error)
+	RevokeByJTI(ctx context.Context, jti string) error
+	RevokeAllByUser(ctx context.Context, userID uint64) error
+	CleanupExpired(ctx context.Context) error
+	RotateSession(ctx context.Context, oldJTI string, newSession *entity.Session) error
 }

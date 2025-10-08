@@ -6,26 +6,34 @@ import (
 	"time"
 )
 
+// Добавление профиля
+type AddProfileInput struct {
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+}
+
 // Результат блокировки
-type AdminBanResult struct {
+type AdminBanOutput struct {
 	Banned bool `json:"banned"`
 }
 
 // Результат разблокировки
-type AdminUnbanResult struct {
+type AdminUnbanOutput struct {
 	Unbanned bool `json:"unbanned"`
 }
 
+type AssignRoleInput struct {
+	UserID string `json:"user_id"`
+}
+
 // Результат назначения роли
-type AssignRoleResult struct {
+type AssignRoleOutput struct {
 	UserID   string `json:"user_id"`
 	Assigned bool   `json:"assigned"`
 }
 
-// Ответ аутентификации
-type AuthPayload struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+type BanUserInput struct {
+	UserID string `json:"user_id"`
 }
 
 // Изменение настроек
@@ -38,6 +46,17 @@ type ChangeSubscriptionsInput struct {
 	Subscriptions []string `json:"subscriptions"`
 }
 
+// Логин пользователя
+type LoginUserInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginUserOutput struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 type Mutation struct {
 }
 
@@ -47,6 +66,22 @@ type ProfilesList struct {
 }
 
 type Query struct {
+}
+
+// Регистрация пользователя
+type RegisterUserInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// Ответы аутентификации
+type RegisterUserOutput struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type UnbanUserInput struct {
+	UserID string `json:"user_id"`
 }
 
 // Изменение профиля
@@ -74,7 +109,7 @@ type UserProfile struct {
 }
 
 // Результат проверки токена
-type ValidateTokenResult struct {
+type ValidateTokenOutput struct {
 	UserID *string `json:"user_id,omitempty"`
 	Valid  bool    `json:"valid"`
 }

@@ -1,12 +1,12 @@
 package grpc
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/usecase"
-	authmw "AdsService/adminservice/infrastructure/grpc"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/usecase"
+	authmw "ads/adminservice/infrastructure/grpc"
 	"context"
 
-	pb "AdsService/adminservice/presentation/grpc/pb"
+	pb "ads/adminservice/presentation/grpc/pb"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -28,7 +28,7 @@ func (s *AdminService) AdminBanUser(ctx context.Context, req *pb.BanUserRequest)
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.BanUserUC.Execute(dto.BanUserDTO{
+	out, err := s.BanUserUC.Execute(dto.BanUser{
 		UserID:          adminID,
 		RequestedUserID: req.UserId,
 	})
@@ -44,7 +44,7 @@ func (s *AdminService) AdminUnbanUser(ctx context.Context, req *pb.UnbanUserRequ
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.UnbanUserUC.Execute(dto.UnbanUserDTO{
+	out, err := s.UnbanUserUC.Execute(dto.UnbanUser{
 		UserID:          adminID,
 		RequestedUserID: req.UserId,
 	})
@@ -55,7 +55,7 @@ func (s *AdminService) AdminUnbanUser(ctx context.Context, req *pb.UnbanUserRequ
 }
 
 func (s *AdminService) AssignRole(ctx context.Context, req *pb.AssignRoleRequest) (*pb.AssignRoleResponse, error) {
-	out, err := s.AssignRoleUC.Execute(dto.AssignRoleDTO{RequestedUserID: req.UserId})
+	out, err := s.AssignRoleUC.Execute(dto.AssignRole{RequestedUserID: req.UserId})
 	if err != nil {
 		return MapAssignRoleResponseDTOToPB(out), status.Error(codes.Internal, err.Error())
 	}
@@ -63,7 +63,7 @@ func (s *AdminService) AssignRole(ctx context.Context, req *pb.AssignRoleRequest
 }
 
 func (s *AdminService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	out, err := s.GetUserUC.Execute(dto.GetUserDTO{AdminUserID: req.UserId})
+	out, err := s.GetUserUC.Execute(dto.GetUser{AdminUserID: req.UserId})
 	if err != nil {
 		return MapGetUserResponseDTOToPB(out), status.Error(codes.NotFound, err.Error())
 	}
@@ -76,7 +76,7 @@ func (s *AdminService) GetProfile(ctx context.Context, req *pb.GetProfileRequest
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.GetProfileUC.Execute(dto.GetProfileDTO{
+	out, err := s.GetProfileUC.Execute(dto.GetProfile{
 		UserID:          adminID,
 		RequestedUserID: req.UserId,
 	})
@@ -92,7 +92,7 @@ func (s *AdminService) AdminGetProfiles(ctx context.Context, req *pb.GetProfiles
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.GetProfilesUC.Execute(dto.GetProfilesListDTO{
+	out, err := s.GetProfilesUC.Execute(dto.GetProfilesList{
 		UserID: adminID,
 		Limit:  req.Limit,
 		Offset: req.Offset,

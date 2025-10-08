@@ -1,11 +1,11 @@
 package tests
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/tests/data"
-	"AdsService/adminservice/app/tests/mocks"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/app/usecase"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/tests/data"
+	"ads/adminservice/app/tests/mocks"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +29,7 @@ func TestAssignRoleUC_Success(t *testing.T) {
 				On("EnhanceUser", testCase.RequestedUserID).
 				Return(nil)
 
-			out, err := uc.Execute(dto.AssignRoleDTO{
+			out, err := uc.Execute(dto.AssignRole{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -56,7 +56,7 @@ func TestAssignRoleUC_GetRoleError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("", errors.New("get role error"))
 
-			_, err := uc.Execute(dto.AssignRoleDTO{
+			_, err := uc.Execute(dto.AssignRole{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -82,7 +82,7 @@ func TestAssignRoleUC_NotAdminError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("user", nil)
 
-			_, err := uc.Execute(dto.AssignRoleDTO{
+			_, err := uc.Execute(dto.AssignRole{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -111,7 +111,7 @@ func TestAssignRoleUC_EnhanceError(t *testing.T) {
 				On("EnhanceUser", mock.Anything).
 				Return(errors.New("enhance user error"))
 
-			out, err := uc.Execute(dto.AssignRoleDTO{
+			out, err := uc.Execute(dto.AssignRole{
 				RequestedUserID: testCase.RequestedUserID,
 			})
 

@@ -1,6 +1,6 @@
 package dto
 
-type GetUserResponseDTO struct {
+type GetUserResponse struct {
 	UserID uint64
 	Email  string
 	Role   string

@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/tests/data"
-	"AdsService/adminservice/app/tests/helpers"
-	"AdsService/adminservice/app/tests/mocks"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/app/usecase"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/tests/data"
+	"ads/adminservice/app/tests/helpers"
+	"ads/adminservice/app/tests/mocks"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ func TestGetProfileUC_Success(t *testing.T) {
 				On("GetProfile", testCase.RequestedUserID).
 				Return(helpers.MakeTestProfile(testCase.RequestedUserID), nil)
 
-			out, err := uc.Execute(dto.GetProfileDTO{
+			out, err := uc.Execute(dto.GetProfile{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -59,7 +59,7 @@ func TestGetProfileUC_GetUserError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("", errors.New("get user error"))
 
-			_, err := uc.Execute(dto.GetProfileDTO{
+			_, err := uc.Execute(dto.GetProfile{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -85,7 +85,7 @@ func TestGetProfileUC_NotAdminError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("user", nil)
 
-			_, err := uc.Execute(dto.GetProfileDTO{
+			_, err := uc.Execute(dto.GetProfile{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -116,7 +116,7 @@ func TestGetProfileUC_GetProfileError(t *testing.T) {
 				On("GetProfile", mock.Anything).
 				Return(nil, errors.New("get profile error"))
 
-			_, err := uc.Execute(dto.GetProfileDTO{
+			_, err := uc.Execute(dto.GetProfile{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -147,7 +147,7 @@ func TestGetProfileUC_ProfileNotFoundError(t *testing.T) {
 				On("GetProfile", mock.Anything).
 				Return(nil, nil)
 
-			_, err := uc.Execute(dto.GetProfileDTO{
+			_, err := uc.Execute(dto.GetProfile{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})

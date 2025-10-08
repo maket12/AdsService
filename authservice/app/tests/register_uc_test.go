@@ -1,18 +1,18 @@
 package tests
 
 import (
-	"AdsService/authservice/app/tests/data"
-	"AdsService/authservice/app/tests/helpers"
-	"AdsService/authservice/app/tests/mocks"
-	"AdsService/authservice/app/usecase"
+	"ads/authservice/app/tests/data"
+	"ads/authservice/app/tests/helpers"
+	"ads/authservice/app/tests/mocks"
+	"ads/authservice/app/usecase"
 	"errors"
 	"strings"
 	"testing"
 	"time"
 
-	"AdsService/authservice/app/dto"
-	"AdsService/authservice/app/uc_errors"
-	"AdsService/authservice/domain/entity"
+	"ads/authservice/app/dto"
+	"ads/authservice/app/uc_errors"
+	"ads/authservice/domain/entity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -56,12 +56,12 @@ func TestRegisterUC_Success(t *testing.T) {
 				Return(helpers.MakeRefreshClaims("jti-x", time.Now().Add(24*time.Hour), time.Now()), nil)
 
 			sessions.
-				On("InsertSession", mock.MatchedBy(func(s *entity.Session) bool {
+				On("CreateSession", mock.MatchedBy(func(s *entity.Session) bool {
 					return s.JTI == "jti-x" && !s.IssuedAt.IsZero() && s.ExpiresAt.After(s.IssuedAt)
 				})).
 				Return(nil)
 
-			out, err := uc.Execute(dto.RegisterDTO{
+			out, err := uc.Execute(dto.Register{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -93,7 +93,7 @@ func TestRegisterUC_AddUserError(t *testing.T) {
 				On("AddUser", mock.AnythingOfType("*entity.User")).
 				Return(errors.New("db insert failed"))
 
-			res, err := uc.Execute(dto.RegisterDTO{Email: testCase.Email, Password: testCase.Password})
+			res, err := uc.Execute(dto.Register{Email: testCase.Email, Password: testCase.Password})
 
 			assert.Error(t, err)
 			assert.Equal(t, uc_errors.ErrAddUser, err)
@@ -122,7 +122,7 @@ func TestRegisterUC_AddProfileError(t *testing.T) {
 				On("AddProfile", mock.Anything, mock.Anything, mock.Anything).
 				Return(nil, errors.New("profile error"))
 
-			res, err := uc.Execute(dto.RegisterDTO{
+			res, err := uc.Execute(dto.Register{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -160,7 +160,7 @@ func TestRegisterUC_GenerateAccessTokenError(t *testing.T) {
 				On("GenerateAccessToken", mock.Anything, mock.Anything, mock.Anything).
 				Return("", errors.New("token error"))
 
-			res, err := uc.Execute(dto.RegisterDTO{
+			res, err := uc.Execute(dto.Register{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -202,7 +202,7 @@ func TestRegisterUC_GenerateRefreshTokenError(t *testing.T) {
 				On("GenerateRefreshToken", mock.Anything).
 				Return("", errors.New("token error"))
 
-			res, err := uc.Execute(dto.RegisterDTO{
+			res, err := uc.Execute(dto.Register{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -247,7 +247,7 @@ func TestRegisterUC_ParseRefreshTokenError(t *testing.T) {
 				On("ParseRefreshToken", "refresh-token").
 				Return(nil, errors.New("parse error"))
 
-			res, err := uc.Execute(dto.RegisterDTO{
+			res, err := uc.Execute(dto.Register{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -263,7 +263,7 @@ func TestRegisterUC_ParseRefreshTokenError(t *testing.T) {
 	}
 }
 
-func TestRegisterUC_InsertSessionError(t *testing.T) {
+func TestRegisterUC_CreateSessionError(t *testing.T) {
 	for _, testCase := range data.RegisterTestCases {
 		t.Run(testCase.Email, func(t *testing.T) {
 			users := new(mocks.MockUsersRepo)
@@ -293,10 +293,10 @@ func TestRegisterUC_InsertSessionError(t *testing.T) {
 				On("ParseRefreshToken", mock.Anything).
 				Return(helpers.MakeRefreshClaims("jti-x", time.Now().Add(24*time.Hour), time.Now()), nil)
 			sessions.
-				On("InsertSession", mock.Anything).
+				On("CreateSession", mock.Anything).
 				Return(errors.New("session error"))
 
-			res, err := uc.Execute(dto.RegisterDTO{
+			res, err := uc.Execute(dto.Register{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})

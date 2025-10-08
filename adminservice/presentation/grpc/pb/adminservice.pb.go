@@ -711,18 +711,18 @@ var file_adminservice_presentation_grpc_proto_adminservice_proto_goTypes = []any
 var file_adminservice_presentation_grpc_proto_adminservice_proto_depIdxs = []int32{
 	12, // 0: adminservice.v1.Profile.updated_at:type_name -> google.protobuf.Timestamp
 	4,  // 1: adminservice.v1.GetProfilesListResponse.profiles:type_name -> adminservice.v1.Profile
-	8,  // 2: adminservice.v1.AdminService.BanUser:input_type -> adminservice.v1.BanUserRequest
-	10, // 3: adminservice.v1.AdminService.UnbanUser:input_type -> adminservice.v1.UnbanUserRequest
-	0,  // 4: adminservice.v1.AdminService.AssignRole:input_type -> adminservice.v1.AssignRoleRequest
-	2,  // 5: adminservice.v1.AdminService.GetUser:input_type -> adminservice.v1.GetUserRequest
-	5,  // 6: adminservice.v1.AdminService.GetProfile:input_type -> adminservice.v1.GetProfileRequest
-	6,  // 7: adminservice.v1.AdminService.GetProfilesList:input_type -> adminservice.v1.GetProfilesListRequest
-	9,  // 8: adminservice.v1.AdminService.BanUser:output_type -> adminservice.v1.BanUserResponse
-	11, // 9: adminservice.v1.AdminService.UnbanUser:output_type -> adminservice.v1.UnbanUserResponse
-	1,  // 10: adminservice.v1.AdminService.AssignRole:output_type -> adminservice.v1.AssignRoleResponse
-	3,  // 11: adminservice.v1.AdminService.GetUser:output_type -> adminservice.v1.GetUserResponse
-	4,  // 12: adminservice.v1.AdminService.GetProfile:output_type -> adminservice.v1.Profile
-	7,  // 13: adminservice.v1.AdminService.GetProfilesList:output_type -> adminservice.v1.GetProfilesListResponse
+	8,  // 2: adminservice.v1.AdminClient.BanUser:input_type -> adminservice.v1.BanUserRequest
+	10, // 3: adminservice.v1.AdminClient.UnbanUser:input_type -> adminservice.v1.UnbanUserRequest
+	0,  // 4: adminservice.v1.AdminClient.AssignRole:input_type -> adminservice.v1.AssignRoleRequest
+	2,  // 5: adminservice.v1.AdminClient.GetUser:input_type -> adminservice.v1.GetUserRequest
+	5,  // 6: adminservice.v1.AdminClient.GetProfile:input_type -> adminservice.v1.GetProfileRequest
+	6,  // 7: adminservice.v1.AdminClient.GetProfilesList:input_type -> adminservice.v1.GetProfilesListRequest
+	9,  // 8: adminservice.v1.AdminClient.BanUser:output_type -> adminservice.v1.BanUserResponse
+	11, // 9: adminservice.v1.AdminClient.UnbanUser:output_type -> adminservice.v1.UnbanUserResponse
+	1,  // 10: adminservice.v1.AdminClient.AssignRole:output_type -> adminservice.v1.AssignRoleResponse
+	3,  // 11: adminservice.v1.AdminClient.GetUser:output_type -> adminservice.v1.GetUserResponse
+	4,  // 12: adminservice.v1.AdminClient.GetProfile:output_type -> adminservice.v1.Profile
+	7,  // 13: adminservice.v1.AdminClient.GetProfilesList:output_type -> adminservice.v1.GetProfilesListResponse
 	8,  // [8:14] is the sub-list for method output_type
 	2,  // [2:8] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name

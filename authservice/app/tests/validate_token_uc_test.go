@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/authservice/app/dto"
-	"AdsService/authservice/app/tests/data"
-	"AdsService/authservice/app/tests/helpers"
-	"AdsService/authservice/app/tests/mocks"
-	"AdsService/authservice/app/uc_errors"
-	"AdsService/authservice/app/usecase"
+	"ads/authservice/app/dto"
+	"ads/authservice/app/tests/data"
+	"ads/authservice/app/tests/helpers"
+	"ads/authservice/app/tests/mocks"
+	"ads/authservice/app/uc_errors"
+	"ads/authservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,7 @@ func TestValidateToken_Success(t *testing.T) {
 				On("ParseAccessToken", testCase.AccessToken).
 				Return(helpers.MakeAccessClaims(), nil)
 
-			out, err := uc.Execute(dto.ValidateTokenDTO{
+			out, err := uc.Execute(dto.ValidateToken{
 				AccessToken: testCase.AccessToken,
 			})
 
@@ -51,7 +51,7 @@ func TestValidateToken_TokenError(t *testing.T) {
 				On("ParseAccessToken", testCase.AccessToken).
 				Return(nil, errors.New("token error"))
 
-			out, err := uc.Execute(dto.ValidateTokenDTO{
+			out, err := uc.Execute(dto.ValidateToken{
 				AccessToken: testCase.AccessToken,
 			})
 

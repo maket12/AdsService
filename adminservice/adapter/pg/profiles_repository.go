@@ -1,21 +1,18 @@
 package pg
 
 import (
-	"AdsService/adminservice/domain/entity"
+	"ads/adminservice/domain/entity"
 	"errors"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
 type ProfilesRepo struct {
-	db     *gorm.DB
-	logger *slog.Logger
+	db *gorm.DB
 }
 
-func NewProfilesRepo(db *gorm.DB, logger *slog.Logger) *ProfilesRepo {
+func NewProfilesRepo(db *gorm.DB) *ProfilesRepo {
 	return &ProfilesRepo{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 

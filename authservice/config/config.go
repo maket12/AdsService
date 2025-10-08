@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/caarlos0/env/v11"
-	"log"
+	"log/slog"
 )
 
 type Config struct {
@@ -20,40 +20,67 @@ type Config struct {
 
 	// Service
 	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50051"`
+	LogLevel    string `env:"LOG_LEVEL" envDefault:"info"`
 	Environment string `env:"ENVIRONMENT" envDefault:"development"`
 }
 
-func Load() *Config {
+func Load() (*Config, error) {
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
 
 	// Валидация обязательных полей
 	if cfg.DBHost == "" {
-		log.Fatal("DB_HOST is required")
+		return nil, fmt.Errorf("DB_HOST is required")
 	}
 	if cfg.DBUser == "" {
-		log.Fatal("DBUser is required")
+		return nil, fmt.Errorf("DBUser is required")
 	}
 	if cfg.DBPassword == "" {
-		log.Fatal("DBPassword is required")
+		return nil, fmt.Errorf("DBPassword is required")
 	}
 	if cfg.DBName == "" {
-		log.Fatal("DBName is required")
+		return nil, fmt.Errorf("DBName is required")
 	}
 
 	if cfg.JWTAccessSecret == "" {
-		log.Fatal("JWT_Access_SECRET is required")
+		return nil, fmt.Errorf("JWT_Access_SECRET is required")
 	}
 	if cfg.JWTRefreshSecret == "" {
-		log.Fatal("JWTRefreshSecret is required")
+		return nil, fmt.Errorf("JWTRefreshSecret is required")
+	}
+
+	validLevels := map[string]bool{
+		"debug": true,
+		"info":  true,
+		"warn":  true,
+		"error": true,
+	}
+	if !validLevels[cfg.LogLevel] {
+		return nil, fmt.Errorf("invalid LOG_LEVEL: %s, must be one of: debug, info, warn, error", cfg.LogLevel)
 	}
 
 	fmt.Printf("Config loaded successfully\n")
 	fmt.Printf("   Environment: %s\n", cfg.Environment)
+	fmt.Printf("   Log Level: %s\n", cfg.LogLevel)
 	fmt.Printf("   DB Host: %s\n", cfg.DBHost)
 	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
 
-	return cfg
+	return cfg, nil
+}
+
+func (c *Config) GetSlogLevel() slog.Level {
+	switch c.LogLevel {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }

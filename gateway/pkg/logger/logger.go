@@ -5,9 +5,11 @@ import (
 	"os"
 )
 
-func New(level slog.Level) *slog.Logger {
+func New() *slog.Logger {
+	var level slog.Level
 	var handler slog.Handler
 
+	level = slog.LevelDebug
 	handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: level,
 	})

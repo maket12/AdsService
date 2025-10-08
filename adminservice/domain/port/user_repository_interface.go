@@ -1,6 +1,6 @@
 package port
 
-import "AdsService/adminservice/domain/entity"
+import "ads/adminservice/domain/entity"
 
 type UserRepository interface {
 	GetUserByID(userID uint64) (*entity.User, error)

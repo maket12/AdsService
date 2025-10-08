@@ -1,6 +1,6 @@
 package dto
 
-type GetUserDTO struct {
+type GetUser struct {
 	AdminUserID     uint64
 	RequestedUserID uint64
 }

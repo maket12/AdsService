@@ -1,8 +1,8 @@
 package mocks
 
 import (
-	"AdsService/authservice/domain/entity"
-	"AdsService/authservice/domain/port"
+	"ads/authservice/domain/entity"
+	"ads/authservice/domain/port"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -82,7 +82,7 @@ type MockSessionsRepo struct{ mock.Mock }
 
 var _ port.SessionRepository = (*MockSessionsRepo)(nil)
 
-func (m *MockSessionsRepo) InsertSession(s *entity.Session) error {
+func (m *MockSessionsRepo) CreateSession(s *entity.Session) error {
 	args := m.Called(s)
 	return args.Error(0)
 }
@@ -115,7 +115,7 @@ func (m *MockSessionsRepo) RotateSession(oldJTI string, newS *entity.Session) er
 	return args.Error(0)
 }
 
-func (m *MockTokensRepo) InsertSession(s *entity.Session) error {
+func (m *MockTokensRepo) CreateSession(s *entity.Session) error {
 	args := m.Called(s)
 	return args.Error(0)
 }

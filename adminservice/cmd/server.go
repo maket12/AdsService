@@ -1,15 +1,15 @@
 package main
 
 import (
-	"AdsService/adminservice/adapter/jwt"
-	"AdsService/adminservice/adapter/pg"
-	"AdsService/adminservice/app/usecase"
-	"AdsService/adminservice/config"
-	grpcinfra "AdsService/adminservice/infrastructure/grpc"
-	"AdsService/adminservice/infrastructure/postgres"
-	"AdsService/adminservice/pkg/logger"
-	adminsvc "AdsService/adminservice/presentation/grpc"
-	pb "AdsService/adminservice/presentation/grpc/pb"
+	"ads/adminservice/adapter/jwt"
+	"ads/adminservice/adapter/pg"
+	"ads/adminservice/app/usecase"
+	"ads/adminservice/config"
+	grpcinfra "ads/adminservice/infrastructure/grpc"
+	"ads/adminservice/infrastructure/postgres"
+	"ads/adminservice/pkg/logger"
+	adminsvc "ads/adminservice/presentation/grpc"
+	pb "ads/adminservice/presentation/grpc/pb"
 	"fmt"
 	"gorm.io/gorm"
 	"log/slog"
@@ -24,9 +24,14 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
-
 	log := logger.New()
+
+	cfg, err := config.Load()
+	if err != nil {
+		log.Error("failed to load config", "error", err)
+		return
+	}
+
 	log.Info("🚀 starting adminservice", "port", cfg.GRPCPort)
 
 	db, err := initDependencies(cfg, log)
@@ -36,7 +41,7 @@ func main() {
 	}
 	defer closeDependencies(log)
 
-	adminService := initServices(db, cfg, log)
+	adminService := initServices(db)
 
 	server := startGRPCServer(adminService, cfg, log)
 
@@ -45,26 +50,24 @@ func main() {
 	log.Info("👋 adminservice stopped")
 }
 
-// Инициализация зависимостей
 func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, error) {
 	log.Info("initializing database connections...")
 
-	if err := postgres.InitDB(cfg, log); err != nil {
+	db, err := postgres.InitDB(cfg)
+	if err != nil {
 		return nil, fmt.Errorf("postgres: %w", err)
 	}
 
-	return postgres.DB, nil
+	return db, nil
 }
 
-// Закрытие соединений
 func closeDependencies(log *slog.Logger) {
 	log.Info("closing database connections...")
 }
 
-// Инициализация сервисов
-func initServices(db *gorm.DB, cfg *config.Config, log *slog.Logger) *adminsvc.AdminService {
-	usersRepo := pg.NewUsersRepo(db, log)
-	profilesRepo := pg.NewProfilesRepo(db, log)
+func initServices(db *gorm.DB) *adminsvc.AdminService {
+	usersRepo := pg.NewUsersRepo(db)
+	profilesRepo := pg.NewProfilesRepo(db)
 
 	assignRoleUC := &usecase.AssignRoleUC{Users: usersRepo}
 	getUserUC := &usecase.GetUserUC{Users: usersRepo}

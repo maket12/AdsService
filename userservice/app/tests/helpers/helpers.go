@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"AdsService/userservice/domain/entity"
+	"ads/userservice/domain/entity"
 )
 
 func MakeTestProfile(

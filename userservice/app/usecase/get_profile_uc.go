@@ -1,23 +1,23 @@
 package usecase
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/mappers"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/domain/port"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/mappers"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/domain/port"
 )
 
 type GetProfileUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *GetProfileUC) Execute(in dto.GetProfileDTO) (dto.ProfileResponseDTO, error) {
+func (uc *GetProfileUC) Execute(in dto.GetProfile) (dto.ProfileResponse, error) {
 	profile, err := uc.Profiles.GetProfile(in.UserID)
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrGetProfile
+		return dto.ProfileResponse{}, uc_errors.ErrGetProfile
 	}
 	if profile == nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrProfileNotFound
+		return dto.ProfileResponse{}, uc_errors.ErrProfileNotFound
 	}
 	return mappers.MapIntoProfileDTO(profile), nil
 }

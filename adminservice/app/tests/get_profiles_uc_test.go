@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/tests/data"
-	"AdsService/adminservice/app/tests/helpers"
-	"AdsService/adminservice/app/tests/mocks"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/app/usecase"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/tests/data"
+	"ads/adminservice/app/tests/helpers"
+	"ads/adminservice/app/tests/mocks"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ func TestGetProfilesUC_Success(t *testing.T) {
 				On("GetAllProfiles", testCase.Limit, testCase.Offset).
 				Return(helpers.MakeTestProfiles(), nil)
 
-			_, err := uc.Execute(dto.GetProfilesListDTO{
+			_, err := uc.Execute(dto.GetProfilesList{
 				UserID: testCase.AdminUserID,
 				Limit:  testCase.Limit,
 				Offset: testCase.Offset,
@@ -59,7 +59,7 @@ func TestGetProfilesUC_GetUserError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("", errors.New("get user error"))
 
-			_, err := uc.Execute(dto.GetProfilesListDTO{
+			_, err := uc.Execute(dto.GetProfilesList{
 				UserID: testCase.AdminUserID,
 				Limit:  testCase.Limit,
 				Offset: testCase.Offset,
@@ -86,7 +86,7 @@ func TestGetProfilesUC_NotAdminError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("user", nil)
 
-			_, err := uc.Execute(dto.GetProfilesListDTO{
+			_, err := uc.Execute(dto.GetProfilesList{
 				UserID: testCase.AdminUserID,
 				Limit:  testCase.Limit,
 				Offset: testCase.Offset,
@@ -118,7 +118,7 @@ func TestGetProfilesUC_GetProfilesError(t *testing.T) {
 				On("GetAllProfiles", mock.Anything, mock.Anything).
 				Return(nil, errors.New("get profiles error"))
 
-			_, err := uc.Execute(dto.GetProfilesListDTO{
+			_, err := uc.Execute(dto.GetProfilesList{
 				UserID: testCase.AdminUserID,
 				Limit:  testCase.Limit,
 				Offset: testCase.Offset,

@@ -1,6 +1,6 @@
 package dto
 
-type AssignRoleDTO struct {
+type AssignRole struct {
 	AdminUserID     uint64
 	RequestedUserID uint64
 }

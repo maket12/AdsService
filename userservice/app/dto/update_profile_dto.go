@@ -1,6 +1,6 @@
 package dto
 
-type UpdateProfileDTO struct {
+type UpdateProfile struct {
 	UserID uint64
 	Name   string
 	Phone  string

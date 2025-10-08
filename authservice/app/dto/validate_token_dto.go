@@ -1,6 +1,6 @@
 package dto
 
-type ValidateTokenDTO struct {
+type ValidateToken struct {
 	AccessToken string
 }
 

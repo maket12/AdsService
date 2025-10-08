@@ -46,33 +46,33 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	AdminBanResult struct {
+	AdminBanOutput struct {
 		Banned func(childComplexity int) int
 	}
 
-	AdminUnbanResult struct {
+	AdminUnbanOutput struct {
 		Unbanned func(childComplexity int) int
 	}
 
-	AssignRoleResult struct {
+	AssignRoleOutput struct {
 		Assigned func(childComplexity int) int
 		UserID   func(childComplexity int) int
 	}
 
-	AuthPayload struct {
+	LoginUserOutput struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AddProfile          func(childComplexity int, name string, phone string) int
-		AdminBanUser        func(childComplexity int, userID string) int
-		AdminUnbanUser      func(childComplexity int, userID string) int
-		AssignUserAsAdmin   func(childComplexity int, userID string) int
+		AddProfile          func(childComplexity int, input AddProfileInput) int
+		AdminBanUser        func(childComplexity int, input *BanUserInput) int
+		AdminUnbanUser      func(childComplexity int, input *UnbanUserInput) int
+		AssignUserAsAdmin   func(childComplexity int, input *AssignRoleInput) int
 		ChangeSettings      func(childComplexity int, input ChangeSettingsInput) int
 		ChangeSubscriptions func(childComplexity int, input ChangeSubscriptionsInput) int
-		Login               func(childComplexity int, email string, password string) int
-		Register            func(childComplexity int, email string, password string) int
+		LoginUser           func(childComplexity int, input *LoginUserInput) int
+		RegisterUser        func(childComplexity int, input *RegisterUserInput) int
 		UpdateProfile       func(childComplexity int, input UpdateProfileInput) int
 		UploadMyPhoto       func(childComplexity int, file graphql.Upload) int
 	}
@@ -87,6 +87,11 @@ type ComplexityRoot struct {
 		Me               func(childComplexity int) int
 		User             func(childComplexity int, userID string) int
 		ValidateToken    func(childComplexity int, accessToken string) int
+	}
+
+	RegisterUserOutput struct {
+		AccessToken  func(childComplexity int) int
+		RefreshToken func(childComplexity int) int
 	}
 
 	User struct {
@@ -105,30 +110,30 @@ type ComplexityRoot struct {
 		UserID               func(childComplexity int) int
 	}
 
-	ValidateTokenResult struct {
+	ValidateTokenOutput struct {
 		UserID func(childComplexity int) int
 		Valid  func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
-	Register(ctx context.Context, email string, password string) (*AuthPayload, error)
-	Login(ctx context.Context, email string, password string) (*AuthPayload, error)
-	AddProfile(ctx context.Context, name string, phone string) (*UserProfile, error)
+	RegisterUser(ctx context.Context, input *RegisterUserInput) (*RegisterUserOutput, error)
+	LoginUser(ctx context.Context, input *LoginUserInput) (*LoginUserOutput, error)
+	AddProfile(ctx context.Context, input AddProfileInput) (*UserProfile, error)
 	UpdateProfile(ctx context.Context, input UpdateProfileInput) (*UserProfile, error)
 	UploadMyPhoto(ctx context.Context, file graphql.Upload) (*UserProfile, error)
 	ChangeSettings(ctx context.Context, input ChangeSettingsInput) (*UserProfile, error)
 	ChangeSubscriptions(ctx context.Context, input ChangeSubscriptionsInput) (*UserProfile, error)
-	AssignUserAsAdmin(ctx context.Context, userID string) (*AssignRoleResult, error)
-	AdminBanUser(ctx context.Context, userID string) (*AdminBanResult, error)
-	AdminUnbanUser(ctx context.Context, userID string) (*AdminUnbanResult, error)
+	AssignUserAsAdmin(ctx context.Context, input *AssignRoleInput) (*AssignRoleOutput, error)
+	AdminBanUser(ctx context.Context, input *BanUserInput) (*AdminBanOutput, error)
+	AdminUnbanUser(ctx context.Context, input *UnbanUserInput) (*AdminUnbanOutput, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*UserProfile, error)
 	User(ctx context.Context, userID string) (*User, error)
 	AdminGetProfile(ctx context.Context, userID string) (*UserProfile, error)
 	AdminGetProfiles(ctx context.Context, limit int, offset int) (*ProfilesList, error)
-	ValidateToken(ctx context.Context, accessToken string) (*ValidateTokenResult, error)
+	ValidateToken(ctx context.Context, accessToken string) (*ValidateTokenOutput, error)
 }
 
 type executableSchema struct {
@@ -150,47 +155,47 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
-	case "AdminBanResult.banned":
-		if e.complexity.AdminBanResult.Banned == nil {
+	case "AdminBanOutput.banned":
+		if e.complexity.AdminBanOutput.Banned == nil {
 			break
 		}
 
-		return e.complexity.AdminBanResult.Banned(childComplexity), true
+		return e.complexity.AdminBanOutput.Banned(childComplexity), true
 
-	case "AdminUnbanResult.unbanned":
-		if e.complexity.AdminUnbanResult.Unbanned == nil {
+	case "AdminUnbanOutput.unbanned":
+		if e.complexity.AdminUnbanOutput.Unbanned == nil {
 			break
 		}
 
-		return e.complexity.AdminUnbanResult.Unbanned(childComplexity), true
+		return e.complexity.AdminUnbanOutput.Unbanned(childComplexity), true
 
-	case "AssignRoleResult.assigned":
-		if e.complexity.AssignRoleResult.Assigned == nil {
+	case "AssignRoleOutput.assigned":
+		if e.complexity.AssignRoleOutput.Assigned == nil {
 			break
 		}
 
-		return e.complexity.AssignRoleResult.Assigned(childComplexity), true
+		return e.complexity.AssignRoleOutput.Assigned(childComplexity), true
 
-	case "AssignRoleResult.user_id":
-		if e.complexity.AssignRoleResult.UserID == nil {
+	case "AssignRoleOutput.user_id":
+		if e.complexity.AssignRoleOutput.UserID == nil {
 			break
 		}
 
-		return e.complexity.AssignRoleResult.UserID(childComplexity), true
+		return e.complexity.AssignRoleOutput.UserID(childComplexity), true
 
-	case "AuthPayload.access_token":
-		if e.complexity.AuthPayload.AccessToken == nil {
+	case "LoginUserOutput.access_token":
+		if e.complexity.LoginUserOutput.AccessToken == nil {
 			break
 		}
 
-		return e.complexity.AuthPayload.AccessToken(childComplexity), true
+		return e.complexity.LoginUserOutput.AccessToken(childComplexity), true
 
-	case "AuthPayload.refresh_token":
-		if e.complexity.AuthPayload.RefreshToken == nil {
+	case "LoginUserOutput.refresh_token":
+		if e.complexity.LoginUserOutput.RefreshToken == nil {
 			break
 		}
 
-		return e.complexity.AuthPayload.RefreshToken(childComplexity), true
+		return e.complexity.LoginUserOutput.RefreshToken(childComplexity), true
 
 	case "Mutation.addProfile":
 		if e.complexity.Mutation.AddProfile == nil {
@@ -202,7 +207,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddProfile(childComplexity, args["name"].(string), args["phone"].(string)), true
+		return e.complexity.Mutation.AddProfile(childComplexity, args["input"].(AddProfileInput)), true
 
 	case "Mutation.adminBanUser":
 		if e.complexity.Mutation.AdminBanUser == nil {
@@ -214,7 +219,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AdminBanUser(childComplexity, args["user_id"].(string)), true
+		return e.complexity.Mutation.AdminBanUser(childComplexity, args["input"].(*BanUserInput)), true
 
 	case "Mutation.adminUnbanUser":
 		if e.complexity.Mutation.AdminUnbanUser == nil {
@@ -226,7 +231,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AdminUnbanUser(childComplexity, args["user_id"].(string)), true
+		return e.complexity.Mutation.AdminUnbanUser(childComplexity, args["input"].(*UnbanUserInput)), true
 
 	case "Mutation.assignUserAsAdmin":
 		if e.complexity.Mutation.AssignUserAsAdmin == nil {
@@ -238,7 +243,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AssignUserAsAdmin(childComplexity, args["user_id"].(string)), true
+		return e.complexity.Mutation.AssignUserAsAdmin(childComplexity, args["input"].(*AssignRoleInput)), true
 
 	case "Mutation.changeSettings":
 		if e.complexity.Mutation.ChangeSettings == nil {
@@ -264,29 +269,29 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.ChangeSubscriptions(childComplexity, args["input"].(ChangeSubscriptionsInput)), true
 
-	case "Mutation.login":
-		if e.complexity.Mutation.Login == nil {
+	case "Mutation.loginUser":
+		if e.complexity.Mutation.LoginUser == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_login_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_loginUser_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Login(childComplexity, args["email"].(string), args["password"].(string)), true
+		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(*LoginUserInput)), true
 
-	case "Mutation.register":
-		if e.complexity.Mutation.Register == nil {
+	case "Mutation.registerUser":
+		if e.complexity.Mutation.RegisterUser == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_register_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_registerUser_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Register(childComplexity, args["email"].(string), args["password"].(string)), true
+		return e.complexity.Mutation.RegisterUser(childComplexity, args["input"].(*RegisterUserInput)), true
 
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
@@ -374,6 +379,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.ValidateToken(childComplexity, args["access_token"].(string)), true
 
+	case "RegisterUserOutput.access_token":
+		if e.complexity.RegisterUserOutput.AccessToken == nil {
+			break
+		}
+
+		return e.complexity.RegisterUserOutput.AccessToken(childComplexity), true
+
+	case "RegisterUserOutput.refresh_token":
+		if e.complexity.RegisterUserOutput.RefreshToken == nil {
+			break
+		}
+
+		return e.complexity.RegisterUserOutput.RefreshToken(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -444,19 +463,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.UserProfile.UserID(childComplexity), true
 
-	case "ValidateTokenResult.user_id":
-		if e.complexity.ValidateTokenResult.UserID == nil {
+	case "ValidateTokenOutput.user_id":
+		if e.complexity.ValidateTokenOutput.UserID == nil {
 			break
 		}
 
-		return e.complexity.ValidateTokenResult.UserID(childComplexity), true
+		return e.complexity.ValidateTokenOutput.UserID(childComplexity), true
 
-	case "ValidateTokenResult.valid":
-		if e.complexity.ValidateTokenResult.Valid == nil {
+	case "ValidateTokenOutput.valid":
+		if e.complexity.ValidateTokenOutput.Valid == nil {
 			break
 		}
 
-		return e.complexity.ValidateTokenResult.Valid(childComplexity), true
+		return e.complexity.ValidateTokenOutput.Valid(childComplexity), true
 
 	}
 	return 0, false
@@ -466,8 +485,14 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAddProfileInput,
+		ec.unmarshalInputAssignRoleInput,
+		ec.unmarshalInputBanUserInput,
 		ec.unmarshalInputChangeSettingsInput,
 		ec.unmarshalInputChangeSubscriptionsInput,
+		ec.unmarshalInputLoginUserInput,
+		ec.unmarshalInputRegisterUserInput,
+		ec.unmarshalInputUnbanUserInput,
 		ec.unmarshalInputUpdateProfileInput,
 	)
 	first := true
@@ -577,8 +602,13 @@ scalar Upload
 
 # ===== Types =====
 
-"""Ответ аутентификации"""
-type AuthPayload {
+"""Ответы аутентификации"""
+type RegisterUserOutput {
+    access_token: String!
+    refresh_token: String!
+}
+
+type LoginUserOutput {
     access_token: String!
     refresh_token: String!
 }
@@ -602,18 +632,18 @@ type UserProfile {
 }
 
 """Результат назначения роли"""
-type AssignRoleResult {
+type AssignRoleOutput {
     user_id: ID!
     assigned: Boolean!
 }
 
 """Результат блокировки"""
-type AdminBanResult {
+type AdminBanOutput {
     banned: Boolean!
 }
 
 """Результат разблокировки"""
-type AdminUnbanResult {
+type AdminUnbanOutput {
     unbanned: Boolean!
 }
 
@@ -623,12 +653,30 @@ type ProfilesList {
 }
 
 """Результат проверки токена"""
-type ValidateTokenResult {
+type ValidateTokenOutput {
     user_id: ID
     valid: Boolean!
 }
 
 # ===== Inputs =====
+
+"""Регистрация пользователя"""
+input RegisterUserInput {
+    email: String!
+    password: String!
+}
+
+"""Логин пользователя"""
+input LoginUserInput {
+    email: String!
+    password: String!
+}
+
+"""Добавление профиля"""
+input AddProfileInput {
+    name: String!
+    phone: String!
+}
 
 """Изменение профиля"""
 input UpdateProfileInput {
@@ -644,6 +692,18 @@ input ChangeSettingsInput {
 """Изменение подписок"""
 input ChangeSubscriptionsInput {
     subscriptions: [String!]!
+}
+
+input AssignRoleInput {
+    user_id: ID!
+}
+
+input BanUserInput {
+    user_id: ID!
+}
+
+input UnbanUserInput {
+    user_id: ID!
 }
 
 # ===== Queries =====
@@ -662,20 +722,20 @@ type Query {
     adminGetProfiles(limit: Int!, offset: Int!): ProfilesList!
 
     # authservice.ValidateToken
-    validateToken(access_token: String!): ValidateTokenResult!
+    validateToken(access_token: String!): ValidateTokenOutput!
 }
 
 # ===== Mutations =====
 
 type Mutation {
     # authservice.Register
-    register(email: String!, password: String!): AuthPayload!
+    registerUser(input: RegisterUserInput): RegisterUserOutput!
 
     # authservice.Login
-    login(email: String!, password: String!): AuthPayload!
+    loginUser(input: LoginUserInput): LoginUserOutput!
 
     # userservice.AddProfile (если профиля нет)
-    addProfile(name: String!, phone: String!): UserProfile!
+    addProfile(input: AddProfileInput!): UserProfile!
 
     # userservice.UpdateProfile
     updateProfile(input: UpdateProfileInput!): UserProfile!
@@ -690,13 +750,13 @@ type Mutation {
     changeSubscriptions(input: ChangeSubscriptionsInput!): UserProfile!
 
     # adminservice.AssignRole (назначаем пользователя админом)
-    assignUserAsAdmin(user_id: ID!): AssignRoleResult!
+    assignUserAsAdmin(input: AssignRoleInput): AssignRoleOutput!
 
     # adminservice.BanUser
-    adminBanUser(user_id: ID!): AdminBanResult!
+    adminBanUser(input: BanUserInput): AdminBanOutput!
 
     # adminservice.UnbanUser
-    adminUnbanUser(user_id: ID!): AdminUnbanResult!
+    adminUnbanUser(input: UnbanUserInput): AdminUnbanOutput!
 }
 `, BuiltIn: false},
 }
@@ -709,56 +769,51 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_addProfile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "name", ec.unmarshalNString2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNAddProfileInput2adsᚋgatewayᚋappᚋresolversᚐAddProfileInput)
 	if err != nil {
 		return nil, err
 	}
-	args["name"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "phone", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["phone"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_adminBanUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "user_id", ec.unmarshalNID2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalOBanUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐBanUserInput)
 	if err != nil {
 		return nil, err
 	}
-	args["user_id"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_adminUnbanUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "user_id", ec.unmarshalNID2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalOUnbanUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐUnbanUserInput)
 	if err != nil {
 		return nil, err
 	}
-	args["user_id"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_assignUserAsAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "user_id", ec.unmarshalNID2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalOAssignRoleInput2ᚖadsᚋgatewayᚋappᚋresolversᚐAssignRoleInput)
 	if err != nil {
 		return nil, err
 	}
-	args["user_id"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_changeSettings_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNChangeSettingsInput2AdsServiceᚋgatewayᚋappᚋresolversᚐChangeSettingsInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNChangeSettingsInput2adsᚋgatewayᚋappᚋresolversᚐChangeSettingsInput)
 	if err != nil {
 		return nil, err
 	}
@@ -769,7 +824,7 @@ func (ec *executionContext) field_Mutation_changeSettings_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_changeSubscriptions_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNChangeSubscriptionsInput2AdsServiceᚋgatewayᚋappᚋresolversᚐChangeSubscriptionsInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNChangeSubscriptionsInput2adsᚋgatewayᚋappᚋresolversᚐChangeSubscriptionsInput)
 	if err != nil {
 		return nil, err
 	}
@@ -777,42 +832,32 @@ func (ec *executionContext) field_Mutation_changeSubscriptions_args(ctx context.
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "email", ec.unmarshalNString2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalOLoginUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐLoginUserInput)
 	if err != nil {
 		return nil, err
 	}
-	args["email"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "password", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["password"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_register_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_registerUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "email", ec.unmarshalNString2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalORegisterUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐRegisterUserInput)
 	if err != nil {
 		return nil, err
 	}
-	args["email"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "password", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["password"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_updateProfile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNUpdateProfileInput2AdsServiceᚋgatewayᚋappᚋresolversᚐUpdateProfileInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNUpdateProfileInput2adsᚋgatewayᚋappᚋresolversᚐUpdateProfileInput)
 	if err != nil {
 		return nil, err
 	}
@@ -943,8 +988,8 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _AdminBanResult_banned(ctx context.Context, field graphql.CollectedField, obj *AdminBanResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AdminBanResult_banned(ctx, field)
+func (ec *executionContext) _AdminBanOutput_banned(ctx context.Context, field graphql.CollectedField, obj *AdminBanOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AdminBanOutput_banned(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -974,9 +1019,9 @@ func (ec *executionContext) _AdminBanResult_banned(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AdminBanResult_banned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AdminBanOutput_banned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AdminBanResult",
+		Object:     "AdminBanOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -987,8 +1032,8 @@ func (ec *executionContext) fieldContext_AdminBanResult_banned(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _AdminUnbanResult_unbanned(ctx context.Context, field graphql.CollectedField, obj *AdminUnbanResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AdminUnbanResult_unbanned(ctx, field)
+func (ec *executionContext) _AdminUnbanOutput_unbanned(ctx context.Context, field graphql.CollectedField, obj *AdminUnbanOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AdminUnbanOutput_unbanned(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1018,9 +1063,9 @@ func (ec *executionContext) _AdminUnbanResult_unbanned(ctx context.Context, fiel
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AdminUnbanResult_unbanned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AdminUnbanOutput_unbanned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AdminUnbanResult",
+		Object:     "AdminUnbanOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1031,8 +1076,8 @@ func (ec *executionContext) fieldContext_AdminUnbanResult_unbanned(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _AssignRoleResult_user_id(ctx context.Context, field graphql.CollectedField, obj *AssignRoleResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AssignRoleResult_user_id(ctx, field)
+func (ec *executionContext) _AssignRoleOutput_user_id(ctx context.Context, field graphql.CollectedField, obj *AssignRoleOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AssignRoleOutput_user_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1062,9 +1107,9 @@ func (ec *executionContext) _AssignRoleResult_user_id(ctx context.Context, field
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AssignRoleResult_user_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AssignRoleOutput_user_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AssignRoleResult",
+		Object:     "AssignRoleOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1075,8 +1120,8 @@ func (ec *executionContext) fieldContext_AssignRoleResult_user_id(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _AssignRoleResult_assigned(ctx context.Context, field graphql.CollectedField, obj *AssignRoleResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AssignRoleResult_assigned(ctx, field)
+func (ec *executionContext) _AssignRoleOutput_assigned(ctx context.Context, field graphql.CollectedField, obj *AssignRoleOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AssignRoleOutput_assigned(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1106,9 +1151,9 @@ func (ec *executionContext) _AssignRoleResult_assigned(ctx context.Context, fiel
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AssignRoleResult_assigned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AssignRoleOutput_assigned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AssignRoleResult",
+		Object:     "AssignRoleOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1119,8 +1164,8 @@ func (ec *executionContext) fieldContext_AssignRoleResult_assigned(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _AuthPayload_access_token(ctx context.Context, field graphql.CollectedField, obj *AuthPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AuthPayload_access_token(ctx, field)
+func (ec *executionContext) _LoginUserOutput_access_token(ctx context.Context, field graphql.CollectedField, obj *LoginUserOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserOutput_access_token(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1150,9 +1195,9 @@ func (ec *executionContext) _AuthPayload_access_token(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AuthPayload_access_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoginUserOutput_access_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AuthPayload",
+		Object:     "LoginUserOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1163,8 +1208,8 @@ func (ec *executionContext) fieldContext_AuthPayload_access_token(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _AuthPayload_refresh_token(ctx context.Context, field graphql.CollectedField, obj *AuthPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AuthPayload_refresh_token(ctx, field)
+func (ec *executionContext) _LoginUserOutput_refresh_token(ctx context.Context, field graphql.CollectedField, obj *LoginUserOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserOutput_refresh_token(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1194,9 +1239,9 @@ func (ec *executionContext) _AuthPayload_refresh_token(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AuthPayload_refresh_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoginUserOutput_refresh_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AuthPayload",
+		Object:     "LoginUserOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1207,8 +1252,8 @@ func (ec *executionContext) fieldContext_AuthPayload_refresh_token(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_register(ctx, field)
+func (ec *executionContext) _Mutation_registerUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_registerUser(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1221,7 +1266,7 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Register(rctx, fc.Args["email"].(string), fc.Args["password"].(string))
+		return ec.resolvers.Mutation().RegisterUser(rctx, fc.Args["input"].(*RegisterUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1233,12 +1278,12 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*AuthPayload)
+	res := resTmp.(*RegisterUserOutput)
 	fc.Result = res
-	return ec.marshalNAuthPayload2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAuthPayload(ctx, field.Selections, res)
+	return ec.marshalNRegisterUserOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐRegisterUserOutput(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_registerUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1247,11 +1292,11 @@ func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "access_token":
-				return ec.fieldContext_AuthPayload_access_token(ctx, field)
+				return ec.fieldContext_RegisterUserOutput_access_token(ctx, field)
 			case "refresh_token":
-				return ec.fieldContext_AuthPayload_refresh_token(ctx, field)
+				return ec.fieldContext_RegisterUserOutput_refresh_token(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AuthPayload", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type RegisterUserOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -1261,15 +1306,15 @@ func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, 
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_register_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_registerUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_login(ctx, field)
+func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_loginUser(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1282,7 +1327,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Login(rctx, fc.Args["email"].(string), fc.Args["password"].(string))
+		return ec.resolvers.Mutation().LoginUser(rctx, fc.Args["input"].(*LoginUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1294,12 +1339,12 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*AuthPayload)
+	res := resTmp.(*LoginUserOutput)
 	fc.Result = res
-	return ec.marshalNAuthPayload2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAuthPayload(ctx, field.Selections, res)
+	return ec.marshalNLoginUserOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐLoginUserOutput(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1308,11 +1353,11 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "access_token":
-				return ec.fieldContext_AuthPayload_access_token(ctx, field)
+				return ec.fieldContext_LoginUserOutput_access_token(ctx, field)
 			case "refresh_token":
-				return ec.fieldContext_AuthPayload_refresh_token(ctx, field)
+				return ec.fieldContext_LoginUserOutput_refresh_token(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AuthPayload", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type LoginUserOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -1322,7 +1367,7 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_loginUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1343,7 +1388,7 @@ func (ec *executionContext) _Mutation_addProfile(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddProfile(rctx, fc.Args["name"].(string), fc.Args["phone"].(string))
+		return ec.resolvers.Mutation().AddProfile(rctx, fc.Args["input"].(AddProfileInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1357,7 +1402,7 @@ func (ec *executionContext) _Mutation_addProfile(ctx context.Context, field grap
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1428,7 +1473,7 @@ func (ec *executionContext) _Mutation_updateProfile(ctx context.Context, field g
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1499,7 +1544,7 @@ func (ec *executionContext) _Mutation_uploadMyPhoto(ctx context.Context, field g
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_uploadMyPhoto(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1570,7 +1615,7 @@ func (ec *executionContext) _Mutation_changeSettings(ctx context.Context, field 
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_changeSettings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1641,7 +1686,7 @@ func (ec *executionContext) _Mutation_changeSubscriptions(ctx context.Context, f
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_changeSubscriptions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1698,7 +1743,7 @@ func (ec *executionContext) _Mutation_assignUserAsAdmin(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AssignUserAsAdmin(rctx, fc.Args["user_id"].(string))
+		return ec.resolvers.Mutation().AssignUserAsAdmin(rctx, fc.Args["input"].(*AssignRoleInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1710,9 +1755,9 @@ func (ec *executionContext) _Mutation_assignUserAsAdmin(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*AssignRoleResult)
+	res := resTmp.(*AssignRoleOutput)
 	fc.Result = res
-	return ec.marshalNAssignRoleResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAssignRoleResult(ctx, field.Selections, res)
+	return ec.marshalNAssignRoleOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐAssignRoleOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_assignUserAsAdmin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1724,11 +1769,11 @@ func (ec *executionContext) fieldContext_Mutation_assignUserAsAdmin(ctx context.
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "user_id":
-				return ec.fieldContext_AssignRoleResult_user_id(ctx, field)
+				return ec.fieldContext_AssignRoleOutput_user_id(ctx, field)
 			case "assigned":
-				return ec.fieldContext_AssignRoleResult_assigned(ctx, field)
+				return ec.fieldContext_AssignRoleOutput_assigned(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AssignRoleResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type AssignRoleOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -1759,7 +1804,7 @@ func (ec *executionContext) _Mutation_adminBanUser(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AdminBanUser(rctx, fc.Args["user_id"].(string))
+		return ec.resolvers.Mutation().AdminBanUser(rctx, fc.Args["input"].(*BanUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1771,9 +1816,9 @@ func (ec *executionContext) _Mutation_adminBanUser(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*AdminBanResult)
+	res := resTmp.(*AdminBanOutput)
 	fc.Result = res
-	return ec.marshalNAdminBanResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAdminBanResult(ctx, field.Selections, res)
+	return ec.marshalNAdminBanOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐAdminBanOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_adminBanUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1785,9 +1830,9 @@ func (ec *executionContext) fieldContext_Mutation_adminBanUser(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "banned":
-				return ec.fieldContext_AdminBanResult_banned(ctx, field)
+				return ec.fieldContext_AdminBanOutput_banned(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AdminBanResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type AdminBanOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -1818,7 +1863,7 @@ func (ec *executionContext) _Mutation_adminUnbanUser(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AdminUnbanUser(rctx, fc.Args["user_id"].(string))
+		return ec.resolvers.Mutation().AdminUnbanUser(rctx, fc.Args["input"].(*UnbanUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1830,9 +1875,9 @@ func (ec *executionContext) _Mutation_adminUnbanUser(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*AdminUnbanResult)
+	res := resTmp.(*AdminUnbanOutput)
 	fc.Result = res
-	return ec.marshalNAdminUnbanResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAdminUnbanResult(ctx, field.Selections, res)
+	return ec.marshalNAdminUnbanOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐAdminUnbanOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_adminUnbanUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1844,9 +1889,9 @@ func (ec *executionContext) fieldContext_Mutation_adminUnbanUser(ctx context.Con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "unbanned":
-				return ec.fieldContext_AdminUnbanResult_unbanned(ctx, field)
+				return ec.fieldContext_AdminUnbanOutput_unbanned(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AdminUnbanResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type AdminUnbanOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -1891,7 +1936,7 @@ func (ec *executionContext) _ProfilesList_profiles(ctx context.Context, field gr
 	}
 	res := resTmp.([]*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚕᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfileᚄ(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚕᚖadsᚋgatewayᚋappᚋresolversᚐUserProfileᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ProfilesList_profiles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1951,7 +1996,7 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2011,7 +2056,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖadsᚋgatewayᚋappᚋresolversᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2074,7 +2119,7 @@ func (ec *executionContext) _Query_adminGetProfile(ctx context.Context, field gr
 	}
 	res := resTmp.(*UserProfile)
 	fc.Result = res
-	return ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
+	return ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_adminGetProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2145,7 +2190,7 @@ func (ec *executionContext) _Query_adminGetProfiles(ctx context.Context, field g
 	}
 	res := resTmp.(*ProfilesList)
 	fc.Result = res
-	return ec.marshalNProfilesList2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐProfilesList(ctx, field.Selections, res)
+	return ec.marshalNProfilesList2ᚖadsᚋgatewayᚋappᚋresolversᚐProfilesList(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_adminGetProfiles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2202,9 +2247,9 @@ func (ec *executionContext) _Query_validateToken(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ValidateTokenResult)
+	res := resTmp.(*ValidateTokenOutput)
 	fc.Result = res
-	return ec.marshalNValidateTokenResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐValidateTokenResult(ctx, field.Selections, res)
+	return ec.marshalNValidateTokenOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐValidateTokenOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_validateToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2216,11 +2261,11 @@ func (ec *executionContext) fieldContext_Query_validateToken(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "user_id":
-				return ec.fieldContext_ValidateTokenResult_user_id(ctx, field)
+				return ec.fieldContext_ValidateTokenOutput_user_id(ctx, field)
 			case "valid":
-				return ec.fieldContext_ValidateTokenResult_valid(ctx, field)
+				return ec.fieldContext_ValidateTokenOutput_valid(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidateTokenResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ValidateTokenOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -2363,6 +2408,94 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RegisterUserOutput_access_token(ctx context.Context, field graphql.CollectedField, obj *RegisterUserOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegisterUserOutput_access_token(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccessToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RegisterUserOutput_access_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RegisterUserOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RegisterUserOutput_refresh_token(ctx context.Context, field graphql.CollectedField, obj *RegisterUserOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegisterUserOutput_refresh_token(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RefreshToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RegisterUserOutput_refresh_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RegisterUserOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2796,8 +2929,8 @@ func (ec *executionContext) fieldContext_UserProfile_updated_at(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _ValidateTokenResult_user_id(ctx context.Context, field graphql.CollectedField, obj *ValidateTokenResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ValidateTokenResult_user_id(ctx, field)
+func (ec *executionContext) _ValidateTokenOutput_user_id(ctx context.Context, field graphql.CollectedField, obj *ValidateTokenOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ValidateTokenOutput_user_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2824,9 +2957,9 @@ func (ec *executionContext) _ValidateTokenResult_user_id(ctx context.Context, fi
 	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ValidateTokenResult_user_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ValidateTokenOutput_user_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ValidateTokenResult",
+		Object:     "ValidateTokenOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2837,8 +2970,8 @@ func (ec *executionContext) fieldContext_ValidateTokenResult_user_id(_ context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _ValidateTokenResult_valid(ctx context.Context, field graphql.CollectedField, obj *ValidateTokenResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ValidateTokenResult_valid(ctx, field)
+func (ec *executionContext) _ValidateTokenOutput_valid(ctx context.Context, field graphql.CollectedField, obj *ValidateTokenOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ValidateTokenOutput_valid(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2868,9 +3001,9 @@ func (ec *executionContext) _ValidateTokenResult_valid(ctx context.Context, fiel
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ValidateTokenResult_valid(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ValidateTokenOutput_valid(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ValidateTokenResult",
+		Object:     "ValidateTokenOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4832,6 +4965,94 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAddProfileInput(ctx context.Context, obj any) (AddProfileInput, error) {
+	var it AddProfileInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "phone"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "phone":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phone"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phone = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputAssignRoleInput(ctx context.Context, obj any) (AssignRoleInput, error) {
+	var it AssignRoleInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"user_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "user_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputBanUserInput(ctx context.Context, obj any) (BanUserInput, error) {
+	var it BanUserInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"user_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "user_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputChangeSettingsInput(ctx context.Context, obj any) (ChangeSettingsInput, error) {
 	var it ChangeSettingsInput
 	asMap := map[string]any{}
@@ -4886,6 +5107,101 @@ func (ec *executionContext) unmarshalInputChangeSubscriptionsInput(ctx context.C
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, obj any) (LoginUserInput, error) {
+	var it LoginUserInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRegisterUserInput(ctx context.Context, obj any) (RegisterUserInput, error) {
+	var it RegisterUserInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUnbanUserInput(ctx context.Context, obj any) (UnbanUserInput, error) {
+	var it UnbanUserInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"user_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "user_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateProfileInput(ctx context.Context, obj any) (UpdateProfileInput, error) {
 	var it UpdateProfileInput
 	asMap := map[string]any{}
@@ -4928,19 +5244,19 @@ func (ec *executionContext) unmarshalInputUpdateProfileInput(ctx context.Context
 
 // region    **************************** object.gotpl ****************************
 
-var adminBanResultImplementors = []string{"AdminBanResult"}
+var adminBanOutputImplementors = []string{"AdminBanOutput"}
 
-func (ec *executionContext) _AdminBanResult(ctx context.Context, sel ast.SelectionSet, obj *AdminBanResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, adminBanResultImplementors)
+func (ec *executionContext) _AdminBanOutput(ctx context.Context, sel ast.SelectionSet, obj *AdminBanOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adminBanOutputImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AdminBanResult")
+			out.Values[i] = graphql.MarshalString("AdminBanOutput")
 		case "banned":
-			out.Values[i] = ec._AdminBanResult_banned(ctx, field, obj)
+			out.Values[i] = ec._AdminBanOutput_banned(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4967,19 +5283,19 @@ func (ec *executionContext) _AdminBanResult(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var adminUnbanResultImplementors = []string{"AdminUnbanResult"}
+var adminUnbanOutputImplementors = []string{"AdminUnbanOutput"}
 
-func (ec *executionContext) _AdminUnbanResult(ctx context.Context, sel ast.SelectionSet, obj *AdminUnbanResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, adminUnbanResultImplementors)
+func (ec *executionContext) _AdminUnbanOutput(ctx context.Context, sel ast.SelectionSet, obj *AdminUnbanOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adminUnbanOutputImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AdminUnbanResult")
+			out.Values[i] = graphql.MarshalString("AdminUnbanOutput")
 		case "unbanned":
-			out.Values[i] = ec._AdminUnbanResult_unbanned(ctx, field, obj)
+			out.Values[i] = ec._AdminUnbanOutput_unbanned(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5006,24 +5322,24 @@ func (ec *executionContext) _AdminUnbanResult(ctx context.Context, sel ast.Selec
 	return out
 }
 
-var assignRoleResultImplementors = []string{"AssignRoleResult"}
+var assignRoleOutputImplementors = []string{"AssignRoleOutput"}
 
-func (ec *executionContext) _AssignRoleResult(ctx context.Context, sel ast.SelectionSet, obj *AssignRoleResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, assignRoleResultImplementors)
+func (ec *executionContext) _AssignRoleOutput(ctx context.Context, sel ast.SelectionSet, obj *AssignRoleOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, assignRoleOutputImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AssignRoleResult")
+			out.Values[i] = graphql.MarshalString("AssignRoleOutput")
 		case "user_id":
-			out.Values[i] = ec._AssignRoleResult_user_id(ctx, field, obj)
+			out.Values[i] = ec._AssignRoleOutput_user_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "assigned":
-			out.Values[i] = ec._AssignRoleResult_assigned(ctx, field, obj)
+			out.Values[i] = ec._AssignRoleOutput_assigned(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5050,24 +5366,24 @@ func (ec *executionContext) _AssignRoleResult(ctx context.Context, sel ast.Selec
 	return out
 }
 
-var authPayloadImplementors = []string{"AuthPayload"}
+var loginUserOutputImplementors = []string{"LoginUserOutput"}
 
-func (ec *executionContext) _AuthPayload(ctx context.Context, sel ast.SelectionSet, obj *AuthPayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, authPayloadImplementors)
+func (ec *executionContext) _LoginUserOutput(ctx context.Context, sel ast.SelectionSet, obj *LoginUserOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loginUserOutputImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AuthPayload")
+			out.Values[i] = graphql.MarshalString("LoginUserOutput")
 		case "access_token":
-			out.Values[i] = ec._AuthPayload_access_token(ctx, field, obj)
+			out.Values[i] = ec._LoginUserOutput_access_token(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "refresh_token":
-			out.Values[i] = ec._AuthPayload_refresh_token(ctx, field, obj)
+			out.Values[i] = ec._LoginUserOutput_refresh_token(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5113,16 +5429,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "register":
+		case "registerUser":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_register(ctx, field)
+				return ec._Mutation_registerUser(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "login":
+		case "loginUser":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_login(ctx, field)
+				return ec._Mutation_loginUser(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5405,6 +5721,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var registerUserOutputImplementors = []string{"RegisterUserOutput"}
+
+func (ec *executionContext) _RegisterUserOutput(ctx context.Context, sel ast.SelectionSet, obj *RegisterUserOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, registerUserOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RegisterUserOutput")
+		case "access_token":
+			out.Values[i] = ec._RegisterUserOutput_access_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "refresh_token":
+			out.Values[i] = ec._RegisterUserOutput_refresh_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *User) graphql.Marshaler {
@@ -5511,21 +5871,21 @@ func (ec *executionContext) _UserProfile(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
-var validateTokenResultImplementors = []string{"ValidateTokenResult"}
+var validateTokenOutputImplementors = []string{"ValidateTokenOutput"}
 
-func (ec *executionContext) _ValidateTokenResult(ctx context.Context, sel ast.SelectionSet, obj *ValidateTokenResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, validateTokenResultImplementors)
+func (ec *executionContext) _ValidateTokenOutput(ctx context.Context, sel ast.SelectionSet, obj *ValidateTokenOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, validateTokenOutputImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("ValidateTokenResult")
+			out.Values[i] = graphql.MarshalString("ValidateTokenOutput")
 		case "user_id":
-			out.Values[i] = ec._ValidateTokenResult_user_id(ctx, field, obj)
+			out.Values[i] = ec._ValidateTokenOutput_user_id(ctx, field, obj)
 		case "valid":
-			out.Values[i] = ec._ValidateTokenResult_valid(ctx, field, obj)
+			out.Values[i] = ec._ValidateTokenOutput_valid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5887,60 +6247,51 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAdminBanResult2AdsServiceᚋgatewayᚋappᚋresolversᚐAdminBanResult(ctx context.Context, sel ast.SelectionSet, v AdminBanResult) graphql.Marshaler {
-	return ec._AdminBanResult(ctx, sel, &v)
+func (ec *executionContext) unmarshalNAddProfileInput2adsᚋgatewayᚋappᚋresolversᚐAddProfileInput(ctx context.Context, v any) (AddProfileInput, error) {
+	res, err := ec.unmarshalInputAddProfileInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAdminBanResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAdminBanResult(ctx context.Context, sel ast.SelectionSet, v *AdminBanResult) graphql.Marshaler {
+func (ec *executionContext) marshalNAdminBanOutput2adsᚋgatewayᚋappᚋresolversᚐAdminBanOutput(ctx context.Context, sel ast.SelectionSet, v AdminBanOutput) graphql.Marshaler {
+	return ec._AdminBanOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAdminBanOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐAdminBanOutput(ctx context.Context, sel ast.SelectionSet, v *AdminBanOutput) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._AdminBanResult(ctx, sel, v)
+	return ec._AdminBanOutput(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAdminUnbanResult2AdsServiceᚋgatewayᚋappᚋresolversᚐAdminUnbanResult(ctx context.Context, sel ast.SelectionSet, v AdminUnbanResult) graphql.Marshaler {
-	return ec._AdminUnbanResult(ctx, sel, &v)
+func (ec *executionContext) marshalNAdminUnbanOutput2adsᚋgatewayᚋappᚋresolversᚐAdminUnbanOutput(ctx context.Context, sel ast.SelectionSet, v AdminUnbanOutput) graphql.Marshaler {
+	return ec._AdminUnbanOutput(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAdminUnbanResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAdminUnbanResult(ctx context.Context, sel ast.SelectionSet, v *AdminUnbanResult) graphql.Marshaler {
+func (ec *executionContext) marshalNAdminUnbanOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐAdminUnbanOutput(ctx context.Context, sel ast.SelectionSet, v *AdminUnbanOutput) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._AdminUnbanResult(ctx, sel, v)
+	return ec._AdminUnbanOutput(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAssignRoleResult2AdsServiceᚋgatewayᚋappᚋresolversᚐAssignRoleResult(ctx context.Context, sel ast.SelectionSet, v AssignRoleResult) graphql.Marshaler {
-	return ec._AssignRoleResult(ctx, sel, &v)
+func (ec *executionContext) marshalNAssignRoleOutput2adsᚋgatewayᚋappᚋresolversᚐAssignRoleOutput(ctx context.Context, sel ast.SelectionSet, v AssignRoleOutput) graphql.Marshaler {
+	return ec._AssignRoleOutput(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAssignRoleResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAssignRoleResult(ctx context.Context, sel ast.SelectionSet, v *AssignRoleResult) graphql.Marshaler {
+func (ec *executionContext) marshalNAssignRoleOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐAssignRoleOutput(ctx context.Context, sel ast.SelectionSet, v *AssignRoleOutput) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._AssignRoleResult(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNAuthPayload2AdsServiceᚋgatewayᚋappᚋresolversᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v AuthPayload) graphql.Marshaler {
-	return ec._AuthPayload(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNAuthPayload2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v *AuthPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._AuthPayload(ctx, sel, v)
+	return ec._AssignRoleOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
@@ -5959,12 +6310,12 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNChangeSettingsInput2AdsServiceᚋgatewayᚋappᚋresolversᚐChangeSettingsInput(ctx context.Context, v any) (ChangeSettingsInput, error) {
+func (ec *executionContext) unmarshalNChangeSettingsInput2adsᚋgatewayᚋappᚋresolversᚐChangeSettingsInput(ctx context.Context, v any) (ChangeSettingsInput, error) {
 	res, err := ec.unmarshalInputChangeSettingsInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNChangeSubscriptionsInput2AdsServiceᚋgatewayᚋappᚋresolversᚐChangeSubscriptionsInput(ctx context.Context, v any) (ChangeSubscriptionsInput, error) {
+func (ec *executionContext) unmarshalNChangeSubscriptionsInput2adsᚋgatewayᚋappᚋresolversᚐChangeSubscriptionsInput(ctx context.Context, v any) (ChangeSubscriptionsInput, error) {
 	res, err := ec.unmarshalInputChangeSubscriptionsInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -6001,11 +6352,25 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNProfilesList2AdsServiceᚋgatewayᚋappᚋresolversᚐProfilesList(ctx context.Context, sel ast.SelectionSet, v ProfilesList) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginUserOutput2adsᚋgatewayᚋappᚋresolversᚐLoginUserOutput(ctx context.Context, sel ast.SelectionSet, v LoginUserOutput) graphql.Marshaler {
+	return ec._LoginUserOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLoginUserOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐLoginUserOutput(ctx context.Context, sel ast.SelectionSet, v *LoginUserOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LoginUserOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNProfilesList2adsᚋgatewayᚋappᚋresolversᚐProfilesList(ctx context.Context, sel ast.SelectionSet, v ProfilesList) graphql.Marshaler {
 	return ec._ProfilesList(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNProfilesList2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐProfilesList(ctx context.Context, sel ast.SelectionSet, v *ProfilesList) graphql.Marshaler {
+func (ec *executionContext) marshalNProfilesList2ᚖadsᚋgatewayᚋappᚋresolversᚐProfilesList(ctx context.Context, sel ast.SelectionSet, v *ProfilesList) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6013,6 +6378,20 @@ func (ec *executionContext) marshalNProfilesList2ᚖAdsServiceᚋgatewayᚋapp�
 		return graphql.Null
 	}
 	return ec._ProfilesList(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNRegisterUserOutput2adsᚋgatewayᚋappᚋresolversᚐRegisterUserOutput(ctx context.Context, sel ast.SelectionSet, v RegisterUserOutput) graphql.Marshaler {
+	return ec._RegisterUserOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRegisterUserOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐRegisterUserOutput(ctx context.Context, sel ast.SelectionSet, v *RegisterUserOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RegisterUserOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
@@ -6061,7 +6440,7 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) unmarshalNUpdateProfileInput2AdsServiceᚋgatewayᚋappᚋresolversᚐUpdateProfileInput(ctx context.Context, v any) (UpdateProfileInput, error) {
+func (ec *executionContext) unmarshalNUpdateProfileInput2adsᚋgatewayᚋappᚋresolversᚐUpdateProfileInput(ctx context.Context, v any) (UpdateProfileInput, error) {
 	res, err := ec.unmarshalInputUpdateProfileInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -6082,11 +6461,11 @@ func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋg
 	return res
 }
 
-func (ec *executionContext) marshalNUser2AdsServiceᚋgatewayᚋappᚋresolversᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2adsᚋgatewayᚋappᚋresolversᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖadsᚋgatewayᚋappᚋresolversᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6096,11 +6475,11 @@ func (ec *executionContext) marshalNUser2ᚖAdsServiceᚋgatewayᚋappᚋresolve
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNUserProfile2AdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx context.Context, sel ast.SelectionSet, v UserProfile) graphql.Marshaler {
+func (ec *executionContext) marshalNUserProfile2adsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx context.Context, sel ast.SelectionSet, v UserProfile) graphql.Marshaler {
 	return ec._UserProfile(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUserProfile2ᚕᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfileᚄ(ctx context.Context, sel ast.SelectionSet, v []*UserProfile) graphql.Marshaler {
+func (ec *executionContext) marshalNUserProfile2ᚕᚖadsᚋgatewayᚋappᚋresolversᚐUserProfileᚄ(ctx context.Context, sel ast.SelectionSet, v []*UserProfile) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6124,7 +6503,7 @@ func (ec *executionContext) marshalNUserProfile2ᚕᚖAdsServiceᚋgatewayᚋapp
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, sel, v[i])
+			ret[i] = ec.marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6144,7 +6523,7 @@ func (ec *executionContext) marshalNUserProfile2ᚕᚖAdsServiceᚋgatewayᚋapp
 	return ret
 }
 
-func (ec *executionContext) marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐUserProfile(ctx context.Context, sel ast.SelectionSet, v *UserProfile) graphql.Marshaler {
+func (ec *executionContext) marshalNUserProfile2ᚖadsᚋgatewayᚋappᚋresolversᚐUserProfile(ctx context.Context, sel ast.SelectionSet, v *UserProfile) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6154,18 +6533,18 @@ func (ec *executionContext) marshalNUserProfile2ᚖAdsServiceᚋgatewayᚋappᚋ
 	return ec._UserProfile(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNValidateTokenResult2AdsServiceᚋgatewayᚋappᚋresolversᚐValidateTokenResult(ctx context.Context, sel ast.SelectionSet, v ValidateTokenResult) graphql.Marshaler {
-	return ec._ValidateTokenResult(ctx, sel, &v)
+func (ec *executionContext) marshalNValidateTokenOutput2adsᚋgatewayᚋappᚋresolversᚐValidateTokenOutput(ctx context.Context, sel ast.SelectionSet, v ValidateTokenOutput) graphql.Marshaler {
+	return ec._ValidateTokenOutput(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNValidateTokenResult2ᚖAdsServiceᚋgatewayᚋappᚋresolversᚐValidateTokenResult(ctx context.Context, sel ast.SelectionSet, v *ValidateTokenResult) graphql.Marshaler {
+func (ec *executionContext) marshalNValidateTokenOutput2ᚖadsᚋgatewayᚋappᚋresolversᚐValidateTokenOutput(ctx context.Context, sel ast.SelectionSet, v *ValidateTokenOutput) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._ValidateTokenResult(ctx, sel, v)
+	return ec._ValidateTokenOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -6421,6 +6800,22 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOAssignRoleInput2ᚖadsᚋgatewayᚋappᚋresolversᚐAssignRoleInput(ctx context.Context, v any) (*AssignRoleInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputAssignRoleInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOBanUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐBanUserInput(ctx context.Context, v any) (*BanUserInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBanUserInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6469,6 +6864,22 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalOLoginUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐLoginUserInput(ctx context.Context, v any) (*LoginUserInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputLoginUserInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalORegisterUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐRegisterUserInput(ctx context.Context, v any) (*RegisterUserInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputRegisterUserInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -6503,6 +6914,14 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	_ = ctx
 	res := graphql.MarshalTime(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOUnbanUserInput2ᚖadsᚋgatewayᚋappᚋresolversᚐUnbanUserInput(ctx context.Context, v any) (*UnbanUserInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUnbanUserInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

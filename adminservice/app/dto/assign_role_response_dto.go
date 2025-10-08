@@ -1,6 +1,6 @@
 package dto
 
-type AssignRoleResponseDTO struct {
+type AssignRoleResponse struct {
 	UserID   uint64
 	Assigned bool
 }

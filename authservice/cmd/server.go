@@ -1,14 +1,14 @@
 package main
 
 import (
-	"AdsService/authservice/adapter/jwt"
-	"AdsService/authservice/adapter/pg"
-	"AdsService/authservice/app/usecase"
-	"AdsService/authservice/config"
-	"AdsService/authservice/infrastructure/postgres"
-	"AdsService/authservice/pkg/logger"
-	authgrpc "AdsService/authservice/presentation/grpc"
-	pb "AdsService/authservice/presentation/grpc/pb"
+	"ads/authservice/adapter/jwt"
+	"ads/authservice/adapter/pg"
+	"ads/authservice/app/usecase"
+	"ads/authservice/config"
+	"ads/authservice/infrastructure/postgres"
+	"ads/authservice/pkg/logger"
+	authgrpc "ads/authservice/presentation/grpc"
+	pb "ads/authservice/presentation/grpc/pb"
 	"fmt"
 	"gorm.io/gorm"
 	"log/slog"
@@ -23,9 +23,13 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		_ = fmt.Errorf("failed to load config", "error", err)
+		return
+	}
 
-	log := logger.New()
+	log := logger.New(cfg.GetSlogLevel())
 	log.Info("🚀 starting authservice", "port", cfg.GRPCPort)
 
 	db, err := initDependencies(cfg, log)
@@ -35,7 +39,7 @@ func main() {
 	}
 	defer closeDependencies(log)
 
-	authService := initServices(db, cfg, log)
+	authService := initServices(db, cfg)
 
 	server := startGRPCServer(authService, cfg, log)
 
@@ -48,22 +52,23 @@ func main() {
 func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, error) {
 	log.Info("initializing database connections...")
 
-	if err := postgres.InitDB(cfg, log); err != nil {
+	db, err := postgres.InitDB(cfg)
+	if err != nil {
 		return nil, fmt.Errorf("postgres: %w", err)
 	}
 
-	return postgres.DB, nil
+	return db, nil
 }
 
 func closeDependencies(log *slog.Logger) {
 	log.Info("closing database connections...")
 }
 
-func initServices(db *gorm.DB, cfg *config.Config, log *slog.Logger) *authgrpc.AuthService {
-	usersRepo := pg.NewUsersRepo(db, log)
-	sessionsRepo := pg.NewSessionsRepo(db, log)
-	profilesRepo := pg.NewProfilesRepo(db, log)
-	tokensRepo := jwt.NewTokenRepository(cfg.JWTAccessSecret, cfg.JWTRefreshSecret, log)
+func initServices(db *gorm.DB, cfg *config.Config) *authgrpc.AuthService {
+	usersRepo := pg.NewUsersRepo(db)
+	sessionsRepo := pg.NewSessionsRepo(db)
+	profilesRepo := pg.NewProfilesRepo(db)
+	tokensRepo := jwt.NewTokenRepository(cfg.JWTAccessSecret, cfg.JWTRefreshSecret)
 
 	registerUC := &usecase.RegisterUC{
 		Users:    usersRepo,

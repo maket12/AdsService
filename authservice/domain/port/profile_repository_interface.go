@@ -1,7 +1,10 @@
 package port
 
-import "AdsService/authservice/domain/entity"
+import (
+	"ads/authservice/domain/entity"
+	"context"
+)
 
 type ProfileRepository interface {
-	AddProfile(userID uint64, name, phone string) (*entity.Profile, error)
+	AddProfile(ctx context.Context, userID uint64, name, phone string) (*entity.Profile, error)
 }

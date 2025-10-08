@@ -33,6 +33,8 @@ spec:
               value: "super-secret-key"
             - name: JWT_REFRESH_SECRET
               value: "super-secret-key-1234321"
+            - name: LOG_LEVEL
+              value: "info"
 ---
 apiVersion: v1
 kind: Service

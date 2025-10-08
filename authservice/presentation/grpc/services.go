@@ -1,11 +1,11 @@
 package grpc
 
 import (
-	pb "AdsService/authservice/presentation/grpc/pb"
+	pb "ads/authservice/presentation/grpc/pb"
 	"context"
 
-	"AdsService/authservice/app/dto"
-	"AdsService/authservice/app/usecase"
+	"ads/authservice/app/dto"
+	"ads/authservice/app/usecase"
 )
 
 type AuthService struct {
@@ -29,8 +29,8 @@ func NewAuthService(
 }
 
 func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.AuthResponse, error) {
-	in := dto.RegisterDTO{Email: req.Email, Password: req.Password}
-	tokens, err := s.RegisterUC.Execute(in)
+	in := dto.Register{Email: req.Email, Password: req.Password}
+	tokens, err := s.RegisterUC.Execute(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +38,8 @@ func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 }
 
 func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
-	in := dto.LoginDTO{Email: req.Email, Password: req.Password}
-	tokens, err := s.LoginUC.Execute(in)
+	in := dto.Login{Email: req.Email, Password: req.Password}
+	tokens, err := s.LoginUC.Execute(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Auth
 }
 
 func (s *AuthService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
-	in := dto.ValidateTokenDTO{AccessToken: req.AccessToken}
+	in := dto.ValidateToken{AccessToken: req.AccessToken}
 	out, err := s.ValidateTokenUC.Execute(in)
 	if err != nil {
 		return &pb.ValidateTokenResponse{Valid: false}, err

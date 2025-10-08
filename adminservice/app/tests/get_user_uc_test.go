@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/tests/data"
-	"AdsService/adminservice/app/tests/helpers"
-	"AdsService/adminservice/app/tests/mocks"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/app/usecase"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/tests/data"
+	"ads/adminservice/app/tests/helpers"
+	"ads/adminservice/app/tests/mocks"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +30,7 @@ func TestGetUserUC_Success(t *testing.T) {
 				On("GetUserByID", testCase.RequestedUserID).
 				Return(helpers.MakeTestUser(testCase.RequestedUserID), nil)
 
-			out, err := uc.Execute(dto.GetUserDTO{
+			out, err := uc.Execute(dto.GetUser{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -56,7 +56,7 @@ func TestGetUserUC_GetRoleError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("", errors.New("get role error"))
 
-			_, err := uc.Execute(dto.GetUserDTO{
+			_, err := uc.Execute(dto.GetUser{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -82,7 +82,7 @@ func TestGetUserUC_NotAdminError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("user", nil)
 
-			_, err := uc.Execute(dto.GetUserDTO{
+			_, err := uc.Execute(dto.GetUser{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -111,7 +111,7 @@ func TestGetUserUC_GetUserError(t *testing.T) {
 				On("GetUserByID", mock.Anything).
 				Return(nil, errors.New("get user error"))
 
-			_, err := uc.Execute(dto.GetUserDTO{
+			_, err := uc.Execute(dto.GetUser{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -140,7 +140,7 @@ func TestGetUserUC_UserNotFoundError(t *testing.T) {
 				On("GetUserByID", mock.Anything).
 				Return(nil, nil)
 
-			_, err := uc.Execute(dto.GetUserDTO{
+			_, err := uc.Execute(dto.GetUser{
 				AdminUserID:     testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})

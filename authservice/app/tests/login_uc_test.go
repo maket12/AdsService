@@ -1,13 +1,13 @@
 package tests
 
 import (
-	"AdsService/authservice/app/dto"
-	"AdsService/authservice/app/tests/data"
-	"AdsService/authservice/app/tests/helpers"
-	"AdsService/authservice/app/tests/mocks"
-	"AdsService/authservice/app/uc_errors"
-	"AdsService/authservice/app/usecase"
-	"AdsService/authservice/domain/entity"
+	"ads/authservice/app/dto"
+	"ads/authservice/app/tests/data"
+	"ads/authservice/app/tests/helpers"
+	"ads/authservice/app/tests/mocks"
+	"ads/authservice/app/uc_errors"
+	"ads/authservice/app/usecase"
+	"ads/authservice/domain/entity"
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -47,12 +47,12 @@ func TestLoginUC_Success(t *testing.T) {
 				Return(helpers.MakeRefreshClaims("jti-x", time.Now().Add(24*time.Hour), time.Now()), nil)
 
 			sessions.
-				On("InsertSession", mock.MatchedBy(func(s *entity.Session) bool {
+				On("CreateSession", mock.MatchedBy(func(s *entity.Session) bool {
 					return s.UserID == existingUser.ID && s.JTI == "jti-x" && !s.IssuedAt.IsZero() && s.ExpiresAt.After(s.IssuedAt)
 				})).
 				Return(nil)
 
-			out, err := uc.Execute(dto.LoginDTO{
+			out, err := uc.Execute(dto.Login{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -82,7 +82,7 @@ func TestLoginUC_GetUserError(t *testing.T) {
 				On("GetUserByEmail", testCase.Email).
 				Return(&entity.User{}, errors.New("db error"))
 
-			res, err := uc.Execute(dto.LoginDTO{Email: testCase.Email, Password: testCase.Password})
+			res, err := uc.Execute(dto.Login{Email: testCase.Email, Password: testCase.Password})
 
 			assert.Error(t, err)
 			assert.Equal(t, uc_errors.ErrGetUser, err)
@@ -107,7 +107,7 @@ func TestLoginUC_UserNotFoundError(t *testing.T) {
 				On("GetUserByEmail", testCase.Email).
 				Return(nil, nil)
 
-			res, err := uc.Execute(dto.LoginDTO{Email: testCase.Email, Password: testCase.Password})
+			res, err := uc.Execute(dto.Login{Email: testCase.Email, Password: testCase.Password})
 
 			assert.Error(t, err)
 			assert.Equal(t, uc_errors.ErrUserNotFound, err)
@@ -134,7 +134,7 @@ func TestLoginUC_InvalidPasswordError(t *testing.T) {
 				On("GetUserByEmail", testCase.Email).
 				Return(existingUser, nil)
 
-			res, err := uc.Execute(dto.LoginDTO{
+			res, err := uc.Execute(dto.Login{
 				Email:    testCase.Email,
 				Password: "wrong_pass",
 			})
@@ -169,7 +169,7 @@ func TestLoginUC_AccessTokenError(t *testing.T) {
 				On("GenerateAccessToken", mock.Anything, mock.Anything, mock.Anything).
 				Return("", errors.New("token error"))
 
-			res, err := uc.Execute(dto.LoginDTO{
+			res, err := uc.Execute(dto.Login{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -206,7 +206,7 @@ func TestLoginUC_RefreshTokenError(t *testing.T) {
 				On("GenerateRefreshToken", mock.Anything).
 				Return("", errors.New("token error"))
 
-			res, err := uc.Execute(dto.LoginDTO{
+			res, err := uc.Execute(dto.Login{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -246,7 +246,7 @@ func TestLoginUC_ParseTokenError(t *testing.T) {
 				On("ParseRefreshToken", mock.Anything).
 				Return(&entity.RefreshClaims{}, errors.New("parse error"))
 
-			res, err := uc.Execute(dto.LoginDTO{
+			res, err := uc.Execute(dto.Login{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})
@@ -260,7 +260,7 @@ func TestLoginUC_ParseTokenError(t *testing.T) {
 	}
 }
 
-func TestLoginUC_InsertSessionError(t *testing.T) {
+func TestLoginUC_CreateSessionError(t *testing.T) {
 	for _, testCase := range data.LoginTestCases {
 		t.Run(testCase.Email, func(t *testing.T) {
 			users := new(mocks.MockUsersRepo)
@@ -287,10 +287,10 @@ func TestLoginUC_InsertSessionError(t *testing.T) {
 				On("ParseRefreshToken", mock.Anything).
 				Return(helpers.MakeRefreshClaims("jti-x", time.Now().Add(24*time.Hour), time.Now()), nil)
 			sessions.
-				On("InsertSession", mock.Anything).
+				On("CreateSession", mock.Anything).
 				Return(errors.New("session error"))
 
-			res, err := uc.Execute(dto.LoginDTO{
+			res, err := uc.Execute(dto.Login{
 				Email:    testCase.Email,
 				Password: testCase.Password,
 			})

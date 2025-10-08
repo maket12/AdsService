@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/mappers"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/domain/port"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/mappers"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/domain/port"
 )
 
 type GetProfileUC struct {
@@ -12,21 +12,21 @@ type GetProfileUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *GetProfileUC) Execute(in dto.GetProfileDTO) (dto.ProfileResponseDTO, error) {
+func (uc *GetProfileUC) Execute(in dto.GetProfile) (dto.ProfileResponse, error) {
 	role, err := uc.Users.GetUserRole(in.UserID)
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrGetUserRole
+		return dto.ProfileResponse{}, uc_errors.ErrGetUserRole
 	}
 	if role != "admin" {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrNotAdmin
+		return dto.ProfileResponse{}, uc_errors.ErrNotAdmin
 	}
 
 	profile, err := uc.Profiles.GetProfile(in.RequestedUserID)
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrGetProfile
+		return dto.ProfileResponse{}, uc_errors.ErrGetProfile
 	}
 	if profile == nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrProfileNotFound
+		return dto.ProfileResponse{}, uc_errors.ErrProfileNotFound
 	}
 	return mappers.MapIntoProfileDTO(profile), nil
 }

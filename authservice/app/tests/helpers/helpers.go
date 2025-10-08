@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"AdsService/authservice/domain/entity"
+	"ads/authservice/domain/entity"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

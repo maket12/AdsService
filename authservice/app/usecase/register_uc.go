@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	"AdsService/authservice/app/dto"
-	"AdsService/authservice/app/uc_errors"
-	"AdsService/authservice/domain/entity"
-	"AdsService/authservice/domain/port"
+	"ads/authservice/app/dto"
+	"ads/authservice/app/uc_errors"
+	"ads/authservice/domain/entity"
+	"ads/authservice/domain/port"
+	"context"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +18,7 @@ type RegisterUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *RegisterUC) Execute(in dto.RegisterDTO) (dto.AuthResponseDTO, error) {
+func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.AuthResponse, error) {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 
 	user := &entity.User{
@@ -25,26 +26,26 @@ func (uc *RegisterUC) Execute(in dto.RegisterDTO) (dto.AuthResponseDTO, error) {
 		Password: string(hashed),
 		Role:     "user",
 	}
-	if err := uc.Users.AddUser(user); err != nil {
-		return dto.AuthResponseDTO{}, uc_errors.ErrAddUser
+	if err := uc.Users.AddUser(ctx, user); err != nil {
+		return dto.AuthResponse{}, uc_errors.ErrAddUser
 	}
 
-	if _, err := uc.Profiles.AddProfile(user.ID, "undefined", "undefined"); err != nil {
-		return dto.AuthResponseDTO{}, uc_errors.ErrAddProfile
+	if _, err := uc.Profiles.AddProfile(ctx, user.ID, "undefined", "undefined"); err != nil {
+		return dto.AuthResponse{}, uc_errors.ErrAddProfile
 	}
 
 	access, err := uc.Tokens.GenerateAccessToken(user.ID, user.Email, user.Role)
 	if err != nil {
-		return dto.AuthResponseDTO{}, uc_errors.ErrTokenIssue
+		return dto.AuthResponse{}, uc_errors.ErrTokenIssue
 	}
 	refresh, err := uc.Tokens.GenerateRefreshToken(user.ID)
 	if err != nil {
-		return dto.AuthResponseDTO{}, uc_errors.ErrTokenIssue
+		return dto.AuthResponse{}, uc_errors.ErrTokenIssue
 	}
 
 	rc, err := uc.Tokens.ParseRefreshToken(refresh)
 	if err != nil {
-		return dto.AuthResponseDTO{}, uc_errors.ErrTokenParse
+		return dto.AuthResponse{}, uc_errors.ErrTokenParse
 	}
 
 	sess := &entity.Session{
@@ -53,9 +54,9 @@ func (uc *RegisterUC) Execute(in dto.RegisterDTO) (dto.AuthResponseDTO, error) {
 		IssuedAt:  time.Now().UTC(),
 		ExpiresAt: rc.ExpiresAt.Time.UTC(),
 	}
-	if err := uc.Sessions.InsertSession(sess); err != nil {
-		return dto.AuthResponseDTO{}, uc_errors.ErrSessionSave
+	if err := uc.Sessions.CreateSession(ctx, sess); err != nil {
+		return dto.AuthResponse{}, uc_errors.ErrSessionSave
 	}
 
-	return dto.AuthResponseDTO{AccessToken: access, RefreshToken: refresh}, nil
+	return dto.AuthResponse{AccessToken: access, RefreshToken: refresh}, nil
 }

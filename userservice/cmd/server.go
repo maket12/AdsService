@@ -1,19 +1,18 @@
 package main
 
 import (
-	"AdsService/userservice/adapter/jwt"
-	mongorepo "AdsService/userservice/adapter/mongo"
-	"AdsService/userservice/adapter/pg"
-	"AdsService/userservice/app/usecase"
-	"AdsService/userservice/config"
-	grpcinfra "AdsService/userservice/infrastructure/grpc"
-	"AdsService/userservice/infrastructure/mongodb"
-	"AdsService/userservice/infrastructure/postgres"
-	"AdsService/userservice/pkg/logger"
-	usersvc "AdsService/userservice/presentation/grpc"
-	pb "AdsService/userservice/presentation/grpc/pb"
+	"ads/userservice/adapter/jwt"
+	mongorepo "ads/userservice/adapter/mongo"
+	"ads/userservice/adapter/pg"
+	"ads/userservice/app/usecase"
+	"ads/userservice/config"
+	grpcinfra "ads/userservice/infrastructure/grpc"
+	"ads/userservice/infrastructure/mongodb"
+	"ads/userservice/infrastructure/postgres"
+	"ads/userservice/pkg/logger"
+	usersvc "ads/userservice/presentation/grpc"
+	pb "ads/userservice/presentation/grpc/pb"
 	"fmt"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"gorm.io/gorm"
 	"log/slog"
 	"net"
@@ -27,19 +26,24 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
-
 	log := logger.New()
+
+	cfg, err := config.Load()
+	if err != nil {
+		log.Error("failed to load config", "error", err)
+		return
+	}
+
 	log.Info("🚀 starting userservice", "port", cfg.GRPCPort)
 
-	db, mongoBucket, err := initDependencies(cfg, log)
+	db, mongoData, err := initDependencies(cfg, log)
 	if err != nil {
 		log.Error("failed to initialize dependencies", "error", err)
 		return
 	}
-	defer closeDependencies(log)
+	defer closeDependencies(mongoData)
 
-	userService := initServices(db, mongoBucket, log)
+	userService := initServices(db, mongoData)
 
 	server := startGRPCServer(userService, cfg, log)
 
@@ -48,31 +52,31 @@ func main() {
 	log.Info("👋 userservice stopped")
 }
 
-func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, *mongo.GridFSBucket, error) {
+func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, *mongodb.MongoData, error) {
 	log.Info("initializing database connections...")
 
-	if err := postgres.InitDB(cfg, log); err != nil {
+	db, err := postgres.InitDB(cfg)
+	if err != nil {
 		return nil, nil, fmt.Errorf("postgres: %w", err)
 	}
 
-	if err := mongodb.InitMongoDB(cfg, log); err != nil {
+	mongoData, err := mongodb.InitMongoDB(cfg)
+	if err != nil {
 		return nil, nil, fmt.Errorf("mongodb: %w", err)
 	}
 
-	return postgres.DB, mongodb.Bucket, nil
+	return db, mongoData, nil
 }
 
-// Закрытие всех соединений
-func closeDependencies(log *slog.Logger) {
-	log.Info("closing database connections...")
-	mongodb.CloseMongoDB(log)
+func closeDependencies(mongoData *mongodb.MongoData) {
+	fmt.Print("closing database connections...")
+	mongodb.CloseMongoDB(mongoData)
 }
 
-func initServices(db *gorm.DB, mongoBucket *mongo.GridFSBucket, log *slog.Logger) *usersvc.UserService {
-	profilesRepo := pg.NewProfilesRepo(db, log)
-	photosRepo := mongorepo.NewPhotoRepo(mongoBucket, log)
+func initServices(db *gorm.DB, mongoData *mongodb.MongoData) *usersvc.UserService {
+	profilesRepo := pg.NewProfilesRepo(db)
+	photosRepo := mongorepo.NewPhotoRepo(mongoData.Bucket)
 
-	// Use cases
 	addProfileUC := &usecase.AddProfileUC{Profiles: profilesRepo}
 	updateProfileUC := &usecase.UpdateProfileUC{Profiles: profilesRepo}
 	uploadPhotoUC := &usecase.UploadPhotoUC{Profiles: profilesRepo, Photos: photosRepo}

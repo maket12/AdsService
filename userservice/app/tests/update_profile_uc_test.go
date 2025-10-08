@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/tests/data"
-	"AdsService/userservice/app/tests/helpers"
-	"AdsService/userservice/app/tests/mocks"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/app/usecase"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/tests/data"
+	"ads/userservice/app/tests/helpers"
+	"ads/userservice/app/tests/mocks"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +31,7 @@ func TestUpdateProfileUC_Success(t *testing.T) {
 				On("UpdateProfilePhone", testCase.UserID, testCase.Phone).
 				Return(helpers.MakeTestProfile(testCase.UserID, testCase.Name, testCase.Phone, true, nil, ""), nil)
 
-			out, err := uc.Execute(dto.UpdateProfileDTO{
+			out, err := uc.Execute(dto.UpdateProfile{
 				UserID: testCase.UserID,
 				Name:   testCase.Name,
 				Phone:  testCase.Phone,
@@ -58,7 +58,7 @@ func TestUpdateProfileUC_UpdateNameError(t *testing.T) {
 				On("UpdateProfileName", mock.Anything, mock.Anything).
 				Return(nil, errors.New("profile error"))
 
-			_, err := uc.Execute(dto.UpdateProfileDTO{
+			_, err := uc.Execute(dto.UpdateProfile{
 				UserID: testCase.UserID,
 				Name:   testCase.Name,
 				Phone:  testCase.Phone,
@@ -88,7 +88,7 @@ func TestUpdateProfileUC_UpdatePhoneError(t *testing.T) {
 				On("UpdateProfilePhone", mock.Anything, mock.Anything).
 				Return(nil, errors.New("profile error"))
 
-			_, err := uc.Execute(dto.UpdateProfileDTO{
+			_, err := uc.Execute(dto.UpdateProfile{
 				UserID: testCase.UserID,
 				Name:   testCase.Name,
 				Phone:  testCase.Phone,

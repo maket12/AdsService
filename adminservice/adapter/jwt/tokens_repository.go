@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"AdsService/userservice/domain/entity"
-	"AdsService/userservice/domain/port"
+	"ads/userservice/domain/entity"
+	"ads/userservice/domain/port"
 )
 
 type TokenRepository struct {

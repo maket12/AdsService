@@ -1,24 +1,24 @@
 package usecase
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/mappers"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/domain/port"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/mappers"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/domain/port"
 )
 
 type UpdateProfileUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *UpdateProfileUC) Execute(in dto.UpdateProfileDTO) (dto.ProfileResponseDTO, error) {
+func (uc *UpdateProfileUC) Execute(in dto.UpdateProfile) (dto.ProfileResponse, error) {
 	_, err := uc.Profiles.UpdateProfileName(in.UserID, in.Name)
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrUpdateProfile
+		return dto.ProfileResponse{}, uc_errors.ErrUpdateProfile
 	}
 	profile, err := uc.Profiles.UpdateProfilePhone(in.UserID, in.Phone)
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrUpdateProfile
+		return dto.ProfileResponse{}, uc_errors.ErrUpdateProfile
 	}
 	return mappers.MapIntoProfileDTO(profile), nil
 }

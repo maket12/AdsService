@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/tests/data"
-	"AdsService/userservice/app/tests/helpers"
-	"AdsService/userservice/app/tests/mocks"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/app/usecase"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/tests/data"
+	"ads/userservice/app/tests/helpers"
+	"ads/userservice/app/tests/mocks"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/app/usecase"
 	"bytes"
 	"errors"
 	"fmt"
@@ -33,7 +33,7 @@ func TestUploadPhotoUC_Success(t *testing.T) {
 				On("UpdateProfilePhoto", testCase.UserID, testCase.ExpectedAnswer).
 				Return(helpers.MakeTestProfile(testCase.UserID, "", "", false, nil, testCase.ExpectedAnswer), nil)
 
-			out, err := uc.Execute(dto.UploadPhotoDTO{
+			out, err := uc.Execute(dto.UploadPhoto{
 				UserID:      testCase.UserID,
 				Data:        testCase.Data,
 				Filename:    testCase.FileName,
@@ -61,7 +61,7 @@ func TestUploadPhotoUC_DataError(t *testing.T) {
 				Photos:   &photos,
 			}
 
-			_, err := uc.Execute(dto.UploadPhotoDTO{
+			_, err := uc.Execute(dto.UploadPhoto{
 				UserID:      testCase.UserID,
 				Data:        testCase.Data,
 				Filename:    testCase.FileName,
@@ -97,7 +97,7 @@ func TestUploadPhotoUC_MongoUploadError(t *testing.T) {
 				On("UploadPhoto", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 				Return("", errors.New("mongo error"))
 
-			_, err := uc.Execute(dto.UploadPhotoDTO{
+			_, err := uc.Execute(dto.UploadPhoto{
 				UserID:      testCase.UserID,
 				Data:        testCase.Data,
 				Filename:    testCase.FileName,
@@ -130,7 +130,7 @@ func TestUploadPhotoUC_UpdatePhotoError(t *testing.T) {
 				On("UpdateProfilePhoto", mock.Anything, mock.Anything).
 				Return(nil, errors.New("update photo error"))
 
-			_, err := uc.Execute(dto.UploadPhotoDTO{
+			_, err := uc.Execute(dto.UploadPhoto{
 				UserID:      testCase.UserID,
 				Data:        testCase.Data,
 				Filename:    testCase.FileName,

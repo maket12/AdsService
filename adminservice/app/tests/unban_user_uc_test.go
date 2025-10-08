@@ -1,11 +1,11 @@
 package tests
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/tests/data"
-	"AdsService/adminservice/app/tests/mocks"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/app/usecase"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/tests/data"
+	"ads/adminservice/app/tests/mocks"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +29,7 @@ func TestUnbanUserUC_Success(t *testing.T) {
 				On("UnbanUser", testCase.RequestedUserID).
 				Return(nil)
 
-			out, err := uc.Execute(dto.UnbanUserDTO{
+			out, err := uc.Execute(dto.UnbanUser{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -56,7 +56,7 @@ func TestUnbanUserUC_GetUserError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("", errors.New("get user error"))
 
-			out, err := uc.Execute(dto.UnbanUserDTO{
+			out, err := uc.Execute(dto.UnbanUser{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -84,7 +84,7 @@ func TestUnbanUserUC_NotAdminError(t *testing.T) {
 				On("GetUserRole", mock.Anything).
 				Return("user", nil)
 
-			out, err := uc.Execute(dto.UnbanUserDTO{
+			out, err := uc.Execute(dto.UnbanUser{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})
@@ -115,7 +115,7 @@ func TestUnbanUserUC_UnbanUserError(t *testing.T) {
 				On("UnbanUser", mock.Anything).
 				Return(errors.New("unban user error"))
 
-			out, err := uc.Execute(dto.UnbanUserDTO{
+			out, err := uc.Execute(dto.UnbanUser{
 				UserID:          testCase.AdminUserID,
 				RequestedUserID: testCase.RequestedUserID,
 			})

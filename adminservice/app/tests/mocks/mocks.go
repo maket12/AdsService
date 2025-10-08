@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"AdsService/adminservice/domain/entity"
+	"ads/adminservice/domain/entity"
 	"github.com/stretchr/testify/mock"
 )
 

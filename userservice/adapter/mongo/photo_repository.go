@@ -1,25 +1,23 @@
 package mongo
 
 import (
-	"AdsService/userservice/domain/entity"
-	"AdsService/userservice/domain/port"
+	"ads/userservice/domain/entity"
+	"ads/userservice/domain/port"
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"io"
-	"log/slog"
 	"time"
 )
 
 type PhotoRepo struct {
 	Bucket *mongo.GridFSBucket
-	logger *slog.Logger
 }
 
-func NewPhotoRepo(bucket *mongo.GridFSBucket, logger *slog.Logger) port.PhotoRepository {
+func NewPhotoRepo(bucket *mongo.GridFSBucket) port.PhotoRepository {
 	return &PhotoRepo{
 		Bucket: bucket,
-		logger: logger,
 	}
 }
 
@@ -44,7 +42,7 @@ func (r *PhotoRepo) UploadPhoto(userID uint64, title, contentType string, rdr io
 	}
 
 	hexID := objectID.Hex()
-	r.logger.Info("Successfully uploaded photo of user[%v] with hexID[%v]", userID, hexID)
+	fmt.Printf("Successfully uploaded photo of user[%v] with hexID[%v]", userID, hexID)
 
 	return hexID, nil
 }

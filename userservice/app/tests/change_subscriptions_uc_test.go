@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/tests/data"
-	"AdsService/userservice/app/tests/helpers"
-	"AdsService/userservice/app/tests/mocks"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/app/usecase"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/tests/data"
+	"ads/userservice/app/tests/helpers"
+	"ads/userservice/app/tests/mocks"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +27,7 @@ func TestChangeSubscriptionsUC_Success(t *testing.T) {
 				On("UpdateProfileSubscriptions", testCase.UserID, testCase.Subscriptions).
 				Return(helpers.MakeTestProfile(testCase.UserID, "", "", false, testCase.Subscriptions, ""), nil)
 
-			out, err := uc.Execute(dto.ChangeSubscriptionsDTO{
+			out, err := uc.Execute(dto.ChangeSubscriptions{
 				UserID:        testCase.UserID,
 				Subscriptions: testCase.Subscriptions,
 			})
@@ -54,7 +54,7 @@ func TestChangeSubscriptionsUC_ChangeSubscriptionsError(t *testing.T) {
 				On("UpdateProfileSubscriptions", mock.Anything, mock.Anything).
 				Return(nil, errors.New("subscriptions error"))
 
-			_, err := uc.Execute(dto.ChangeSubscriptionsDTO{
+			_, err := uc.Execute(dto.ChangeSubscriptions{
 				UserID:        testCase.UserID,
 				Subscriptions: testCase.Subscriptions,
 			})

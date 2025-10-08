@@ -1,20 +1,19 @@
 package pg
 
 import (
-	"AdsService/adminservice/domain/entity"
-	"AdsService/adminservice/domain/port"
+	"ads/adminservice/domain/entity"
+	"ads/adminservice/domain/port"
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
 type UsersRepo struct {
-	db     *gorm.DB
-	logger *slog.Logger
+	db *gorm.DB
 }
 
-func NewUsersRepo(db *gorm.DB, logger *slog.Logger) port.UserRepository {
-	return &UsersRepo{db: db, logger: logger}
+func NewUsersRepo(db *gorm.DB) port.UserRepository {
+	return &UsersRepo{db: db}
 }
 
 func (r *UsersRepo) GetUserByID(userID uint64) (*entity.User, error) {
@@ -33,8 +32,7 @@ func (r *UsersRepo) GetUserRole(userID uint64) (string, error) {
 	var role string
 	result := r.db.Model(entity.User{}).Where("id = ?", userID).Pluck("role", role).Error
 	if result != nil {
-		r.logger.Error("database error: %v", result)
-		return "", result
+		return "", fmt.Errorf("database error: %v", result)
 	}
 	return role, result
 }
@@ -42,8 +40,7 @@ func (r *UsersRepo) GetUserRole(userID uint64) (string, error) {
 func (r *UsersRepo) EnhanceUser(userID uint64) error {
 	res := r.db.Model(&entity.User{}).Where("id = ?", userID).Update("role", "admin").Error
 	if res != nil {
-		r.logger.Error("error to enhance user: %w", res)
-		return res
+		return fmt.Errorf("error to enhance user: %w", res)
 	}
 	return nil
 }
@@ -51,8 +48,7 @@ func (r *UsersRepo) EnhanceUser(userID uint64) error {
 func (r *UsersRepo) BanUser(userID uint64) error {
 	res := r.db.Model(&entity.User{}).Where("id = ?", userID).Update("banned", true).Error
 	if res != nil {
-		r.logger.Error("error to ban user: %w", res)
-		return res
+		return fmt.Errorf("error to ban user: %w", res)
 	}
 	return nil
 }
@@ -60,8 +56,7 @@ func (r *UsersRepo) BanUser(userID uint64) error {
 func (r *UsersRepo) UnbanUser(userID uint64) error {
 	res := r.db.Model(&entity.User{}).Where("id = ?", userID).Update("banned", false).Error
 	if res != nil {
-		r.logger.Error("error to unban user: %w", res)
-		return res
+		return fmt.Errorf("error to unban user: %w", res)
 	}
 	return nil
 }

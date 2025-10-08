@@ -1,9 +1,12 @@
 package port
 
-import "AdsService/authservice/domain/entity"
+import (
+	"ads/authservice/domain/entity"
+	"context"
+)
 
 type UserRepository interface {
-	CheckUserExist(email string) (bool, error)
-	AddUser(user *entity.User) error
-	GetUserByEmail(email string) (*entity.User, error)
+	CheckUserExist(ctx context.Context, email string) (bool, error)
+	AddUser(ctx context.Context, user *entity.User) error
+	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
 }

@@ -1,32 +1,42 @@
 package pg
 
 import (
-	"AdsService/authservice/domain/entity"
-	"AdsService/authservice/domain/port"
+	"ads/authservice/domain/entity"
+	"ads/authservice/domain/port"
+	"context"
+	"errors"
+	"fmt"
 	"gorm.io/gorm"
-	"log/slog"
 	"time"
 )
 
 type ProfilesRepo struct {
-	db     *gorm.DB
-	logger *slog.Logger
+	db *gorm.DB
 }
 
-func NewProfilesRepo(db *gorm.DB, logger *slog.Logger) port.ProfileRepository {
+func NewProfilesRepo(db *gorm.DB) port.ProfileRepository {
 	return &ProfilesRepo{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
-func (r *ProfilesRepo) AddProfile(userID uint64, name, phone string) (*entity.Profile, error) {
+func (r *ProfilesRepo) AddProfile(ctx context.Context, userID uint64, name, phone string) (*entity.Profile, error) {
+	if userID == 0 {
+		return nil, errors.New("user ID must be valid")
+	}
+	if name == "" {
+		return nil, errors.New("name must be not empty")
+	}
+	if phone == "" {
+		return nil, errors.New("phone must be not empty")
+	}
+
 	var p = entity.Profile{
 		UserID:    userID,
 		Name:      name,
 		Phone:     phone,
 		UpdatedAt: time.Now().UTC(),
 	}
-	r.logger.Info("Created new profile: %v", userID)
-	return &p, r.db.Create(&p).Error
+	fmt.Printf("Created new profile: %v", userID)
+	return &p, r.db.WithContext(ctx).Create(&p).Error
 }

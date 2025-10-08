@@ -1,9 +1,9 @@
 package resolvers
 
 import (
-	adminpb "AdsService/adminservice/presentation/grpc/pb"
-	authpb "AdsService/authservice/presentation/grpc/pb"
-	userpb "AdsService/userservice/presentation/grpc/pb"
+	adminpb "ads/adminservice/presentation/grpc/pb"
+	authpb "ads/authservice/presentation/grpc/pb"
+	userpb "ads/userservice/presentation/grpc/pb"
 	"fmt"
 	"strconv"
 	"time"
@@ -81,23 +81,30 @@ func MapAdminPbProfilesToUserProfiles(resp *adminpb.GetProfilesListResponse) *Pr
 	return &ProfilesList{Profiles: profiles}
 }
 
-func MapPbBanResponseToBanResult(resp *adminpb.BanUserResponse) *AdminBanResult {
-	return &AdminBanResult{Banned: resp.Banned}
+func MapPbBanResponseToBanOutput(resp *adminpb.BanUserResponse) *AdminBanOutput {
+	return &AdminBanOutput{Banned: resp.Banned}
 }
 
-func MapPbUnbanResponseToUnbanResult(resp *adminpb.UnbanUserResponse) *AdminUnbanResult {
-	return &AdminUnbanResult{Unbanned: resp.Unbanned}
+func MapPbUnbanResponseToUnbanOutput(resp *adminpb.UnbanUserResponse) *AdminUnbanOutput {
+	return &AdminUnbanOutput{Unbanned: resp.Unbanned}
 }
 
-func MapPbAssignRoleResponseToAssignRoleResult(resp *adminpb.AssignRoleResponse) *AssignRoleResult {
-	return &AssignRoleResult{
+func MapPbAssignRoleResponseToAssignRoleOutput(resp *adminpb.AssignRoleResponse) *AssignRoleOutput {
+	return &AssignRoleOutput{
 		UserID:   strconv.FormatUint(resp.UserId, 10),
 		Assigned: resp.Assigned,
 	}
 }
 
-func MapPbAuthResponseToAuthPayload(resp *authpb.AuthResponse) *AuthPayload {
-	return &AuthPayload{
+func MapPbAuthResponseToRegisterOutput(resp *authpb.AuthResponse) *RegisterUserOutput {
+	return &RegisterUserOutput{
+		AccessToken:  resp.AccessToken,
+		RefreshToken: resp.RefreshToken,
+	}
+}
+
+func MapPbAuthResponseToLoginOutput(resp *authpb.AuthResponse) *LoginUserOutput {
+	return &LoginUserOutput{
 		AccessToken:  resp.AccessToken,
 		RefreshToken: resp.RefreshToken,
 	}

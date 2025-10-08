@@ -1,6 +1,6 @@
 package dto
 
-type UploadPhotoDTO struct {
+type UploadPhoto struct {
 	UserID      uint64
 	Data        []byte
 	Filename    string

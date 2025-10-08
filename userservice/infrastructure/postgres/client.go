@@ -1,22 +1,16 @@
 package postgres
 
 import (
-	"AdsService/userservice/config"
-	"AdsService/userservice/domain/entity"
+	"ads/userservice/config"
+	"ads/userservice/domain/entity"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
-var DB *gorm.DB
-
-func InitDB(cfg *config.Config, logger *slog.Logger) error {
-	logger.Info("connecting to PostgreSQL...",
-		slog.String("host", cfg.DBHost),
-		slog.Int("port", cfg.DBPort),
-		slog.String("database", cfg.DBName),
-	)
+func InitDB(cfg *config.Config) (*gorm.DB, error) {
+	fmt.Printf("connecting to PostgreSQL... host=%s port=%d database=%s\n",
+		cfg.DBHost, cfg.DBPort, cfg.DBName)
 
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -26,16 +20,15 @@ func InitDB(cfg *config.Config, logger *slog.Logger) error {
 		cfg.DBPassword,
 		cfg.DBName)
 
-	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := (DB.AutoMigrate(&entity.Profile{})); err != nil {
-		return err
+	if err = (DB.AutoMigrate(&entity.Profile{})); err != nil {
+		return nil, err
 	}
 
-	logger.Info("✅ PostgreSQL connected successfully")
-	return nil
+	fmt.Print("✅ PostgreSQL connected successfully")
+	return DB, nil
 }

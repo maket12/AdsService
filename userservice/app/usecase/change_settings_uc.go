@@ -1,18 +1,18 @@
 package usecase
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/mappers"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/domain/entity"
-	"AdsService/userservice/domain/port"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/mappers"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/domain/entity"
+	"ads/userservice/domain/port"
 )
 
 type ChangeSettingsUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *ChangeSettingsUC) Execute(in dto.ChangeSettingsDTO) (dto.ProfileResponseDTO, error) {
+func (uc *ChangeSettingsUC) Execute(in dto.ChangeSettings) (dto.ProfileResponse, error) {
 	var profile *entity.Profile
 	var err error
 
@@ -23,7 +23,7 @@ func (uc *ChangeSettingsUC) Execute(in dto.ChangeSettingsDTO) (dto.ProfileRespon
 	}
 
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrChangeSettings
+		return dto.ProfileResponse{}, uc_errors.ErrChangeSettings
 	}
 
 	return mappers.MapIntoProfileDTO(profile), nil

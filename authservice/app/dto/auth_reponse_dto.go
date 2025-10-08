@@ -1,6 +1,6 @@
 package dto
 
-type AuthResponseDTO struct {
+type AuthResponse struct {
 	AccessToken  string
 	RefreshToken string
 }

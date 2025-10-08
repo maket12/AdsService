@@ -2,7 +2,7 @@ package dto
 
 import "time"
 
-type ProfileResponseDTO struct {
+type ProfileResponse struct {
 	UserID               uint64
 	Name                 string
 	Phone                string

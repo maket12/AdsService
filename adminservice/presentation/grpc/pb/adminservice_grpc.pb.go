@@ -19,15 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AdminService_BanUser_FullMethodName         = "/adminservice.v1.AdminService/BanUser"
-	AdminService_UnbanUser_FullMethodName       = "/adminservice.v1.AdminService/UnbanUser"
-	AdminService_AssignRole_FullMethodName      = "/adminservice.v1.AdminService/AssignRole"
-	AdminService_GetUser_FullMethodName         = "/adminservice.v1.AdminService/GetUser"
-	AdminService_GetProfile_FullMethodName      = "/adminservice.v1.AdminService/GetProfile"
-	AdminService_GetProfilesList_FullMethodName = "/adminservice.v1.AdminService/GetProfilesList"
+	AdminService_BanUser_FullMethodName         = "/adminservice.v1.AdminClient/BanUser"
+	AdminService_UnbanUser_FullMethodName       = "/adminservice.v1.AdminClient/UnbanUser"
+	AdminService_AssignRole_FullMethodName      = "/adminservice.v1.AdminClient/AssignRole"
+	AdminService_GetUser_FullMethodName         = "/adminservice.v1.AdminClient/GetUser"
+	AdminService_GetProfile_FullMethodName      = "/adminservice.v1.AdminClient/GetProfile"
+	AdminService_GetProfilesList_FullMethodName = "/adminservice.v1.AdminClient/GetProfilesList"
 )
 
-// AdminServiceClient is the client API for AdminService service.
+// AdminServiceClient is the client API for AdminClient service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AdminServiceClient interface {
@@ -107,7 +107,7 @@ func (c *adminServiceClient) GetProfilesList(ctx context.Context, in *GetProfile
 	return out, nil
 }
 
-// AdminServiceServer is the server API for AdminService service.
+// AdminServiceServer is the server API for AdminClient service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
 type AdminServiceServer interface {
@@ -274,11 +274,11 @@ func _AdminService_GetProfilesList_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-// AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
+// AdminService_ServiceDesc is the grpc.ServiceDesc for AdminClient service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AdminService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "adminservice.v1.AdminService",
+	ServiceName: "adminservice.v1.AdminClient",
 	HandlerType: (*AdminServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

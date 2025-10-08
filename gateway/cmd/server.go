@@ -1,13 +1,21 @@
 package main
 
 import (
-	authpb "AdsService/authservice/presentation/grpc/pb"
-	"AdsService/gateway/app/resolvers"
-	"AdsService/gateway/infrastructure/authctx"
-	userpb "AdsService/userservice/presentation/grpc/pb"
-	"log"
+	adminpb "ads/adminservice/presentation/grpc/pb"
+	authpb "ads/authservice/presentation/grpc/pb"
+	"ads/gateway/app/resolvers"
+	"ads/gateway/config"
+	"ads/gateway/infrastructure/authctx"
+	"ads/gateway/pkg/logger"
+	userpb "ads/userservice/presentation/grpc/pb"
+	"context"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -15,55 +23,153 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func getenv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
+type GRPCClients struct {
+	AuthConn    *grpc.ClientConn
+	UserConn    *grpc.ClientConn
+	AdminConn   *grpc.ClientConn
+	AuthClient  authpb.AuthServiceClient
+	UserClient  userpb.UsersServiceClient
+	AdminClient adminpb.AdminServiceClient
 }
 
 func main() {
-	authAddr := getenv("AUTH_GRPC_ADDR", "authservice:50051")
-	userAddr := getenv("USER_GRPC_ADDR", "userservice:50052")
+	log := logger.New()
 
-	// gRPC connections
-	authConn, err := grpc.NewClient(authAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("failed to connect to authservice: %v", err)
+		log.Error("failed to load config", "error", err)
+		return
 	}
-	defer authConn.Close()
 
-	userConn, err := grpc.NewClient(userAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	clients, err := initGrpcClients(cfg, log)
 	if err != nil {
-		log.Fatalf("failed to connect to userservice: %v", err)
+		log.Error("failed to initialize gRPC clients", "error", err)
+		return
 	}
-	defer userConn.Close()
+	defer closeGrpcClients(clients, log)
 
-	// gRPC clients
-	authClient := authpb.NewAuthServiceClient(authConn)
-	userClient := userpb.NewUsersServiceClient(userConn)
-
-	// GraphQL resolver
 	resolver := &resolvers.Resolver{
-		AuthClient: authClient,
-		UserClient: userClient,
+		AuthClient:  clients.AuthClient,
+		UserClient:  clients.UserClient,
+		AdminClient: clients.AdminClient,
 	}
 
-	// GraphQL server
+	server := startHTTPServer(resolver, log)
+
+	waitForShutdown(server, clients, log)
+
+	log.Info("👋 gateway stopped")
+}
+
+func initGrpcClients(cfg *config.Config, log *slog.Logger) (*GRPCClients, error) {
+	log.Info("initializing gRPC clients...")
+
+	clients := &GRPCClients{}
+
+	authConn, err := grpc.NewClient(cfg.AuthGrpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("auth service: %w", err)
+	}
+	clients.AuthConn = authConn
+	clients.AuthClient = authpb.NewAuthServiceClient(authConn)
+
+	userConn, err := grpc.NewClient(cfg.UserGrpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		authConn.Close()
+		return nil, fmt.Errorf("user service: %w", err)
+	}
+	clients.UserConn = userConn
+	clients.UserClient = userpb.NewUsersServiceClient(userConn)
+
+	adminConn, err := grpc.NewClient(cfg.AdminGrpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		authConn.Close()
+		userConn.Close()
+		return nil, fmt.Errorf("admin service: %w", err)
+	}
+	clients.AdminConn = adminConn
+	clients.AdminClient = adminpb.NewAdminServiceClient(adminConn)
+
+	log.Info("✅ gRPC clients connected successfully",
+		slog.String("auth", cfg.AuthGrpcAddr),
+		slog.String("user", cfg.UserGrpcAddr),
+		slog.String("admin", cfg.AdminGrpcAddr),
+	)
+
+	return clients, nil
+}
+
+func closeGrpcClients(clients *GRPCClients, log *slog.Logger) {
+	log.Info("closing gRPC connections...")
+
+	if clients.AuthConn != nil {
+		if err := clients.AuthConn.Close(); err != nil {
+			log.Error("failed to close auth connection", "error", err)
+		} else {
+			log.Info("✅ auth connection closed")
+		}
+	}
+
+	if clients.UserConn != nil {
+		if err := clients.UserConn.Close(); err != nil {
+			log.Error("failed to close user connection", "error", err)
+		} else {
+			log.Info("✅ user connection closed")
+		}
+	}
+
+	if clients.AdminConn != nil {
+		if err := clients.AdminConn.Close(); err != nil {
+			log.Error("failed to close admin connection", "error", err)
+		} else {
+			log.Info("✅ admin connection closed")
+		}
+	}
+}
+
+func startHTTPServer(resolver *resolvers.Resolver, log *slog.Logger) *http.Server {
 	srv := handler.NewDefaultServer(resolvers.NewExecutableSchema(resolvers.Config{Resolvers: resolver}))
 
-	// HTTP middleware: кладём Authorization -> gRPC metadata в контекст
 	authMD := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := authctx.MetadataFromRequest(r) // берёт Authorization из заголовка и кладёт md "authorization"
-			next.ServeHTTP(w, r.WithContext(ctx)) // этот ctx попадёт во все резолверы
+			ctx := authctx.MetadataFromRequest(r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 
-	// Routes
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", authMD(srv)) // <--- оборачиваем /query
+	http.Handle("/query", authMD(srv))
 
-	log.Println("🚀 Gateway running at http://localhost:8080/")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: nil,
+	}
+
+	go func() {
+		log.Info("🚀 gateway running at http://localhost:8080/")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("HTTP server failed", "error", err)
+		}
+	}()
+
+	return server
+}
+
+func waitForShutdown(server *http.Server, clients *GRPCClients, log *slog.Logger) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Info("🛑 shutting down gateway...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Error("failed to shutdown server gracefully", "error", err)
+	} else {
+		log.Info("✅ HTTP server stopped gracefully")
+	}
+
+	closeGrpcClients(clients, log)
 }

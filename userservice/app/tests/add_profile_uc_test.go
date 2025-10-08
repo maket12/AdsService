@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/tests/data"
-	"AdsService/userservice/app/tests/helpers"
-	"AdsService/userservice/app/tests/mocks"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/app/usecase"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/tests/data"
+	"ads/userservice/app/tests/helpers"
+	"ads/userservice/app/tests/mocks"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +31,7 @@ func TestAddProfileUC_Success(t *testing.T) {
 				On("AddProfile", testCase.UserID, testCase.Name, testCase.Phone).
 				Return(helpers.MakeTestProfile(testCase.UserID, testCase.Name, testCase.Phone, true, nil, ""), nil)
 
-			out, err := uc.Execute(dto.AddProfileDTO{
+			out, err := uc.Execute(dto.AddProfile{
 				UserID: testCase.UserID,
 				Name:   testCase.Name,
 				Phone:  testCase.Phone,
@@ -62,7 +62,7 @@ func TestAddProfileUC_AddProfileError(t *testing.T) {
 				On("AddProfile", mock.Anything, mock.Anything, mock.Anything).
 				Return(nil, errors.New("profile error"))
 
-			_, err := uc.Execute(dto.AddProfileDTO{
+			_, err := uc.Execute(dto.AddProfile{
 				UserID: testCase.UserID,
 				Name:   testCase.Name,
 				Phone:  testCase.Phone,

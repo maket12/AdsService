@@ -1,6 +1,6 @@
 package dto
 
-type UnbanUserResponseDTO struct {
+type UnbanUserResponse struct {
 	UserID   uint64
 	Unbanned bool
 }

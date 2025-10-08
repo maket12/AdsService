@@ -1,16 +1,16 @@
 package usecase
 
 import (
-	"AdsService/authservice/app/dto"
-	"AdsService/authservice/app/uc_errors"
-	"AdsService/authservice/domain/port"
+	"ads/authservice/app/dto"
+	"ads/authservice/app/uc_errors"
+	"ads/authservice/domain/port"
 )
 
 type ValidateTokenUC struct {
 	Tokens port.TokenRepository
 }
 
-func (uc *ValidateTokenUC) Execute(in dto.ValidateTokenDTO) (dto.ValidateTokenResponse, error) {
+func (uc *ValidateTokenUC) Execute(in dto.ValidateToken) (dto.ValidateTokenResponse, error) {
 	claims, err := uc.Tokens.ParseAccessToken(in.AccessToken)
 	if err != nil {
 		return dto.ValidateTokenResponse{

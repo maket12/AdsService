@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"AdsService/adminservice/domain/entity"
+	"ads/adminservice/domain/entity"
 )
 
 func MakeTestUser(userID uint64) *entity.User {

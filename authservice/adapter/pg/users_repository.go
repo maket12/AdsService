@@ -1,28 +1,31 @@
 package pg
 
 import (
-	"AdsService/authservice/domain/entity"
-	"AdsService/authservice/domain/port"
+	"ads/authservice/domain/entity"
+	"ads/authservice/domain/port"
+	"context"
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
 type UsersRepo struct {
-	db     *gorm.DB
-	logger *slog.Logger
+	db *gorm.DB
 }
 
-func NewUsersRepo(db *gorm.DB, logger *slog.Logger) port.UserRepository {
+func NewUsersRepo(db *gorm.DB) port.UserRepository {
 	return &UsersRepo{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
-func (r *UsersRepo) CheckUserExist(email string) (bool, error) {
+func (r *UsersRepo) CheckUserExist(ctx context.Context, email string) (bool, error) {
+	if email == "" {
+		return false, errors.New("email must be not empty")
+	}
+
 	var u entity.User
-	err := r.db.Where("email = ?", email).First(&u).Error
+	err := r.db.WithContext(ctx).Where("email = ?", email).First(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
@@ -32,28 +35,36 @@ func (r *UsersRepo) CheckUserExist(email string) (bool, error) {
 	return true, nil
 }
 
-func (r *UsersRepo) AddUser(user *entity.User) error {
-	exists, err := r.CheckUserExist(user.Email)
+func (r *UsersRepo) AddUser(ctx context.Context, user *entity.User) error {
+	if user.ID == 0 {
+		return errors.New("user ID must be valid")
+	}
+
+	exists, err := r.CheckUserExist(ctx, user.Email)
 	if err != nil {
 		return err
 	}
 	if exists {
-		r.logger.Error("User with email %s already exists", user.Email)
+		fmt.Printf("User with email %s already exists", user.Email)
 		return nil
 	}
 
-	if err := r.db.Create(user).Error; err != nil {
-		r.logger.Error("Error while adding user: %v", err)
+	if err = r.db.WithContext(ctx).Create(user).Error; err != nil {
+		fmt.Printf("Error while adding user: %v", err)
 		return err
 	}
 
-	r.logger.Info("Successfully added user = %v", user.ID)
+	fmt.Printf("Successfully added user = %v", user.ID)
 	return nil
 }
 
-func (r *UsersRepo) GetUserByEmail(email string) (*entity.User, error) {
+func (r *UsersRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+	if email == "" {
+		return nil, errors.New("email must be not empty")
+	}
+
 	var user entity.User
-	result := r.db.Where("email = ?", email).First(&user)
+	result := r.db.WithContext(ctx).Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil

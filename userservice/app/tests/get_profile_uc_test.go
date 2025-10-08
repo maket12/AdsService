@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/tests/data"
-	"AdsService/userservice/app/tests/helpers"
-	"AdsService/userservice/app/tests/mocks"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/app/usecase"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/tests/data"
+	"ads/userservice/app/tests/helpers"
+	"ads/userservice/app/tests/mocks"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +27,7 @@ func TestGetProfileUC_Success(t *testing.T) {
 				On("GetProfile", testCase.UserID).
 				Return(helpers.MakeTestProfile(testCase.UserID, "", "", false, nil, ""), nil)
 
-			out, err := uc.Execute(dto.GetProfileDTO{
+			out, err := uc.Execute(dto.GetProfile{
 				UserID: testCase.UserID,
 			})
 
@@ -52,7 +52,7 @@ func TestGetProfileUC_GetProfileError(t *testing.T) {
 				On("GetProfile", mock.Anything).
 				Return(nil, errors.New("get profile error"))
 
-			_, err := uc.Execute(dto.GetProfileDTO{
+			_, err := uc.Execute(dto.GetProfile{
 				UserID: testCase.UserID,
 			})
 
@@ -77,7 +77,7 @@ func TestGetProfileUC_NotFoundError(t *testing.T) {
 				On("GetProfile", mock.Anything).
 				Return(nil, nil)
 
-			_, err := uc.Execute(dto.GetProfileDTO{
+			_, err := uc.Execute(dto.GetProfile{
 				UserID: testCase.UserID,
 			})
 

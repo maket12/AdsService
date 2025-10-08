@@ -1,17 +1,17 @@
 package usecase
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/mappers"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/domain/port"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/mappers"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/domain/port"
 )
 
 type AddProfileUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *AddProfileUC) Execute(in dto.AddProfileDTO) (dto.ProfileResponseDTO, error) {
+func (uc *AddProfileUC) Execute(in dto.AddProfile) (dto.ProfileResponse, error) {
 	existing, err := uc.Profiles.GetProfile(in.UserID)
 	if err == nil {
 		return mappers.MapIntoProfileDTO(existing), nil
@@ -19,7 +19,7 @@ func (uc *AddProfileUC) Execute(in dto.AddProfileDTO) (dto.ProfileResponseDTO, e
 
 	profile, err := uc.Profiles.AddProfile(in.UserID, in.Name, in.Phone)
 	if err != nil {
-		return dto.ProfileResponseDTO{}, uc_errors.ErrAddProfile
+		return dto.ProfileResponse{}, uc_errors.ErrAddProfile
 	}
 	return mappers.MapIntoProfileDTO(profile), nil
 }

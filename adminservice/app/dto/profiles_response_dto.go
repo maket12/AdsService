@@ -1,5 +1,5 @@
 package dto
 
-type ProfilesResponseDTO struct {
-	Profiles []ProfileResponseDTO
+type ProfilesResponse struct {
+	Profiles []ProfileResponse
 }

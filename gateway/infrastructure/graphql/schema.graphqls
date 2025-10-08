@@ -9,8 +9,13 @@ scalar Upload
 
 # ===== Types =====
 
-"""Ответ аутентификации"""
-type AuthPayload {
+"""Ответы аутентификации"""
+type RegisterUserOutput {
+    access_token: String!
+    refresh_token: String!
+}
+
+type LoginUserOutput {
     access_token: String!
     refresh_token: String!
 }
@@ -34,18 +39,18 @@ type UserProfile {
 }
 
 """Результат назначения роли"""
-type AssignRoleResult {
+type AssignRoleOutput {
     user_id: ID!
     assigned: Boolean!
 }
 
 """Результат блокировки"""
-type AdminBanResult {
+type AdminBanOutput {
     banned: Boolean!
 }
 
 """Результат разблокировки"""
-type AdminUnbanResult {
+type AdminUnbanOutput {
     unbanned: Boolean!
 }
 
@@ -55,12 +60,30 @@ type ProfilesList {
 }
 
 """Результат проверки токена"""
-type ValidateTokenResult {
+type ValidateTokenOutput {
     user_id: ID
     valid: Boolean!
 }
 
 # ===== Inputs =====
+
+"""Регистрация пользователя"""
+input RegisterUserInput {
+    email: String!
+    password: String!
+}
+
+"""Логин пользователя"""
+input LoginUserInput {
+    email: String!
+    password: String!
+}
+
+"""Добавление профиля"""
+input AddProfileInput {
+    name: String!
+    phone: String!
+}
 
 """Изменение профиля"""
 input UpdateProfileInput {
@@ -76,6 +99,18 @@ input ChangeSettingsInput {
 """Изменение подписок"""
 input ChangeSubscriptionsInput {
     subscriptions: [String!]!
+}
+
+input AssignRoleInput {
+    user_id: ID!
+}
+
+input BanUserInput {
+    user_id: ID!
+}
+
+input UnbanUserInput {
+    user_id: ID!
 }
 
 # ===== Queries =====
@@ -94,20 +129,20 @@ type Query {
     adminGetProfiles(limit: Int!, offset: Int!): ProfilesList!
 
     # authservice.ValidateToken
-    validateToken(access_token: String!): ValidateTokenResult!
+    validateToken(access_token: String!): ValidateTokenOutput!
 }
 
 # ===== Mutations =====
 
 type Mutation {
     # authservice.Register
-    register(email: String!, password: String!): AuthPayload!
+    registerUser(input: RegisterUserInput): RegisterUserOutput!
 
     # authservice.Login
-    login(email: String!, password: String!): AuthPayload!
+    loginUser(input: LoginUserInput): LoginUserOutput!
 
     # userservice.AddProfile (если профиля нет)
-    addProfile(name: String!, phone: String!): UserProfile!
+    addProfile(input: AddProfileInput!): UserProfile!
 
     # userservice.UpdateProfile
     updateProfile(input: UpdateProfileInput!): UserProfile!
@@ -122,11 +157,11 @@ type Mutation {
     changeSubscriptions(input: ChangeSubscriptionsInput!): UserProfile!
 
     # adminservice.AssignRole (назначаем пользователя админом)
-    assignUserAsAdmin(user_id: ID!): AssignRoleResult!
+    assignUserAsAdmin(input: AssignRoleInput): AssignRoleOutput!
 
     # adminservice.BanUser
-    adminBanUser(user_id: ID!): AdminBanResult!
+    adminBanUser(input: BanUserInput): AdminBanOutput!
 
     # adminservice.UnbanUser
-    adminUnbanUser(user_id: ID!): AdminUnbanResult!
+    adminUnbanUser(input: UnbanUserInput): AdminUnbanOutput!
 }

@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"AdsService/adminservice/app/dto"
-	"AdsService/adminservice/app/mappers"
-	"AdsService/adminservice/app/uc_errors"
-	"AdsService/adminservice/domain/port"
+	"ads/adminservice/app/dto"
+	"ads/adminservice/app/mappers"
+	"ads/adminservice/app/uc_errors"
+	"ads/adminservice/domain/port"
 )
 
 type GetProfilesUC struct {
@@ -12,21 +12,21 @@ type GetProfilesUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *GetProfilesUC) Execute(in dto.GetProfilesListDTO) (dto.ProfilesResponseDTO, error) {
+func (uc *GetProfilesUC) Execute(in dto.GetProfilesList) (dto.ProfilesResponse, error) {
 	role, err := uc.Users.GetUserRole(in.UserID)
 	if err != nil {
-		return dto.ProfilesResponseDTO{}, uc_errors.ErrGetUserRole
+		return dto.ProfilesResponse{}, uc_errors.ErrGetUserRole
 	}
 	if role != "admin" {
-		return dto.ProfilesResponseDTO{}, uc_errors.ErrNotAdmin
+		return dto.ProfilesResponse{}, uc_errors.ErrNotAdmin
 	}
 
 	profiles, err := uc.Profiles.GetAllProfiles(in.Limit, in.Offset)
 	if err != nil {
-		return dto.ProfilesResponseDTO{}, uc_errors.ErrGetProfiles
+		return dto.ProfilesResponse{}, uc_errors.ErrGetProfiles
 	}
 	if profiles == nil {
-		return dto.ProfilesResponseDTO{}, nil
+		return dto.ProfilesResponse{}, nil
 	}
 	return mappers.MapIntoProfilesDTO(profiles), nil
 }

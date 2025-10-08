@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/tests/data"
-	"AdsService/userservice/app/tests/helpers"
-	"AdsService/userservice/app/tests/mocks"
-	"AdsService/userservice/app/uc_errors"
-	"AdsService/userservice/app/usecase"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/tests/data"
+	"ads/userservice/app/tests/helpers"
+	"ads/userservice/app/tests/mocks"
+	"ads/userservice/app/uc_errors"
+	"ads/userservice/app/usecase"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +33,7 @@ func TestChangeSettingsUC_Success(t *testing.T) {
 					Return(helpers.MakeTestProfile(testCase.UserID, "", "", false, nil, ""), nil)
 			}
 
-			out, err := uc.Execute(dto.ChangeSettingsDTO{
+			out, err := uc.Execute(dto.ChangeSettings{
 				UserID:               testCase.UserID,
 				NotificationsEnabled: testCase.NotificationsEnabled,
 			})
@@ -66,7 +66,7 @@ func TestAddProfileUC_ChangeSettingsError(t *testing.T) {
 					Return(nil, errors.New("notifications error"))
 			}
 
-			_, err := uc.Execute(dto.ChangeSettingsDTO{
+			_, err := uc.Execute(dto.ChangeSettings{
 				UserID:               testCase.UserID,
 				NotificationsEnabled: testCase.NotificationsEnabled,
 			})

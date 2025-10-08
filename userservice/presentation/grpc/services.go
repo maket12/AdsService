@@ -1,13 +1,13 @@
 package grpc
 
 import (
-	"AdsService/userservice/app/dto"
-	"AdsService/userservice/app/usecase"
-	authmw "AdsService/userservice/infrastructure/grpc"
+	"ads/userservice/app/dto"
+	"ads/userservice/app/usecase"
+	authmw "ads/userservice/infrastructure/grpc"
 	"context"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "AdsService/userservice/presentation/grpc/pb"
+	pb "ads/userservice/presentation/grpc/pb"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,7 +29,7 @@ func (s *UserService) AddProfile(ctx context.Context, req *pb.AddProfileRequest)
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	out, err := s.AddProfileUC.Execute(dto.AddProfileDTO{UserID: userID, Name: req.Name, Phone: req.Phone})
+	out, err := s.AddProfileUC.Execute(dto.AddProfile{UserID: userID, Name: req.Name, Phone: req.Phone})
 	if err != nil {
 		return MapProfileResponseDTOToPB(out), status.Errorf(codes.Internal, "%s", err.Error())
 	}
@@ -42,7 +42,7 @@ func (s *UserService) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.P
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.GetProfileUC.Execute(dto.GetProfileDTO{UserID: userID})
+	out, err := s.GetProfileUC.Execute(dto.GetProfile{UserID: userID})
 	if err != nil {
 		return MapProfileResponseDTOToPB(out), status.Errorf(codes.Internal, "%s", err.Error())
 	}
@@ -55,7 +55,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.UpdateProfileUC.Execute(dto.UpdateProfileDTO{
+	out, err := s.UpdateProfileUC.Execute(dto.UpdateProfile{
 		UserID: userID,
 		Name:   req.Name,
 		Phone:  req.Phone,
@@ -72,7 +72,7 @@ func (s *UserService) UploadPhoto(ctx context.Context, req *pb.UploadPhotoReques
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.UploadPhotoUC.Execute(dto.UploadPhotoDTO{
+	out, err := s.UploadPhotoUC.Execute(dto.UploadPhoto{
 		UserID:      userID,
 		Data:        req.Data,
 		Filename:    req.Filename,
@@ -90,7 +90,7 @@ func (s *UserService) ChangeSettings(ctx context.Context, req *pb.ChangeSettings
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.ChangeSettingUC.Execute(dto.ChangeSettingsDTO{
+	out, err := s.ChangeSettingUC.Execute(dto.ChangeSettings{
 		UserID:               userID,
 		NotificationsEnabled: req.NotificationsEnabled,
 	})
@@ -106,7 +106,7 @@ func (s *UserService) ChangeSubscriptions(ctx context.Context, req *pb.ChangeSub
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.ChangeSubscriptionsUC.Execute(dto.ChangeSubscriptionsDTO{
+	out, err := s.ChangeSubscriptionsUC.Execute(dto.ChangeSubscriptions{
 		UserID:        userID,
 		Subscriptions: req.Subscriptions,
 	})

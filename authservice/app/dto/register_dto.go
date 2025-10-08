@@ -1,6 +1,6 @@
 package dto
 
-type RegisterDTO struct {
+type Register struct {
 	Email    string
 	Password string
 }

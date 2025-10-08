@@ -1,6 +1,6 @@
 package dto
 
-type ChangeSubscriptionsDTO struct {
+type ChangeSubscriptions struct {
 	UserID        uint64
 	Subscriptions []string
 }

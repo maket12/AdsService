@@ -1,6 +1,6 @@
 package dto
 
-type LoginDTO struct {
+type Login struct {
 	Email    string
 	Password string
 }

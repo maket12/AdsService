@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"AdsService/userservice/domain/port"
+	"ads/userservice/domain/port"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
