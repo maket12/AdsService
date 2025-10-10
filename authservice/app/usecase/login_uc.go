@@ -6,8 +6,9 @@ import (
 	"ads/authservice/domain/entity"
 	"ads/authservice/domain/port"
 	"context"
-	"golang.org/x/crypto/bcrypt"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type LoginUC struct {
@@ -25,31 +26,27 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.AuthResponse,
 		return dto.AuthResponse{}, uc_errors.ErrUserNotFound
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(in.Password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(in.Password)); err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrInvalidCredential
 	}
 
-	access, err := uc.Tokens.GenerateAccessToken(user.ID, user.Email, user.Role)
+	access, err := uc.Tokens.GenerateAccessToken(ctx, user.GetID(), user.GetEmail(), user.GetRole())
 	if err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrTokenIssue
 	}
 
-	refresh, err := uc.Tokens.GenerateRefreshToken(user.ID)
+	refresh, err := uc.Tokens.GenerateRefreshToken(ctx, user.GetID())
 	if err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrTokenIssue
 	}
 
-	rClaims, err := uc.Tokens.ParseRefreshToken(refresh)
+	rClaims, err := uc.Tokens.ParseRefreshToken(ctx, refresh)
 	if err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrTokenParse
 	}
 
-	if err := uc.Sessions.CreateSession(ctx, &entity.Session{
-		UserID:    user.ID,
-		JTI:       rClaims.ID,
-		IssuedAt:  time.Now().UTC(),
-		ExpiresAt: rClaims.ExpiresAt.Time.UTC(),
-	}); err != nil {
+	sess, err := entity.NewSession(0, entity.UserID(user.GetID()), rClaims.ID, time.Now().UTC(), rClaims.ExpiresAt.Time.UTC())
+	if err = uc.Sessions.InsertSession(ctx, sess); err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrSessionSave
 	}
 

@@ -1,10 +1,18 @@
-package entity
+package profile
 
 import (
+	"ads/internal/pkg/ddd"
 	"errors"
+	"github.com/google/uuid"
 	"strings"
 	"time"
 )
+
+// ===== Value Objects =====
+
+type UserID uint64
+
+func (id UserID) Valid() bool { return id != 0 }
 
 // примитивная валидация. при необходимости заверните libphonenumber.
 type Phone string
@@ -30,6 +38,8 @@ func (s Subscription) Valid() bool { return strings.TrimSpace(string(s)) != "" }
 // ===== Aggregate Root =====
 
 type Profile struct {
+	*ddd.BaseAggregate[uuid.UUID]
+
 	// поля не экспортируем: управление только методами
 	userID               UserID
 	name                 string
@@ -43,7 +53,7 @@ type Profile struct {
 
 // инварианты/ошибки
 var (
-	ErrInvalidPUserID     = errors.New("profile: invalid user id")
+	ErrInvalidUserID      = errors.New("profile: invalid user id")
 	ErrEmptyName          = errors.New("profile: empty name")
 	ErrAlreadyBanned      = errors.New("profile: already banned")
 	ErrNotBanned          = errors.New("profile: not banned")
@@ -53,9 +63,9 @@ var (
 
 // конструктор
 
-func NewProfile(id UserID, name, rawPhone string, opts ...ProfileOption) (*Profile, error) {
+func New(id UserID, name, rawPhone string, opts ...Option) (*Profile, error) {
 	if !id.Valid() {
-		return nil, ErrInvalidPUserID
+		return nil, ErrInvalidUserID
 	}
 
 	name = strings.TrimSpace(name)
@@ -69,6 +79,8 @@ func NewProfile(id UserID, name, rawPhone string, opts ...ProfileOption) (*Profi
 	}
 
 	p := &Profile{
+		BaseAggregate: ddd.NewBaseAggregate[uuid.UUID](uuid.New()),
+
 		userID:               id,
 		name:                 name,
 		phone:                &phone,
@@ -87,12 +99,12 @@ func NewProfile(id UserID, name, rawPhone string, opts ...ProfileOption) (*Profi
 
 // функциональные опции для необязательных полей
 
-type ProfileOption func(*Profile) error
+type Option func(*Profile) error
 
-func WithPhone(ph Phone) ProfileOption {
+func WithPhone(ph Phone) Option {
 	return func(p *Profile) error { p.phone = &ph; return nil }
 }
-func WithPhotoID(photo string) ProfileOption {
+func WithPhotoID(photo string) Option {
 	return func(p *Profile) error {
 		ph := strings.TrimSpace(photo)
 		if ph == "" {
@@ -102,7 +114,7 @@ func WithPhotoID(photo string) ProfileOption {
 		return nil
 	}
 }
-func WithSubscriptions(subs ...Subscription) ProfileOption {
+func WithSubscriptions(subs ...Subscription) Option {
 	return func(p *Profile) error {
 		for _, s := range subs {
 			if !s.Valid() {
@@ -113,7 +125,7 @@ func WithSubscriptions(subs ...Subscription) ProfileOption {
 		return nil
 	}
 }
-func WithNotificationsEnabled(enabled bool) ProfileOption {
+func WithNotificationsEnabled(enabled bool) Option {
 	return func(p *Profile) error { p.notificationsEnabled = enabled; return nil }
 }
 

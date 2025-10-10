@@ -1,4 +1,4 @@
-package config
+package cmd
 
 import (
 	"fmt"
@@ -30,7 +30,6 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
 
-	// Валидация обязательных полей
 	if cfg.DBHost == "" {
 		return nil, fmt.Errorf("DB_HOST is required")
 	}

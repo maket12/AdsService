@@ -21,40 +21,37 @@ type RegisterUC struct {
 func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.AuthResponse, error) {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 
-	user := &entity.User{
-		Email:    in.Email,
-		Password: string(hashed),
-		Role:     "user",
+	u, err := entity.NewUser(0, in.Email, string(hashed), "user")
+	if err != nil {
+		return dto.AuthResponse{}, err
 	}
-	if err := uc.Users.AddUser(ctx, user); err != nil {
+	if err = uc.Users.AddUser(ctx, u); err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrAddUser
 	}
 
-	if _, err := uc.Profiles.AddProfile(ctx, user.ID, "undefined", "undefined"); err != nil {
+	if _, err = uc.Profiles.AddProfile(ctx, u.GetID(), "undefined", "undefined"); err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrAddProfile
 	}
 
-	access, err := uc.Tokens.GenerateAccessToken(user.ID, user.Email, user.Role)
+	access, err := uc.Tokens.GenerateAccessToken(ctx, u.GetID(), u.GetEmail(), u.GetRole())
 	if err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrTokenIssue
 	}
-	refresh, err := uc.Tokens.GenerateRefreshToken(user.ID)
+	refresh, err := uc.Tokens.GenerateRefreshToken(ctx, u.GetID())
 	if err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrTokenIssue
 	}
 
-	rc, err := uc.Tokens.ParseRefreshToken(refresh)
+	rc, err := uc.Tokens.ParseRefreshToken(ctx, refresh)
 	if err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrTokenParse
 	}
 
-	sess := &entity.Session{
-		UserID:    user.ID,
-		JTI:       rc.ID,
-		IssuedAt:  time.Now().UTC(),
-		ExpiresAt: rc.ExpiresAt.Time.UTC(),
+	sess, err := entity.NewSession(0, entity.UserID(u.GetID()), rc.ID, time.Now().UTC(), rc.ExpiresAt.Time.UTC())
+	if err != nil {
+		return dto.AuthResponse{}, err
 	}
-	if err := uc.Sessions.CreateSession(ctx, sess); err != nil {
+	if err := uc.Sessions.InsertSession(ctx, sess); err != nil {
 		return dto.AuthResponse{}, uc_errors.ErrSessionSave
 	}
 

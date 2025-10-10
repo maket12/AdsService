@@ -1,10 +1,13 @@
 package port
 
-import "ads/authservice/domain/entity"
+import (
+	"ads/authservice/domain/entity"
+	"context"
+)
 
 type TokenRepository interface {
-	GenerateAccessToken(userID uint64, email, role string) (string, error)
-	GenerateRefreshToken(userID uint64) (string, error)
-	ParseAccessToken(tokenStr string) (*entity.AccessClaims, error)
-	ParseRefreshToken(tokenStr string) (*entity.RefreshClaims, error)
+	GenerateAccessToken(ctx context.Context, userID uint64, email, role string) (string, error)
+	GenerateRefreshToken(ctx context.Context, userID uint64) (string, error)
+	ParseAccessToken(ctx context.Context, tokenStr string) (*entity.AccessClaims, error)
+	ParseRefreshToken(ctx context.Context, tokenStr string) (*entity.RefreshClaims, error)
 }

@@ -1,4 +1,4 @@
-package port
+package ports
 
 import (
 	"ads/authservice/domain/entity"
@@ -6,7 +6,7 @@ import (
 )
 
 type SessionRepository interface {
-	InsertSession(ctx context.Context, s *entity.Session) error
+	CreateSession(ctx context.Context, session *entity.Session) error
 	GetSessionByJTI(ctx context.Context, jti string) (*entity.Session, error)
 	RevokeByJTI(ctx context.Context, jti string) error
 	RevokeAllByUser(ctx context.Context, userID uint64) error

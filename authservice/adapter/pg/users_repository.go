@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -32,11 +33,16 @@ func (r *UsersRepo) CheckUserExist(ctx context.Context, email string) (bool, err
 		}
 		return false, err
 	}
+
+	if u.IsBanned() {
+		return false, entity.ErrUserBanned
+	}
+
 	return true, nil
 }
 
 func (r *UsersRepo) AddUser(ctx context.Context, user *entity.User) error {
-	if user.ID == 0 {
+	if entity.UserID(user.GetID()).Valid() {
 		return errors.New("user ID must be valid")
 	}
 
@@ -47,6 +53,10 @@ func (r *UsersRepo) AddUser(ctx context.Context, user *entity.User) error {
 	if exists {
 		fmt.Printf("User with email %s already exists", user.Email)
 		return nil
+	}
+
+	if user.GetRole() == "" {
+		user.ChangeRole("user")
 	}
 
 	if err = r.db.WithContext(ctx).Create(user).Error; err != nil {
@@ -71,5 +81,10 @@ func (r *UsersRepo) GetUserByEmail(ctx context.Context, email string) (*entity.U
 		}
 		return nil, result.Error
 	}
+
+	if user.IsBanned() {
+		return nil, entity.ErrUserBanned
+	}
+
 	return &user, nil
 }

@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"gorm.io/gorm"
-	"time"
 )
 
 type ProfilesRepo struct {
@@ -31,12 +31,11 @@ func (r *ProfilesRepo) AddProfile(ctx context.Context, userID uint64, name, phon
 		return nil, errors.New("phone must be not empty")
 	}
 
-	var p = entity.Profile{
-		UserID:    userID,
-		Name:      name,
-		Phone:     phone,
-		UpdatedAt: time.Now().UTC(),
+	p, err := entity.NewProfile(entity.UserID(userID), name, phone)
+	if err != nil {
+		return nil, err
 	}
+
 	fmt.Printf("Created new profile: %v", userID)
-	return &p, r.db.WithContext(ctx).Create(&p).Error
+	return p, r.db.WithContext(ctx).Create(&p).Error
 }

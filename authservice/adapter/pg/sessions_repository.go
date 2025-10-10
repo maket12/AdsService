@@ -6,8 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type SessionsRepo struct {
@@ -20,12 +21,16 @@ func NewSessionsRepo(db *gorm.DB) port.SessionRepository {
 	}
 }
 
-func (r *SessionsRepo) CreateSession(ctx context.Context, session *entity.Session) error {
-	if session.UserID == 0 {
+func (r *SessionsRepo) InsertSession(ctx context.Context, session *entity.Session) error {
+	if session.UserID().Valid() {
 		return errors.New("user ID is required")
 	}
-	if session.ExpiresAt.Before(time.Now()) {
+	if session.ExpiresAt().Before(time.Now()) {
 		return errors.New("expiration date must be in future")
+	}
+
+	if session.IsExpired() {
+		return entity.ErrSessionExpired
 	}
 
 	result := r.db.WithContext(ctx).Create(session).Error
@@ -53,8 +58,16 @@ func (r *SessionsRepo) RevokeByJTI(ctx context.Context, jti string) error {
 		return errors.New("empty jti")
 	}
 
-	return r.db.WithContext(ctx).Model(&entity.Session{}).Where("jti = ? AND revoked_at IS NULL", jti).
-		Update("revoked_at", gorm.Expr("now()")).Error
+	session, err := r.GetSessionByJTI(ctx, jti)
+	if err != nil {
+		return err
+	}
+
+	if err := session.Revoke(); err != nil {
+		return err
+	}
+
+	return r.db.WithContext(ctx).Save(session).Error
 }
 
 func (r *SessionsRepo) RevokeAllByUser(ctx context.Context, userID uint64) error {
@@ -62,9 +75,24 @@ func (r *SessionsRepo) RevokeAllByUser(ctx context.Context, userID uint64) error
 		return errors.New("user ID is required")
 	}
 
-	return r.db.WithContext(ctx).Model(&entity.Session{}).
+	var sessions []entity.Session
+	if err := r.db.WithContext(ctx).
 		Where("user_id = ? AND revoked_at IS NULL", userID).
-		Update("revoked_at", gorm.Expr("now()")).Error
+		Find(&sessions).Error; err != nil {
+		return err
+	}
+
+	for _, session := range sessions {
+		if err := session.Revoke(); err != nil {
+			return err
+		}
+
+		if err := r.db.WithContext(ctx).Save(&session).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *SessionsRepo) CleanupExpired(ctx context.Context) error {
@@ -75,22 +103,29 @@ func (r *SessionsRepo) RotateSession(ctx context.Context, oldJTI string, newSess
 	if oldJTI == "" {
 		return errors.New("empty old jti")
 	}
-	if newSession.UserID == 0 {
+	if newSession.UserID() == 0 {
 		return errors.New("user ID is required")
 	}
-	if newSession.ExpiresAt.Before(time.Now()) {
+	if newSession.ExpiresAt().Before(time.Now()) {
 		return errors.New("expiration date must be in future")
 	}
 
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&entity.Session{}).
-			Where("jti = ? AND revoked_at IS NULL", oldJTI).
-			Update("revoked_at", gorm.Expr("now()")).Error; err != nil {
-			return err
-		}
-		if newSession.IssuedAt.IsZero() {
-			newSession.IssuedAt = time.Now().UTC()
-		}
-		return tx.Create(newSession).Error
-	})
+	oldSession, err := r.GetSessionByJTI(ctx, oldJTI)
+	if err != nil {
+		return err
+	}
+
+	if err := oldSession.Rotate(string(newSession.JTI())); err != nil {
+		return err
+	}
+
+	if err := r.db.WithContext(ctx).Save(oldSession).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.WithContext(ctx).Create(newSession).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

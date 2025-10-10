@@ -1,4 +1,4 @@
-package logger
+package cmd
 
 import (
 	"log/slog"

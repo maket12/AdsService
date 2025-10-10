@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"ads/internal/core/ports"
 	"errors"
 	"fmt"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	"ads/authservice/domain/entity"
-	"ads/authservice/domain/port"
 )
 
 type TokenRepository struct {
@@ -17,7 +17,7 @@ type TokenRepository struct {
 	refreshSecret []byte
 }
 
-func NewTokenRepository(accessSecret, refreshSecret string) port.TokenRepository {
+func NewTokenRepository(accessSecret, refreshSecret string) ports.TokenRepository {
 	return &TokenRepository{
 		accessSecret:  []byte(accessSecret),
 		refreshSecret: []byte(refreshSecret),

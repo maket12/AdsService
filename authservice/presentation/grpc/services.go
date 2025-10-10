@@ -48,7 +48,7 @@ func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Auth
 
 func (s *AuthService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
 	in := dto.ValidateToken{AccessToken: req.AccessToken}
-	out, err := s.ValidateTokenUC.Execute(in)
+	out, err := s.ValidateTokenUC.Execute(ctx, in)
 	if err != nil {
 		return &pb.ValidateTokenResponse{Valid: false}, err
 	}

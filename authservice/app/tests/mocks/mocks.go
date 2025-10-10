@@ -3,6 +3,7 @@ package mocks
 import (
 	"ads/authservice/domain/entity"
 	"ads/authservice/domain/port"
+	"ads/internal/core/ports"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -48,7 +49,7 @@ func (m *MockProfilesRepo) AddProfile(userID uint64, name, phone string) (*entit
 
 type MockTokensRepo struct{ mock.Mock }
 
-var _ port.TokenRepository = (*MockTokensRepo)(nil)
+var _ ports.TokenRepository = (*MockTokensRepo)(nil)
 
 func (m *MockTokensRepo) GenerateAccessToken(userID uint64, email, role string) (string, error) {
 	args := m.Called(userID, email, role)
