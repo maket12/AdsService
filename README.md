@@ -1,2 +1,2 @@
 # AdsService
-Non-comercial project wroten mainly on Go.
+Non-comercial project written mainly on Go.

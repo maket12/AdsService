@@ -1,0 +1,167 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+# ===== Scalars =====
+scalar Time
+scalar Upload
+
+# ===== Types =====
+
+"""Ответы аутентификации"""
+type RegisterUserOutput {
+    access_token: String!
+    refresh_token: String!
+}
+
+type LoginUserOutput {
+    access_token: String!
+    refresh_token: String!
+}
+
+"""Пользователь без профиля"""
+type User {
+    user_id: ID!
+    email: String!
+    role: String!
+}
+
+"""Профиль пользователя"""
+type UserProfile {
+    user_id: ID!
+    name: String
+    phone: String
+    photo_id: String
+    notifications_enabled: Boolean!
+    subscriptions: [String!]!
+    updated_at: Time
+}
+
+"""Результат назначения роли"""
+type AssignRoleOutput {
+    user_id: ID!
+    assigned: Boolean!
+}
+
+"""Результат блокировки"""
+type AdminBanOutput {
+    banned: Boolean!
+}
+
+"""Результат разблокировки"""
+type AdminUnbanOutput {
+    unbanned: Boolean!
+}
+
+"""Список профилей пользователей"""
+type ProfilesList {
+    profiles: [UserProfile!]!
+}
+
+"""Результат проверки токена"""
+type ValidateTokenOutput {
+    user_id: ID
+    valid: Boolean!
+}
+
+# ===== Inputs =====
+
+"""Регистрация пользователя"""
+input RegisterUserInput {
+    email: String!
+    password: String!
+}
+
+"""Логин пользователя"""
+input LoginUserInput {
+    email: String!
+    password: String!
+}
+
+"""Добавление профиля"""
+input AddProfileInput {
+    name: String!
+    phone: String!
+}
+
+"""Изменение профиля"""
+input UpdateProfileInput {
+    name: String
+    phone: String
+}
+
+"""Изменение настроек"""
+input ChangeSettingsInput {
+    notifications_enabled: Boolean!
+}
+
+"""Изменение подписок"""
+input ChangeSubscriptionsInput {
+    subscriptions: [String!]!
+}
+
+input AssignRoleInput {
+    user_id: ID!
+}
+
+input BanUserInput {
+    user_id: ID!
+}
+
+input UnbanUserInput {
+    user_id: ID!
+}
+
+# ===== Queries =====
+
+type Query {
+    # userservice.GetProfile (по токену)
+    me: UserProfile!
+
+    # adminservice.GetUser
+    user(user_id: ID!): User!
+
+    # adminservice.GetProfile (админ)
+    adminGetProfile(user_id: ID!): UserProfile!
+
+    # adminservice.GetProfilesList (админ)
+    adminGetProfiles(limit: Int!, offset: Int!): ProfilesList!
+
+    # authservice.ValidateToken
+    validateToken(access_token: String!): ValidateTokenOutput!
+}
+
+# ===== Mutations =====
+
+type Mutation {
+    # authservice.Register
+    registerUser(input: RegisterUserInput): RegisterUserOutput!
+
+    # authservice.Login
+    loginUser(input: LoginUserInput): LoginUserOutput!
+
+    # userservice.AddProfile (если профиля нет)
+    addProfile(input: AddProfileInput!): UserProfile!
+
+    # userservice.UpdateProfile
+    updateProfile(input: UpdateProfileInput!): UserProfile!
+
+    # userservice.UploadPhoto — возвращает photo_id
+    uploadMyPhoto(file: Upload!): UserProfile!
+
+    # userservice.ChangeSettings
+    changeSettings(input: ChangeSettingsInput!): UserProfile!
+
+    # userservice.ChangeSubscriptions
+    changeSubscriptions(input: ChangeSubscriptionsInput!): UserProfile!
+
+    # adminservice.AssignRole (назначаем пользователя админом)
+    assignUserAsAdmin(input: AssignRoleInput): AssignRoleOutput!
+
+    # adminservice.BanUser
+    adminBanUser(input: BanUserInput): AdminBanOutput!
+
+    # adminservice.UnbanUser
+    adminUnbanUser(input: UnbanUserInput): AdminUnbanOutput!
+}
