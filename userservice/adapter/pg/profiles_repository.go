@@ -4,9 +4,9 @@ import (
 	"ads/userservice/domain/entity"
 	"errors"
 	"fmt"
+
 	"github.com/lib/pq"
 	"gorm.io/gorm"
-	"time"
 )
 
 type ProfilesRepo struct {
@@ -20,14 +20,13 @@ func NewProfilesRepo(db *gorm.DB) *ProfilesRepo {
 }
 
 func (r *ProfilesRepo) AddProfile(userID uint64, name, phone string) (*entity.Profile, error) {
-	var p = entity.Profile{
-		UserID:    userID,
-		Name:      name,
-		Phone:     phone,
-		UpdatedAt: time.Now().UTC(),
+	p, err := entity.NewProfile(entity.UserID(userID), name, phone)
+	if err != nil {
+		return nil, err
 	}
+
 	fmt.Printf("Created new profile: %v", userID)
-	return &p, r.db.Create(&p).Error
+	return p, r.db.Create(&p).Error
 }
 
 func (r *ProfilesRepo) UpdateProfileName(userID uint64, name string) (*entity.Profile, error) {
