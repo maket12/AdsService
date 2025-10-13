@@ -1,9 +1,10 @@
 package mongodb
 
 import (
-	"ads/userservice/config"
+	"ads/userservice/pkg"
 	"context"
 	"fmt"
+
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -14,7 +15,7 @@ type MongoData struct {
 	Bucket *mongo.GridFSBucket
 }
 
-func InitMongoDB(cfg *config.Config) (*MongoData, error) {
+func InitMongoDB(cfg *pkg.Config) (*MongoData, error) {
 	var (
 		mongoData MongoData
 		err       error

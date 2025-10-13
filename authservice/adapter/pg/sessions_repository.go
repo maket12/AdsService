@@ -6,18 +6,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 type SessionsRepo struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *slog.Logger
 }
 
-func NewSessionsRepo(db *gorm.DB) port.SessionRepository {
+func NewSessionsRepo(db *gorm.DB, log *slog.Logger) port.SessionRepository {
 	return &SessionsRepo{
-		db: db,
+		db:     db,
+		logger: log,
 	}
 }
 
@@ -37,7 +40,7 @@ func (r *SessionsRepo) InsertSession(ctx context.Context, session *entity.Sessio
 	if result != nil {
 		return fmt.Errorf("error while insert session: %w", result)
 	}
-	fmt.Printf("Inserted session for user[id=%v]", session.UserID)
+	r.logger.InfoContext(ctx, "Inserted session for user[id=%v]", session.UserID)
 	return nil
 }
 

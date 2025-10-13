@@ -4,8 +4,8 @@ import (
 	"ads/userservice/domain/entity"
 	"ads/userservice/domain/port"
 	"context"
-	"fmt"
 	"io"
+	"log/slog"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -14,15 +14,17 @@ import (
 
 type PhotoRepo struct {
 	Bucket *mongo.GridFSBucket
+	logger *slog.Logger
 }
 
-func NewPhotoRepo(bucket *mongo.GridFSBucket) port.PhotoRepository {
+func NewPhotoRepo(bucket *mongo.GridFSBucket, log *slog.Logger) port.PhotoRepository {
 	return &PhotoRepo{
 		Bucket: bucket,
+		logger: log,
 	}
 }
 
-func (r *PhotoRepo) UploadPhoto(userID uint64, title, contentType string, rdr io.Reader, size int64) (string, error) {
+func (r *PhotoRepo) UploadPhoto(ctx context.Context, userID uint64, title, contentType string, rdr io.Reader, size int64) (string, error) {
 	photo := entity.Photo{
 		Title:       title,
 		ContentType: contentType,
@@ -33,7 +35,7 @@ func (r *PhotoRepo) UploadPhoto(userID uint64, title, contentType string, rdr io
 	uploadOpts := options.GridFSUpload().SetMetadata(photo)
 
 	objectID, err := r.Bucket.UploadFromStream(
-		context.TODO(),
+		ctx,
 		photo.Title,
 		rdr,
 		uploadOpts,
@@ -43,7 +45,7 @@ func (r *PhotoRepo) UploadPhoto(userID uint64, title, contentType string, rdr io
 	}
 
 	hexID := objectID.Hex()
-	fmt.Printf("Successfully uploaded photo of user[%v] with hexID[%v]", userID, hexID)
+	r.logger.InfoContext(ctx, "Successfully uploaded photo of user[%v] with hexID[%v]", userID, hexID)
 
 	return hexID, nil
 }

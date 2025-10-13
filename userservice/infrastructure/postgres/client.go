@@ -1,14 +1,15 @@
 package postgres
 
 import (
-	"ads/userservice/config"
 	"ads/userservice/domain/entity"
+	"ads/userservice/pkg"
 	"fmt"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func InitDB(cfg *config.Config) (*gorm.DB, error) {
+func InitDB(cfg *pkg.Config) (*gorm.DB, error) {
 	fmt.Printf("connecting to PostgreSQL... host=%s port=%d database=%s\n",
 		cfg.DBHost, cfg.DBPort, cfg.DBName)
 

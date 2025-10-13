@@ -4,14 +4,15 @@ import (
 	"ads/adminservice/app/dto"
 	"ads/adminservice/app/uc_errors"
 	"ads/adminservice/domain/port"
+	"context"
 )
 
 type UnbanUserUC struct {
 	Users port.UserRepository
 }
 
-func (uc *UnbanUserUC) Execute(in dto.UnbanUser) (dto.UnbanUserResponse, error) {
-	role, err := uc.Users.GetUserRole(in.UserID)
+func (uc *UnbanUserUC) Execute(ctx context.Context, in dto.UnbanUser) (dto.UnbanUserResponse, error) {
+	role, err := uc.Users.GetUserRole(ctx, in.UserID)
 	if err != nil {
 		return dto.UnbanUserResponse{
 			UserID:   in.RequestedUserID,
@@ -25,7 +26,7 @@ func (uc *UnbanUserUC) Execute(in dto.UnbanUser) (dto.UnbanUserResponse, error) 
 		}, uc_errors.ErrNotAdmin
 	}
 
-	if err := uc.Users.UnbanUser(in.RequestedUserID); err != nil {
+	if err := uc.Users.UnbanUser(ctx, in.RequestedUserID); err != nil {
 		return dto.UnbanUserResponse{
 			UserID:   in.RequestedUserID,
 			Unbanned: false,

@@ -5,6 +5,7 @@ import (
 	"ads/userservice/app/usecase"
 	authmw "ads/userservice/infrastructure/grpc"
 	"context"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "ads/userservice/presentation/grpc/pb"
@@ -29,7 +30,7 @@ func (s *UserService) AddProfile(ctx context.Context, req *pb.AddProfileRequest)
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	out, err := s.AddProfileUC.Execute(dto.AddProfile{UserID: userID, Name: req.Name, Phone: req.Phone})
+	out, err := s.AddProfileUC.Execute(ctx, dto.AddProfile{UserID: userID, Name: req.Name, Phone: req.Phone})
 	if err != nil {
 		return MapProfileResponseDTOToPB(out), status.Errorf(codes.Internal, "%s", err.Error())
 	}
@@ -42,7 +43,7 @@ func (s *UserService) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.P
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.GetProfileUC.Execute(dto.GetProfile{UserID: userID})
+	out, err := s.GetProfileUC.Execute(ctx, dto.GetProfile{UserID: userID})
 	if err != nil {
 		return MapProfileResponseDTOToPB(out), status.Errorf(codes.Internal, "%s", err.Error())
 	}
@@ -55,7 +56,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.UpdateProfileUC.Execute(dto.UpdateProfile{
+	out, err := s.UpdateProfileUC.Execute(ctx, dto.UpdateProfile{
 		UserID: userID,
 		Name:   req.Name,
 		Phone:  req.Phone,
@@ -72,7 +73,7 @@ func (s *UserService) UploadPhoto(ctx context.Context, req *pb.UploadPhotoReques
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.UploadPhotoUC.Execute(dto.UploadPhoto{
+	out, err := s.UploadPhotoUC.Execute(ctx, dto.UploadPhoto{
 		UserID:      userID,
 		Data:        req.Data,
 		Filename:    req.Filename,
@@ -90,7 +91,7 @@ func (s *UserService) ChangeSettings(ctx context.Context, req *pb.ChangeSettings
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.ChangeSettingUC.Execute(dto.ChangeSettings{
+	out, err := s.ChangeSettingUC.Execute(ctx, dto.ChangeSettings{
 		UserID:               userID,
 		NotificationsEnabled: req.NotificationsEnabled,
 	})
@@ -106,7 +107,7 @@ func (s *UserService) ChangeSubscriptions(ctx context.Context, req *pb.ChangeSub
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.ChangeSubscriptionsUC.Execute(dto.ChangeSubscriptions{
+	out, err := s.ChangeSubscriptionsUC.Execute(ctx, dto.ChangeSubscriptions{
 		UserID:        userID,
 		Subscriptions: req.Subscriptions,
 	})

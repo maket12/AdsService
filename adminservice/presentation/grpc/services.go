@@ -28,7 +28,7 @@ func (s *AdminService) AdminBanUser(ctx context.Context, req *pb.BanUserRequest)
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.BanUserUC.Execute(dto.BanUser{
+	out, err := s.BanUserUC.Execute(ctx, dto.BanUser{
 		UserID:          adminID,
 		RequestedUserID: req.UserId,
 	})
@@ -44,7 +44,7 @@ func (s *AdminService) AdminUnbanUser(ctx context.Context, req *pb.UnbanUserRequ
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.UnbanUserUC.Execute(dto.UnbanUser{
+	out, err := s.UnbanUserUC.Execute(ctx, dto.UnbanUser{
 		UserID:          adminID,
 		RequestedUserID: req.UserId,
 	})
@@ -55,7 +55,7 @@ func (s *AdminService) AdminUnbanUser(ctx context.Context, req *pb.UnbanUserRequ
 }
 
 func (s *AdminService) AssignRole(ctx context.Context, req *pb.AssignRoleRequest) (*pb.AssignRoleResponse, error) {
-	out, err := s.AssignRoleUC.Execute(dto.AssignRole{RequestedUserID: req.UserId})
+	out, err := s.AssignRoleUC.Execute(ctx, dto.AssignRole{RequestedUserID: req.UserId})
 	if err != nil {
 		return MapAssignRoleResponseDTOToPB(out), status.Error(codes.Internal, err.Error())
 	}
@@ -63,7 +63,7 @@ func (s *AdminService) AssignRole(ctx context.Context, req *pb.AssignRoleRequest
 }
 
 func (s *AdminService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	out, err := s.GetUserUC.Execute(dto.GetUser{AdminUserID: req.UserId})
+	out, err := s.GetUserUC.Execute(ctx, dto.GetUser{AdminUserID: req.UserId})
 	if err != nil {
 		return MapGetUserResponseDTOToPB(out), status.Error(codes.NotFound, err.Error())
 	}
@@ -76,7 +76,7 @@ func (s *AdminService) GetProfile(ctx context.Context, req *pb.GetProfileRequest
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.GetProfileUC.Execute(dto.GetProfile{
+	out, err := s.GetProfileUC.Execute(ctx, dto.GetProfile{
 		UserID:          adminID,
 		RequestedUserID: req.UserId,
 	})
@@ -92,7 +92,7 @@ func (s *AdminService) AdminGetProfiles(ctx context.Context, req *pb.GetProfiles
 		return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	}
 
-	out, err := s.GetProfilesUC.Execute(dto.GetProfilesList{
+	out, err := s.GetProfilesUC.Execute(ctx, dto.GetProfilesList{
 		UserID: adminID,
 		Limit:  req.Limit,
 		Offset: req.Offset,

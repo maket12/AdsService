@@ -5,14 +5,15 @@ import (
 	"ads/adminservice/app/mappers"
 	"ads/adminservice/app/uc_errors"
 	"ads/adminservice/domain/port"
+	"context"
 )
 
 type GetUserUC struct {
 	Users port.UserRepository
 }
 
-func (uc *GetUserUC) Execute(in dto.GetUser) (dto.GetUserResponse, error) {
-	role, err := uc.Users.GetUserRole(in.AdminUserID)
+func (uc *GetUserUC) Execute(ctx context.Context, in dto.GetUser) (dto.GetUserResponse, error) {
+	role, err := uc.Users.GetUserRole(ctx, in.AdminUserID)
 	if err != nil {
 		return dto.GetUserResponse{}, uc_errors.ErrGetUserRole
 	}
@@ -20,7 +21,7 @@ func (uc *GetUserUC) Execute(in dto.GetUser) (dto.GetUserResponse, error) {
 		return dto.GetUserResponse{}, uc_errors.ErrNotAdmin
 	}
 
-	user, err := uc.Users.GetUserByID(in.RequestedUserID)
+	user, err := uc.Users.GetUserByID(ctx, in.RequestedUserID)
 	if err != nil {
 		return dto.GetUserResponse{}, uc_errors.ErrGetUser
 	}

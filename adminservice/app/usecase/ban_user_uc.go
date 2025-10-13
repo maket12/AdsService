@@ -4,14 +4,15 @@ import (
 	"ads/adminservice/app/dto"
 	"ads/adminservice/app/uc_errors"
 	"ads/adminservice/domain/port"
+	"context"
 )
 
 type BanUserUC struct {
 	Users port.UserRepository
 }
 
-func (uc *BanUserUC) Execute(in dto.BanUser) (dto.BanUserResponse, error) {
-	role, err := uc.Users.GetUserRole(in.UserID)
+func (uc *BanUserUC) Execute(ctx context.Context, in dto.BanUser) (dto.BanUserResponse, error) {
+	role, err := uc.Users.GetUserRole(ctx, in.UserID)
 	if err != nil {
 		return dto.BanUserResponse{
 			UserID: in.RequestedUserID,
@@ -25,7 +26,7 @@ func (uc *BanUserUC) Execute(in dto.BanUser) (dto.BanUserResponse, error) {
 		}, uc_errors.ErrNotAdmin
 	}
 
-	if err := uc.Users.BanUser(in.RequestedUserID); err != nil {
+	if err := uc.Users.BanUser(ctx, in.RequestedUserID); err != nil {
 		return dto.BanUserResponse{
 			UserID: in.RequestedUserID,
 			Banned: false,
