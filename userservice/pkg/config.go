@@ -1,7 +1,8 @@
-package config
+package pkg
 
 import (
 	"fmt"
+
 	"github.com/caarlos0/env/v11"
 )
 
@@ -13,12 +14,17 @@ type Config struct {
 	DBPassword string `env:"DB_PASSWORD,required"`
 	DBName     string `env:"DB_NAME,required"`
 
+	// MongoDB
+	MongoURI    string `env:"MONGODB_URI,required"`
+	MongoDB     string `env:"MONGODB_DB_NAME" envDefault:"ads_service"`
+	MongoBucket string `env:"MONGODB_BUCKET_NAME" envDefault:"photos"`
+
 	// JWT
 	JWTAccessSecret  string `env:"JWT_ACCESS_SECRET,required"`
 	JWTRefreshSecret string `env:"JWT_REFRESH_SECRET,required"`
 
 	// Service
-	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50053"`
+	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50052"`
 	Environment string `env:"ENVIRONMENT" envDefault:"development"`
 }
 
@@ -42,17 +48,16 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("DBName is required")
 	}
 
+	if cfg.MongoURI == "" {
+		return nil, fmt.Errorf("MongoURI is required")
+	}
+
 	if cfg.JWTAccessSecret == "" {
 		return nil, fmt.Errorf("JWT_Access_SECRET is required")
 	}
 	if cfg.JWTRefreshSecret == "" {
 		return nil, fmt.Errorf("JWTRefreshSecret is required")
 	}
-
-	fmt.Printf("Config loaded successfully\n")
-	fmt.Printf("   Environment: %s\n", cfg.Environment)
-	fmt.Printf("   DB Host: %s\n", cfg.DBHost)
-	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
 
 	return cfg, nil
 }

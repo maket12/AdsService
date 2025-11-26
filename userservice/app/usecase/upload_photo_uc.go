@@ -6,6 +6,7 @@ import (
 	"ads/userservice/app/uc_errors"
 	"ads/userservice/domain/port"
 	"bytes"
+	"context"
 )
 
 type UploadPhotoUC struct {
@@ -13,7 +14,7 @@ type UploadPhotoUC struct {
 	Photos   port.PhotoRepository
 }
 
-func (uc *UploadPhotoUC) Execute(in dto.UploadPhoto) (dto.ProfileResponse, error) {
+func (uc *UploadPhotoUC) Execute(ctx context.Context, in dto.UploadPhoto) (dto.ProfileResponse, error) {
 	if len(in.Data) == 0 {
 		return dto.ProfileResponse{}, uc_errors.ErrEmptyDataPhoto
 	}
@@ -25,12 +26,12 @@ func (uc *UploadPhotoUC) Execute(in dto.UploadPhoto) (dto.ProfileResponse, error
 	}
 
 	reader := bytes.NewReader(in.Data)
-	objectHexID, err := uc.Photos.UploadPhoto(in.UserID, in.Filename, in.ContentType, reader, int64(len(in.Data)))
+	objectHexID, err := uc.Photos.UploadPhoto(ctx, in.UserID, in.Filename, in.ContentType, reader, int64(len(in.Data)))
 	if err != nil || objectHexID == "" {
 		return dto.ProfileResponse{}, uc_errors.ErrMongoUploadPhoto
 	}
 
-	profile, err := uc.Profiles.UpdateProfilePhoto(in.UserID, objectHexID)
+	profile, err := uc.Profiles.UpdateProfilePhoto(ctx, in.UserID, objectHexID)
 	if err != nil {
 		return dto.ProfileResponse{}, uc_errors.ErrUpdatePhoto
 	}

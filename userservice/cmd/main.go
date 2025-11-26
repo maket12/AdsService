@@ -5,15 +5,13 @@ import (
 	mongorepo "ads/userservice/adapter/mongo"
 	"ads/userservice/adapter/pg"
 	"ads/userservice/app/usecase"
-	"ads/userservice/config"
 	grpcinfra "ads/userservice/infrastructure/grpc"
 	"ads/userservice/infrastructure/mongodb"
 	"ads/userservice/infrastructure/postgres"
-	"ads/userservice/pkg/logger"
+	"ads/userservice/pkg"
 	usersvc "ads/userservice/presentation/grpc"
 	pb "ads/userservice/presentation/grpc/pb"
 	"fmt"
-	"gorm.io/gorm"
 	"log/slog"
 	"net"
 	"os"
@@ -21,14 +19,16 @@ import (
 	"syscall"
 	"time"
 
+	"gorm.io/gorm"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
-	log := logger.New()
+	log := pkg.New()
 
-	cfg, err := config.Load()
+	cfg, err := pkg.Load()
 	if err != nil {
 		log.Error("failed to load config", "error", err)
 		return
@@ -43,7 +43,7 @@ func main() {
 	}
 	defer closeDependencies(mongoData)
 
-	userService := initServices(db, mongoData)
+	userService := initServices(db, mongoData, log)
 
 	server := startGRPCServer(userService, cfg, log)
 
@@ -52,7 +52,7 @@ func main() {
 	log.Info("👋 userservice stopped")
 }
 
-func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, *mongodb.MongoData, error) {
+func initDependencies(cfg *pkg.Config, log *slog.Logger) (*gorm.DB, *mongodb.MongoData, error) {
 	log.Info("initializing database connections...")
 
 	db, err := postgres.InitDB(cfg)
@@ -73,9 +73,9 @@ func closeDependencies(mongoData *mongodb.MongoData) {
 	mongodb.CloseMongoDB(mongoData)
 }
 
-func initServices(db *gorm.DB, mongoData *mongodb.MongoData) *usersvc.UserService {
-	profilesRepo := pg.NewProfilesRepo(db)
-	photosRepo := mongorepo.NewPhotoRepo(mongoData.Bucket)
+func initServices(db *gorm.DB, mongoData *mongodb.MongoData, log *slog.Logger) *usersvc.UserService {
+	profilesRepo := pg.NewProfilesRepo(db, log)
+	photosRepo := mongorepo.NewPhotoRepo(mongoData.Bucket, log)
 
 	addProfileUC := &usecase.AddProfileUC{Profiles: profilesRepo}
 	updateProfileUC := &usecase.UpdateProfileUC{Profiles: profilesRepo}
@@ -94,7 +94,7 @@ func initServices(db *gorm.DB, mongoData *mongodb.MongoData) *usersvc.UserServic
 	}
 }
 
-func startGRPCServer(userService *usersvc.UserService, cfg *config.Config, log *slog.Logger) *grpc.Server {
+func startGRPCServer(userService *usersvc.UserService, cfg *pkg.Config, log *slog.Logger) *grpc.Server {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	if err != nil {
 		log.Error("failed to listen", "error", err)

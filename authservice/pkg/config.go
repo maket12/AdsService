@@ -1,9 +1,10 @@
-package cmd
+package pkg
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v11"
 	"log/slog"
+
+	"github.com/caarlos0/env/v11"
 )
 
 type Config struct {

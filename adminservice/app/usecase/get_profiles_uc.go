@@ -5,6 +5,7 @@ import (
 	"ads/adminservice/app/mappers"
 	"ads/adminservice/app/uc_errors"
 	"ads/adminservice/domain/port"
+	"context"
 )
 
 type GetProfilesUC struct {
@@ -12,8 +13,8 @@ type GetProfilesUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *GetProfilesUC) Execute(in dto.GetProfilesList) (dto.ProfilesResponse, error) {
-	role, err := uc.Users.GetUserRole(in.UserID)
+func (uc *GetProfilesUC) Execute(ctx context.Context, in dto.GetProfilesList) (dto.ProfilesResponse, error) {
+	role, err := uc.Users.GetUserRole(ctx, in.UserID)
 	if err != nil {
 		return dto.ProfilesResponse{}, uc_errors.ErrGetUserRole
 	}
@@ -21,7 +22,7 @@ func (uc *GetProfilesUC) Execute(in dto.GetProfilesList) (dto.ProfilesResponse, 
 		return dto.ProfilesResponse{}, uc_errors.ErrNotAdmin
 	}
 
-	profiles, err := uc.Profiles.GetAllProfiles(in.Limit, in.Offset)
+	profiles, err := uc.Profiles.GetAllProfiles(ctx, in.Limit, in.Offset)
 	if err != nil {
 		return dto.ProfilesResponse{}, uc_errors.ErrGetProfiles
 	}

@@ -22,9 +22,9 @@ func NewTokenRepository(accessToken, refreshToken string) port.TokenRepository {
 	}
 }
 
-func (s *TokenRepository) ParseAccessToken(tokenStr string) (*entity.AccessClaims, error) {
+func (s *TokenRepository) ParseAccessToken(token string) (*entity.AccessClaims, error) {
 	var c entity.AccessClaims
-	parsedToken, err := jwt.ParseWithClaims(tokenStr, &c, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.ParseWithClaims(token, &c, func(token *jwt.Token) (interface{}, error) {
 		return s.accessSecret, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}), jwt.WithLeeway(30*time.Second))
 

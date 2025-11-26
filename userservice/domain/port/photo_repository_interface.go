@@ -1,7 +1,10 @@
 package port
 
-import "io"
+import (
+	"context"
+	"io"
+)
 
 type PhotoRepository interface {
-	UploadPhoto(userID uint64, title, contentType string, r io.Reader, size int64) (string, error)
+	UploadPhoto(ctx context.Context, userID uint64, title, contentType string, r io.Reader, size int64) (string, error)
 }

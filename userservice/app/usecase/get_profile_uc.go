@@ -5,14 +5,15 @@ import (
 	"ads/userservice/app/mappers"
 	"ads/userservice/app/uc_errors"
 	"ads/userservice/domain/port"
+	"context"
 )
 
 type GetProfileUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *GetProfileUC) Execute(in dto.GetProfile) (dto.ProfileResponse, error) {
-	profile, err := uc.Profiles.GetProfile(in.UserID)
+func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfile) (dto.ProfileResponse, error) {
+	profile, err := uc.Profiles.GetProfile(ctx, in.UserID)
 	if err != nil {
 		return dto.ProfileResponse{}, uc_errors.ErrGetProfile
 	}

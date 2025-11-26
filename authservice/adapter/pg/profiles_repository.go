@@ -5,18 +5,20 @@ import (
 	"ads/authservice/domain/port"
 	"context"
 	"errors"
-	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
 
 type ProfilesRepo struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *slog.Logger
 }
 
-func NewProfilesRepo(db *gorm.DB) port.ProfileRepository {
+func NewProfilesRepo(db *gorm.DB, log *slog.Logger) port.ProfileRepository {
 	return &ProfilesRepo{
-		db: db,
+		db:     db,
+		logger: log,
 	}
 }
 
@@ -36,6 +38,6 @@ func (r *ProfilesRepo) AddProfile(ctx context.Context, userID uint64, name, phon
 		return nil, err
 	}
 
-	fmt.Printf("Created new profile: %v", userID)
+	r.logger.InfoContext(ctx, "Created new profile: %v", userID)
 	return p, r.db.WithContext(ctx).Create(&p).Error
 }

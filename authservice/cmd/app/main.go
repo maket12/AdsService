@@ -1,15 +1,14 @@
 package main
 
 import (
+	"ads/authservice/adapter/jwt"
 	"ads/authservice/adapter/pg"
 	"ads/authservice/app/usecase"
-	"ads/authservice/cmd"
 	"ads/authservice/infrastructure/postgres"
-	"ads/authservice/internal/adapter/jwt"
+	"ads/authservice/pkg"
 	authgrpc "ads/authservice/presentation/grpc"
 	pb "ads/authservice/presentation/grpc/pb"
 	"fmt"
-	"gorm.io/gorm"
 	"log/slog"
 	"net"
 	"os"
@@ -17,18 +16,20 @@ import (
 	"syscall"
 	"time"
 
+	"gorm.io/gorm"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
-	cfg, err := cmd.Load()
+	cfg, err := pkg.Load()
 	if err != nil {
 		_ = fmt.Errorf("failed to load config", "error", err)
 		return
 	}
 
-	log := cmd.New(cfg.GetSlogLevel())
+	log := pkg.New(cfg.GetSlogLevel())
 	log.Info("🚀 starting authservice", "port", cfg.GRPCPort)
 
 	db, err := initDependencies(cfg, log)
@@ -38,7 +39,7 @@ func main() {
 	}
 	defer closeDependencies(log)
 
-	authService := initServices(db, cfg)
+	authService := initServices(db, cfg, log)
 
 	server := startGRPCServer(authService, cfg, log)
 
@@ -47,7 +48,7 @@ func main() {
 	log.Info("👋 authservice stopped")
 }
 
-func initDependencies(cfg *cmd.Config, log *slog.Logger) (*gorm.DB, error) {
+func initDependencies(cfg *pkg.Config, log *slog.Logger) (*gorm.DB, error) {
 	log.Info("initializing database connections...")
 
 	db, err := postgres.InitDB(cfg)
@@ -62,11 +63,11 @@ func closeDependencies(log *slog.Logger) {
 	log.Info("closing database connections...")
 }
 
-func initServices(db *gorm.DB, cfg *cmd.Config) *authgrpc.AuthService {
-	usersRepo := pg.NewUsersRepo(db)
-	sessionsRepo := pg.NewSessionsRepo(db)
-	profilesRepo := pg.NewProfilesRepo(db)
-	tokensRepo := jwt.NewTokenRepository(cfg.JWTAccessSecret, cfg.JWTRefreshSecret)
+func initServices(db *gorm.DB, cfg *pkg.Config, log *slog.Logger) *authgrpc.AuthService {
+	usersRepo := pg.NewUsersRepo(db, log)
+	sessionsRepo := pg.NewSessionsRepo(db, log)
+	profilesRepo := pg.NewProfilesRepo(db, log)
+	tokensRepo := jwt.NewTokenRepository(cfg.JWTAccessSecret, cfg.JWTRefreshSecret, log)
 
 	registerUC := &usecase.RegisterUC{
 		Users:    usersRepo,
@@ -84,7 +85,7 @@ func initServices(db *gorm.DB, cfg *cmd.Config) *authgrpc.AuthService {
 	return authgrpc.NewAuthService(registerUC, loginUC, validateUC)
 }
 
-func startGRPCServer(authService *authgrpc.AuthService, cfg *cmd.Config, log *slog.Logger) *grpc.Server {
+func startGRPCServer(authService *authgrpc.AuthService, cfg *pkg.Config, log *slog.Logger) *grpc.Server {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	if err != nil {
 		log.Error("failed to listen", "error", err)

@@ -4,14 +4,12 @@ import (
 	"ads/adminservice/adapter/jwt"
 	"ads/adminservice/adapter/pg"
 	"ads/adminservice/app/usecase"
-	"ads/adminservice/config"
 	grpcinfra "ads/adminservice/infrastructure/grpc"
 	"ads/adminservice/infrastructure/postgres"
-	"ads/adminservice/pkg/logger"
+	"ads/adminservice/pkg"
 	adminsvc "ads/adminservice/presentation/grpc"
 	pb "ads/adminservice/presentation/grpc/pb"
 	"fmt"
-	"gorm.io/gorm"
 	"log/slog"
 	"net"
 	"os"
@@ -19,18 +17,20 @@ import (
 	"syscall"
 	"time"
 
+	"gorm.io/gorm"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
-	log := logger.New()
-
-	cfg, err := config.Load()
+	cfg, err := pkg.Load()
 	if err != nil {
-		log.Error("failed to load config", "error", err)
+		_ = fmt.Errorf("failed to load config", "error", err)
 		return
 	}
+
+	log := pkg.New(cfg.GetSlogLevel())
 
 	log.Info("🚀 starting adminservice", "port", cfg.GRPCPort)
 
@@ -41,7 +41,7 @@ func main() {
 	}
 	defer closeDependencies(log)
 
-	adminService := initServices(db)
+	adminService := initServices(db, log)
 
 	server := startGRPCServer(adminService, cfg, log)
 
@@ -50,7 +50,7 @@ func main() {
 	log.Info("👋 adminservice stopped")
 }
 
-func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, error) {
+func initDependencies(cfg *pkg.Config, log *slog.Logger) (*gorm.DB, error) {
 	log.Info("initializing database connections...")
 
 	db, err := postgres.InitDB(cfg)
@@ -65,9 +65,9 @@ func closeDependencies(log *slog.Logger) {
 	log.Info("closing database connections...")
 }
 
-func initServices(db *gorm.DB) *adminsvc.AdminService {
-	usersRepo := pg.NewUsersRepo(db)
-	profilesRepo := pg.NewProfilesRepo(db)
+func initServices(db *gorm.DB, log *slog.Logger) *adminsvc.AdminService {
+	usersRepo := pg.NewUsersRepo(db, log)
+	profilesRepo := pg.NewProfilesRepo(db, log)
 
 	assignRoleUC := &usecase.AssignRoleUC{Users: usersRepo}
 	getUserUC := &usecase.GetUserUC{Users: usersRepo}
@@ -86,7 +86,7 @@ func initServices(db *gorm.DB) *adminsvc.AdminService {
 	}
 }
 
-func startGRPCServer(adminService *adminsvc.AdminService, cfg *config.Config, log *slog.Logger) *grpc.Server {
+func startGRPCServer(adminService *adminsvc.AdminService, cfg *pkg.Config, log *slog.Logger) *grpc.Server {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	if err != nil {
 		log.Error("failed to listen", "error", err)

@@ -5,14 +5,15 @@ import (
 	"ads/userservice/app/mappers"
 	"ads/userservice/app/uc_errors"
 	"ads/userservice/domain/port"
+	"context"
 )
 
 type ChangeSubscriptionsUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *ChangeSubscriptionsUC) Execute(in dto.ChangeSubscriptions) (dto.ProfileResponse, error) {
-	profile, err := uc.Profiles.UpdateProfileSubscriptions(in.UserID, in.Subscriptions)
+func (uc *ChangeSubscriptionsUC) Execute(ctx context.Context, in dto.ChangeSubscriptions) (dto.ProfileResponse, error) {
+	profile, err := uc.Profiles.UpdateProfileSubscriptions(ctx, in.UserID, in.Subscriptions)
 	if err != nil {
 		return dto.ProfileResponse{}, uc_errors.ErrChangeSubscriptions
 	}

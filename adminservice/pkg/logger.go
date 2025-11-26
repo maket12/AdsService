@@ -1,4 +1,4 @@
-package cmd
+package pkg
 
 import (
 	"log/slog"

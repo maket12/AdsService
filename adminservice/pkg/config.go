@@ -1,7 +1,9 @@
-package config
+package pkg
 
 import (
 	"fmt"
+	"log/slog"
+
 	"github.com/caarlos0/env/v11"
 )
 
@@ -13,17 +15,13 @@ type Config struct {
 	DBPassword string `env:"DB_PASSWORD,required"`
 	DBName     string `env:"DB_NAME,required"`
 
-	// MongoDB
-	MongoURI    string `env:"MONGODB_URI,required"`
-	MongoDB     string `env:"MONGODB_DB_NAME" envDefault:"ads_service"`
-	MongoBucket string `env:"MONGODB_BUCKET_NAME" envDefault:"photos"`
-
 	// JWT
 	JWTAccessSecret  string `env:"JWT_ACCESS_SECRET,required"`
 	JWTRefreshSecret string `env:"JWT_REFRESH_SECRET,required"`
 
 	// Service
-	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50052"`
+	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50053"`
+	LogLevel    string `env:"LOG_LEVEL" envDefault:"info"`
 	Environment string `env:"ENVIRONMENT" envDefault:"development"`
 }
 
@@ -47,10 +45,6 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("DBName is required")
 	}
 
-	if cfg.MongoURI == "" {
-		return nil, fmt.Errorf("MongoURI is required")
-	}
-
 	if cfg.JWTAccessSecret == "" {
 		return nil, fmt.Errorf("JWT_Access_SECRET is required")
 	}
@@ -58,10 +52,30 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("JWTRefreshSecret is required")
 	}
 
-	fmt.Printf("Config loaded successfully\n")
-	fmt.Printf("   Environment: %s\n", cfg.Environment)
-	fmt.Printf("   DB Host: %s\n", cfg.DBHost)
-	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
+	validLevels := map[string]bool{
+		"debug": true,
+		"info":  true,
+		"warn":  true,
+		"error": true,
+	}
+	if !validLevels[cfg.LogLevel] {
+		return nil, fmt.Errorf("invalid LOG_LEVEL: %s, must be one of: debug, info, warn, error", cfg.LogLevel)
+	}
 
 	return cfg, nil
+}
+
+func (c *Config) GetSlogLevel() slog.Level {
+	switch c.LogLevel {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }

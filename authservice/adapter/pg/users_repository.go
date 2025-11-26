@@ -5,18 +5,20 @@ import (
 	"ads/authservice/domain/port"
 	"context"
 	"errors"
-	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
 
 type UsersRepo struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *slog.Logger
 }
 
-func NewUsersRepo(db *gorm.DB) port.UserRepository {
+func NewUsersRepo(db *gorm.DB, log *slog.Logger) port.UserRepository {
 	return &UsersRepo{
-		db: db,
+		db:     db,
+		logger: log,
 	}
 }
 
@@ -51,7 +53,7 @@ func (r *UsersRepo) AddUser(ctx context.Context, user *entity.User) error {
 		return err
 	}
 	if exists {
-		fmt.Printf("User with email %s already exists", user.Email)
+		r.logger.InfoContext(ctx, "User with email %s already exists", user.Email)
 		return nil
 	}
 
@@ -60,11 +62,11 @@ func (r *UsersRepo) AddUser(ctx context.Context, user *entity.User) error {
 	}
 
 	if err = r.db.WithContext(ctx).Create(user).Error; err != nil {
-		fmt.Printf("Error while adding user: %v", err)
+		r.logger.InfoContext(ctx, "Error while adding user: %v", err)
 		return err
 	}
 
-	fmt.Printf("Successfully added user = %v", user.ID)
+	r.logger.InfoContext(ctx, "Successfully added user = %v", user.ID)
 	return nil
 }
 

@@ -6,20 +6,21 @@ import (
 	"ads/userservice/app/uc_errors"
 	"ads/userservice/domain/entity"
 	"ads/userservice/domain/port"
+	"context"
 )
 
 type ChangeSettingsUC struct {
 	Profiles port.ProfileRepository
 }
 
-func (uc *ChangeSettingsUC) Execute(in dto.ChangeSettings) (dto.ProfileResponse, error) {
+func (uc *ChangeSettingsUC) Execute(ctx context.Context, in dto.ChangeSettings) (dto.ProfileResponse, error) {
 	var profile *entity.Profile
 	var err error
 
 	if in.NotificationsEnabled {
-		profile, err = uc.Profiles.EnableNotifications(in.UserID)
+		profile, err = uc.Profiles.EnableNotifications(ctx, in.UserID)
 	} else {
-		profile, err = uc.Profiles.DisableNotifications(in.UserID)
+		profile, err = uc.Profiles.DisableNotifications(ctx, in.UserID)
 	}
 
 	if err != nil {
