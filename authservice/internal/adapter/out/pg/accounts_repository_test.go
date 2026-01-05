@@ -32,7 +32,7 @@ type AccountsRepoSuite struct {
 	testAccount *model.Account
 }
 
-func TestAccountRepoSuite(t *testing.T) {
+func TestAccountsRepoSuite(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
 	}
@@ -40,6 +40,8 @@ func TestAccountRepoSuite(t *testing.T) {
 }
 
 func (s *AccountsRepoSuite) setupDatabase() {
+	const targetVersion = 1
+
 	sourceDriver, err := iofs.New(migrations.FS, ".")
 	s.Require().NoError(err, "failed to create iofs driver")
 
@@ -48,11 +50,11 @@ func (s *AccountsRepoSuite) setupDatabase() {
 		sourceDriver,
 		s.dsn,
 	)
-	s.Require().NoError(err, "failed to crate migration instance")
+	s.Require().NoError(err, "failed to create migration instance")
 
 	s.migrate = m
 
-	err = m.Up()
+	err = m.Migrate(targetVersion)
 
 	// If migration is correct - setup has done
 	if err == nil || errors.Is(err, migrate.ErrNoChange) {
@@ -73,7 +75,7 @@ func (s *AccountsRepoSuite) setupDatabase() {
 		s.Require().NoError(err, "failed to migrate down during recovery")
 	}
 
-	err = m.Up()
+	err = m.Migrate(targetVersion)
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		s.Require().NoError(err, "failed to migrate up after recovery")
 	}
@@ -182,6 +184,8 @@ func (s *AccountsRepoSuite) TestGetByEmail_NotFound() {
 	// Trying to get non-existing account
 	var unexistingEmail = "unexist@gmail.com"
 	_, err := s.repo.GetByEmail(s.ctx, unexistingEmail)
+
+	s.Require().Error(err)
 	s.Require().ErrorIsf(err, errs.ErrObjectNotFound,
 		"Expected error \"ErrObjectNotFound\", got %v", err)
 }
