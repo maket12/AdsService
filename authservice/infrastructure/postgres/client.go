@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"ads/authservice/domain/entity"
+	entity2 "ads/authservice/internal/domain/entity"
 	"ads/authservice/pkg"
 	"fmt"
 
@@ -26,7 +26,7 @@ func InitDB(cfg *pkg.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err = (DB.AutoMigrate(&entity.User{}, &entity.Session{}, &entity.Profile{})); err != nil {
+	if err = (DB.AutoMigrate(&entity2.User{}, &entity2.Session{}, &entity2.Profile{})); err != nil {
 		return nil, err
 	}
 

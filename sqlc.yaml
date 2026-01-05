@@ -1,0 +1,11 @@
+version: "2"
+
+sql:
+  - engine: "postgresql"
+    schema: "migrations"
+    queries: "authservice/internal/adapter/out/pg/queries"
+    gen:
+      go:
+        package: "sqlc"
+        out: "authservice/internal/adapter/out/pg/sqlc"
+        sql_package: "database/sql"

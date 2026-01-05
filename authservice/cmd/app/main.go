@@ -1,10 +1,10 @@
 package main
 
 import (
-	"ads/authservice/adapter/jwt"
-	"ads/authservice/adapter/pg"
-	"ads/authservice/app/usecase"
 	"ads/authservice/infrastructure/postgres"
+	"ads/authservice/internal/adapter/jwt"
+	"ads/authservice/internal/adapter/out/pg"
+	usecase2 "ads/authservice/internal/app/usecase"
 	"ads/authservice/pkg"
 	authgrpc "ads/authservice/presentation/grpc"
 	pb "ads/authservice/presentation/grpc/pb"
@@ -69,18 +69,18 @@ func initServices(db *gorm.DB, cfg *pkg.Config, log *slog.Logger) *authgrpc.Auth
 	profilesRepo := pg.NewProfilesRepo(db, log)
 	tokensRepo := jwt.NewTokenRepository(cfg.JWTAccessSecret, cfg.JWTRefreshSecret, log)
 
-	registerUC := &usecase.RegisterUC{
+	registerUC := &usecase2.RegisterUC{
 		Users:    usersRepo,
 		Sessions: sessionsRepo,
 		Tokens:   tokensRepo,
 		Profiles: profilesRepo,
 	}
-	loginUC := &usecase.LoginUC{
+	loginUC := &usecase2.LoginUC{
 		Users:    usersRepo,
 		Sessions: sessionsRepo,
 		Tokens:   tokensRepo,
 	}
-	validateUC := &usecase.ValidateTokenUC{Tokens: tokensRepo}
+	validateUC := &usecase2.ValidateTokenUC{Tokens: tokensRepo}
 
 	return authgrpc.NewAuthService(registerUC, loginUC, validateUC)
 }
