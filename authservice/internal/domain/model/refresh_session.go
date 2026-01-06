@@ -41,8 +41,11 @@ func NewRefreshSession(
 	if rotatedFrom != nil && *rotatedFrom == uuid.Nil {
 		return nil, errs.NewValueInvalidError("rotated_from")
 	}
+	if ip != nil && *ip == "" {
+		return nil, errs.NewValueInvalidError("ip")
+	}
 	if userAgent != nil && *userAgent == "" {
-		return nil, errs.NewValueRequiredError("user_agent")
+		return nil, errs.NewValueInvalidError("user_agent")
 	}
 
 	now := time.Now()

@@ -12,13 +12,10 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/google/uuid"
-
 	"github.com/stretchr/testify/suite"
 )
 
@@ -99,16 +96,7 @@ func (s *AccountsRepoSuite) SetupSuite() {
 
 	s.ctx = context.Background()
 
-	s.testAccount = model.RestoreAccount(
-		uuid.New(),
-		"new@email.com",
-		"hashed-secret-pass",
-		model.AccountActive,
-		false,
-		time.Now(),
-		time.Now(),
-		nil,
-	)
+	s.testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
 }
 
 func (s *AccountsRepoSuite) TearDownSuite() {
@@ -134,10 +122,8 @@ func (s *AccountsRepoSuite) TestCreateGetByID() {
 	// And then get
 	acc, err := s.repo.GetByID(s.ctx, s.testAccount.ID())
 	s.Require().NoError(err)
-	s.Require().Exactlyf(s.testAccount.Email(), acc.Email(),
-		"Expected email %v, got %v", s.testAccount.Email(), acc.Email())
-	s.Require().Exactlyf(s.testAccount.PasswordHash(), acc.PasswordHash(),
-		"Expected pass has %v, got %v", s.testAccount.PasswordHash(), acc.PasswordHash())
+	s.Require().Exactly(s.testAccount.Email(), acc.Email())
+	s.Require().Exactly(s.testAccount.PasswordHash(), acc.PasswordHash())
 }
 
 func (s *AccountsRepoSuite) TestCreate_DuplicateEmail() {
@@ -145,11 +131,7 @@ func (s *AccountsRepoSuite) TestCreate_DuplicateEmail() {
 	_ = s.repo.Create(s.ctx, s.testAccount)
 
 	// Trying to create an account with the same email
-	var newAcc = model.RestoreAccount(
-		uuid.New(), s.testAccount.Email(),
-		"hashed-pass", model.AccountActive, true,
-		time.Now(), time.Now(), nil,
-	)
+	newAcc, _ := model.NewAccount(s.testAccount.Email(), "hashed-pass")
 	err := s.repo.Create(s.ctx, newAcc)
 	s.Require().Error(err)
 }
@@ -161,10 +143,8 @@ func (s *AccountsRepoSuite) TestGetByEmail() {
 	// Get by email
 	acc, err := s.repo.GetByEmail(s.ctx, s.testAccount.Email())
 	s.Require().NoError(err)
-	s.Require().Exactlyf(s.testAccount.ID(), acc.ID(),
-		"Expected id %v, got %v", s.testAccount.ID(), acc.ID())
-	s.Require().Exactlyf(s.testAccount.PasswordHash(), acc.PasswordHash(),
-		"Expected pass has %v, got %v", s.testAccount.PasswordHash(), acc.PasswordHash())
+	s.Require().Exactly(s.testAccount.ID(), acc.ID())
+	s.Require().Exactly(s.testAccount.PasswordHash(), acc.PasswordHash())
 }
 
 func (s *AccountsRepoSuite) TestGetByEmail_CaseInsensitive() {
@@ -176,8 +156,7 @@ func (s *AccountsRepoSuite) TestGetByEmail_CaseInsensitive() {
 	acc, err := s.repo.GetByEmail(s.ctx, upperEmail)
 
 	s.Require().NoError(err)
-	s.Require().Equalf(s.testAccount.ID(), acc.ID(),
-		"expected id %v, got %v", s.testAccount.ID(), acc.ID())
+	s.Require().Equal(s.testAccount.ID(), acc.ID())
 }
 
 func (s *AccountsRepoSuite) TestGetByEmail_NotFound() {
@@ -186,8 +165,7 @@ func (s *AccountsRepoSuite) TestGetByEmail_NotFound() {
 	_, err := s.repo.GetByEmail(s.ctx, unexistingEmail)
 
 	s.Require().Error(err)
-	s.Require().ErrorIsf(err, errs.ErrObjectNotFound,
-		"Expected error \"ErrObjectNotFound\", got %v", err)
+	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
 }
 
 func (s *AccountsRepoSuite) TestMarkLogin() {
@@ -200,7 +178,7 @@ func (s *AccountsRepoSuite) TestMarkLogin() {
 
 	// Check if the account is marked
 	acc, _ := s.repo.GetByEmail(s.ctx, s.testAccount.Email())
-	s.Require().NotNil(acc.LastLoginAt(), "expected not null last log in time")
+	s.Require().NotNil(acc.LastLoginAt())
 
 	// Check update time
 	s.Require().NotEqual(s.testAccount.UpdatedAt(), acc.UpdatedAt(),
@@ -217,7 +195,7 @@ func (s *AccountsRepoSuite) TestVerifyEmail() {
 
 	// Check if the account is marked
 	acc, _ := s.repo.GetByID(s.ctx, s.testAccount.ID())
-	s.Require().Truef(acc.EmailVerified(), "expected verified email, got non-verified")
+	s.Require().True(acc.EmailVerified())
 
 	// Check update time
 	s.Require().NotEqual(s.testAccount.UpdatedAt(), acc.UpdatedAt(),

@@ -11,7 +11,6 @@ import (
 	"errors"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
@@ -94,23 +93,13 @@ func (s *AccountRolesRepoSuite) SetupSuite() {
 
 	s.ctx = context.Background()
 
-	testUID := uuid.New()
-	var testAccount = model.RestoreAccount(
-		testUID,
-		"new@email.com",
-		"hashed-secret-pass",
-		model.AccountActive,
-		false,
-		time.Now(),
-		time.Now(),
-		nil,
-	)
+	testAccount, _ := model.NewAccount("new@email.com", "hashed-secret-pass")
 
 	// Create an account in the main table
 	accountsRepo := pg.NewAccountsRepository(queries)
 	_ = accountsRepo.Create(s.ctx, testAccount)
 
-	s.testRole = model.RestoreAccountRole(testUID, model.RoleUser)
+	s.testRole, _ = model.NewAccountRole(testAccount.ID())
 }
 
 func (s *AccountRolesRepoSuite) TearDownSuite() {
@@ -136,13 +125,12 @@ func (s *AccountRolesRepoSuite) TestCreateGet() {
 	// Get by account id
 	role, err := s.repo.Get(s.ctx, s.testRole.AccountID())
 	s.Require().NoError(err)
-	s.Require().Equalf(s.testRole.Role(), role.Role(),
-		"expected role %v, got %v", s.testRole.Role(), role.Role())
+	s.Require().Equal(s.testRole.Role(), role.Role())
 }
 
 func (s *AccountRolesRepoSuite) TestCreate_NonExistingAccount() {
 	// Create an account role for unexisting account
-	newRole := model.RestoreAccountRole(uuid.New(), model.RoleAdmin)
+	newRole, _ := model.NewAccountRole(uuid.New())
 	err := s.repo.Create(s.ctx, newRole)
 	s.Require().Error(err)
 }
@@ -151,8 +139,7 @@ func (s *AccountRolesRepoSuite) TestGet_NotFound() {
 	// Try to get non-existing account role
 	_, err := s.repo.Get(s.ctx, s.testRole.AccountID())
 	s.Require().Error(err)
-	s.Require().ErrorIsf(err, errs.ErrObjectNotFound,
-		"Expected error \"ErrObjectNotFound\", got %v", err)
+	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
 }
 
 func (s *AccountRolesRepoSuite) TestUpdate() {
@@ -168,8 +155,7 @@ func (s *AccountRolesRepoSuite) TestUpdate() {
 
 	// Ensure update was correct
 	acc, _ := s.repo.Get(s.ctx, s.testRole.AccountID())
-	s.Require().Equalf(model.RoleAdmin, acc.Role(),
-		"expected role admin, got %v", acc.Role())
+	s.Require().Equal(model.RoleAdmin, acc.Role())
 }
 
 func (s *AccountRolesRepoSuite) TestDelete() {
@@ -183,6 +169,5 @@ func (s *AccountRolesRepoSuite) TestDelete() {
 	// Ensure deletion was successful
 	_, err = s.repo.Get(s.ctx, s.testRole.AccountID())
 	s.Require().Error(err)
-	s.Require().ErrorIsf(err, errs.ErrObjectNotFound,
-		"expected \"ErrObjectNotFound\", got %v", err)
+	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
 }
