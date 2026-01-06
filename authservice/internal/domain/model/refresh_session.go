@@ -47,6 +47,9 @@ func NewRefreshSession(
 	if userAgent != nil && *userAgent == "" {
 		return nil, errs.NewValueInvalidError("user_agent")
 	}
+	if ttl <= 0 {
+		return nil, errs.NewValueInvalidError("ttl")
+	}
 
 	now := time.Now()
 	expiresAt := now.Add(ttl)
@@ -106,6 +109,11 @@ func (r *RefreshSession) Revoke(reason *string) error {
 	if r.IsRevoked() {
 		return ErrTokenAlreadyRevoked
 	}
+
+	if reason != nil && *reason == "" {
+		return errs.NewValueInvalidError("revoke_reason")
+	}
+
 	now := time.Now()
 	r.revokedAt = &now
 	r.revokeReason = reason

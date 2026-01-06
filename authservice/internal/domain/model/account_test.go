@@ -15,18 +15,18 @@ func TestNewAccount(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		name     string
-		email    string
-		password string // hashed
-		expect   error
+		name         string
+		email        string
+		passwordHash string
+		expect       error
 	}
 
 	var tests = []testCase{
 		{
-			name:     "success",
-			email:    "new-email@gmail.com",
-			password: "new-password",
-			expect:   nil,
+			name:         "success",
+			email:        "new-email@gmail.com",
+			passwordHash: "new-password",
+			expect:       nil,
 		},
 		{
 			name:   "empty email",
@@ -34,21 +34,21 @@ func TestNewAccount(t *testing.T) {
 			expect: errs.ErrValueIsRequired,
 		},
 		{
-			name:     "empty password",
-			email:    "new-email@gmail.com",
-			password: "",
-			expect:   errs.ErrValueIsRequired,
+			name:         "empty password",
+			email:        "new-email@gmail.com",
+			passwordHash: "",
+			expect:       errs.ErrValueIsRequired,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			acc, err := model.NewAccount(tt.email, tt.password)
+			acc, err := model.NewAccount(tt.email, tt.passwordHash)
 			if tt.expect == nil {
 				require.NoError(t, err)
 				assert.NotNil(t, acc.ID())
 				assert.Equal(t, tt.email, acc.Email())
-				assert.Equal(t, tt.password, acc.PasswordHash())
+				assert.Equal(t, tt.passwordHash, acc.PasswordHash())
 				assert.Equal(t, acc.Status(), model.AccountActive)
 				assert.False(t, acc.EmailVerified())
 			} else {
