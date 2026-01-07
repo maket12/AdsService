@@ -21,6 +21,7 @@ func TestNewRefreshSession(t *testing.T) {
 
 	type testCase struct {
 		name        string
+		id          uuid.UUID
 		accountID   uuid.UUID
 		tokenHash   string
 		rotatedFrom *uuid.UUID
@@ -33,13 +34,23 @@ func TestNewRefreshSession(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:      "success",
+			id:        uuid.New(),
 			accountID: uuid.New(),
 			tokenHash: "hashed",
 			ttl:       time.Minute,
 			expect:    nil,
 		},
 		{
+			name:      "nullable session id",
+			id:        uuid.Nil,
+			accountID: uuid.New(),
+			tokenHash: "hashed",
+			ttl:       time.Minute,
+			expect:    errs.ErrValueIsInvalid,
+		},
+		{
 			name:      "nullable account id",
+			id:        uuid.New(),
 			accountID: uuid.Nil,
 			tokenHash: "hashed",
 			ttl:       time.Minute,
@@ -47,6 +58,7 @@ func TestNewRefreshSession(t *testing.T) {
 		},
 		{
 			name:      "empty token hash",
+			id:        uuid.New(),
 			accountID: uuid.New(),
 			tokenHash: "",
 			ttl:       time.Minute,
@@ -54,6 +66,7 @@ func TestNewRefreshSession(t *testing.T) {
 		},
 		{
 			name:        "nullable rotated from",
+			id:          uuid.New(),
 			accountID:   uuid.New(),
 			tokenHash:   "hashed",
 			rotatedFrom: &uuid.Nil,
@@ -62,6 +75,7 @@ func TestNewRefreshSession(t *testing.T) {
 		},
 		{
 			name:      "empty ip",
+			id:        uuid.New(),
 			accountID: uuid.New(),
 			tokenHash: "hashed",
 			ip:        vPtr(""),
@@ -70,6 +84,7 @@ func TestNewRefreshSession(t *testing.T) {
 		},
 		{
 			name:      "empty user-agent",
+			id:        uuid.New(),
 			accountID: uuid.New(),
 			tokenHash: "hashed",
 			ip:        vPtr("123.021.234.0"),
@@ -79,6 +94,7 @@ func TestNewRefreshSession(t *testing.T) {
 		},
 		{
 			name:      "invalid ttl (not positive)",
+			id:        uuid.New(),
 			accountID: uuid.New(),
 			tokenHash: "hashed",
 			ip:        vPtr("123.021.234.0"),
@@ -91,8 +107,8 @@ func TestNewRefreshSession(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			session, err := model.NewRefreshSession(
-				tt.accountID, tt.tokenHash, tt.rotatedFrom,
-				tt.ip, tt.userAgent, tt.ttl)
+				tt.id, tt.accountID, tt.tokenHash,
+				tt.rotatedFrom, tt.ip, tt.userAgent, tt.ttl)
 			if tt.expect == nil {
 				require.NoError(t, err)
 				require.NotNil(t, session)

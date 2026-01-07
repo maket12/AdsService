@@ -2,13 +2,36 @@ package uc_errors
 
 import "errors"
 
+/*
+================ Validation failures ================
+*/
 var (
-	ErrGetUser           = errors.New("failed to get user")
-	ErrUserNotFound      = errors.New("user not found")
-	ErrInvalidCredential = errors.New("invalid credentials")
-	ErrTokenIssue        = errors.New("failed to issue token")
-	ErrTokenParse        = errors.New("failed to parse token")
-	ErrSessionSave       = errors.New("failed to save session")
-	ErrAddUser           = errors.New("failed to add user")
-	ErrAddProfile        = errors.New("failed to add profile")
+	ErrInvalidCredentials  = errors.New("invalid email or password")
+	ErrCannotLogin         = errors.New("account either is blocked or not exists")
+	ErrInvalidRefreshToken = errors.New("refresh token is invalid or not found")
+	ErrCannotRevoke        = errors.New("refresh token has been already rotated or invalid")
+	ErrInvalidAccessToken  = errors.New("access token is invalid")
+)
+
+/*
+================ Adapter failures ================
+*/
+var (
+	ErrHashPassword        = errors.New("failed to hash password")
+	ErrGenerateAccessToken = errors.New("failed to generate access token")
+)
+
+/*
+================ Database failures ================
+*/
+var (
+	ErrCreateAccountDB         = errors.New("failed to create account using db")
+	ErrCreateAccountRoleDB     = errors.New("failed to create account role using db")
+	ErrGetAccountByEmailDB     = errors.New("failed to get account by email using db")
+	ErrGetAccountByIDDB        = errors.New("failed to get account by id using db")
+	ErrUpdateAccountDB         = errors.New("failed to update account using db")
+	ErrGetAccountRoleDB        = errors.New("failed to get account role using db")
+	ErrCreateRefreshSessionDB  = errors.New("failed to create refresh session using db")
+	ErrGetRefreshSessionByIDDB = errors.New("failed to get refresh session by ID using db")
+	ErrRevokeRefreshSession    = errors.New("failed to revoke refresh session using db")
 )

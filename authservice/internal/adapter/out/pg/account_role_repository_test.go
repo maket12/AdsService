@@ -21,7 +21,7 @@ import (
 type AccountRolesRepoSuite struct {
 	suite.Suite
 	db       *sql.DB
-	repo     *pg.AccountRolesRepository
+	repo     *pg.AccountRoleRepository
 	ctx      context.Context
 	dsn      string
 	migrate  *migrate.Migrate

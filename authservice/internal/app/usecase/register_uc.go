@@ -1,59 +1,56 @@
 package usecase
 
 import (
-	dto2 "ads/authservice/internal/app/dto"
+	"ads/authservice/internal/app/dto"
 	"ads/authservice/internal/app/uc_errors"
-	entity2 "ads/authservice/internal/domain/entity"
-	port2 "ads/authservice/internal/domain/port"
+	"ads/authservice/internal/domain/model"
+	"ads/authservice/internal/domain/port"
 	"context"
-	"time"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterUC struct {
-	Users    port2.UserRepository
-	Sessions port2.SessionRepository
-	Tokens   port2.TokenRepository
-	Profiles port2.ProfileRepository
+	Account        port.AccountRepository
+	AccountRole    port.AccountRoleRepository
+	PasswordHasher port.PasswordHasher
 }
 
-func (uc *RegisterUC) Execute(ctx context.Context, in dto2.Register) (dto2.AuthResponse, error) {
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+func NewRegisterUC(
+	account port.AccountRepository,
+	accountRole port.AccountRoleRepository,
+	passwordHasher port.PasswordHasher,
+) *RegisterUC {
+	return &RegisterUC{
+		Account:        account,
+		AccountRole:    accountRole,
+		PasswordHasher: passwordHasher,
+	}
+}
 
-	u, err := entity2.NewUser(0, in.Email, string(hashed), "user")
+func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.RegisterResponse, error) {
+	// Hashing the password
+	hashedPassword, err := uc.PasswordHasher.Hash(in.Password)
 	if err != nil {
-		return dto2.AuthResponse{}, err
-	}
-	if err = uc.Users.AddUser(ctx, u); err != nil {
-		return dto2.AuthResponse{}, uc_errors.ErrAddUser
+		return dto.RegisterResponse{}, uc_errors.Wrap(uc_errors.ErrHashPassword, err)
 	}
 
-	if _, err = uc.Profiles.AddProfile(ctx, u.GetID(), "undefined", "undefined"); err != nil {
-		return dto2.AuthResponse{}, uc_errors.ErrAddProfile
-	}
-
-	access, err := uc.Tokens.GenerateAccessToken(ctx, u.GetID(), u.GetEmail(), u.GetRole())
+	// Creating rich-models with validation
+	account, err := model.NewAccount(in.Email, hashedPassword)
 	if err != nil {
-		return dto2.AuthResponse{}, uc_errors.ErrTokenIssue
+		return dto.RegisterResponse{}, err
 	}
-	refresh, err := uc.Tokens.GenerateRefreshToken(ctx, u.GetID())
+	accountRole, err := model.NewAccountRole(account.ID())
 	if err != nil {
-		return dto2.AuthResponse{}, uc_errors.ErrTokenIssue
+		return dto.RegisterResponse{}, err
 	}
 
-	rc, err := uc.Tokens.ParseRefreshToken(ctx, refresh)
-	if err != nil {
-		return dto2.AuthResponse{}, uc_errors.ErrTokenParse
+	// Save all into database
+	if err := uc.Account.Create(ctx, account); err != nil {
+		return dto.RegisterResponse{}, uc_errors.Wrap(uc_errors.ErrCreateAccountDB, err)
+	}
+	if err := uc.AccountRole.Create(ctx, accountRole); err != nil {
+		return dto.RegisterResponse{}, uc_errors.Wrap(uc_errors.ErrCreateAccountRoleDB, err)
 	}
 
-	sess, err := entity2.NewSession(0, entity2.UserID(u.GetID()), rc.ID, time.Now().UTC(), rc.ExpiresAt.Time.UTC())
-	if err != nil {
-		return dto2.AuthResponse{}, err
-	}
-	if err := uc.Sessions.InsertSession(ctx, sess); err != nil {
-		return dto2.AuthResponse{}, uc_errors.ErrSessionSave
-	}
-
-	return dto2.AuthResponse{AccessToken: access, RefreshToken: refresh}, nil
+	// Response
+	return dto.RegisterResponse{AccountID: account.ID()}, nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccountsRepository interface {
+type AccountRepository interface {
 	Create(ctx context.Context, account *model.Account) error
 	GetByEmail(ctx context.Context, email string) (*model.Account, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Account, error)

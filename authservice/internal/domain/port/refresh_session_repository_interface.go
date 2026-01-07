@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type RefreshSessionsRepository interface {
+type RefreshSessionRepository interface {
 	Create(ctx context.Context, session *model.RefreshSession) error
 	GetByHash(ctx context.Context, tokenHash string) (*model.RefreshSession, error)
 	GetByID(ctx context.Context, tokenID uuid.UUID) (*model.RefreshSession, error)

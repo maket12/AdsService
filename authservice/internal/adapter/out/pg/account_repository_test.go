@@ -22,7 +22,7 @@ import (
 type AccountsRepoSuite struct {
 	suite.Suite
 	db          *sql.DB
-	repo        *pg.AccountsRepository
+	repo        *pg.AccountRepository
 	ctx         context.Context
 	dsn         string
 	migrate     *migrate.Migrate

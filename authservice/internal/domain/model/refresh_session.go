@@ -28,10 +28,13 @@ type RefreshSession struct {
 }
 
 func NewRefreshSession(
-	accountID uuid.UUID, refreshTokenHash string, rotatedFrom *uuid.UUID,
-	ip *string, userAgent *string,
+	id, accountID uuid.UUID, refreshTokenHash string,
+	rotatedFrom *uuid.UUID, ip *string, userAgent *string,
 	ttl time.Duration,
 ) (*RefreshSession, error) {
+	if id == uuid.Nil {
+		return nil, errs.NewValueInvalidError("session_id")
+	}
 	if accountID == uuid.Nil {
 		return nil, errs.NewValueInvalidError("account_id")
 	}
@@ -55,7 +58,7 @@ func NewRefreshSession(
 	expiresAt := now.Add(ttl)
 
 	return &RefreshSession{
-		id:               uuid.New(),
+		id:               id,
 		accountID:        accountID,
 		refreshTokenHash: refreshTokenHash,
 		createdAt:        now,

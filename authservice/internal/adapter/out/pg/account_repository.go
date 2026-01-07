@@ -13,20 +13,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccountsRepository struct {
+type AccountRepository struct {
 	q *sqlc.Queries
 }
 
-func NewAccountsRepository(q *sqlc.Queries) *AccountsRepository {
-	return &AccountsRepository{q: q}
+func NewAccountsRepository(q *sqlc.Queries) *AccountRepository {
+	return &AccountRepository{q: q}
 }
 
-func (r *AccountsRepository) Create(ctx context.Context, account *model.Account) error {
+func (r *AccountRepository) Create(ctx context.Context, account *model.Account) error {
 	params := mapper.MapAccountToSQLCCreate(account)
 	return r.q.CreateAccount(ctx, params)
 }
 
-func (r *AccountsRepository) GetByEmail(ctx context.Context, email string) (*model.Account, error) {
+func (r *AccountRepository) GetByEmail(ctx context.Context, email string) (*model.Account, error) {
 	rawAcc, err := r.q.GetAccountByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -40,7 +40,7 @@ func (r *AccountsRepository) GetByEmail(ctx context.Context, email string) (*mod
 	return account, nil
 }
 
-func (r *AccountsRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Account, error) {
+func (r *AccountRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Account, error) {
 	rawAcc, err := r.q.GetAccountByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -54,7 +54,7 @@ func (r *AccountsRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.
 	return account, nil
 }
 
-func (r *AccountsRepository) MarkLogin(ctx context.Context, account *model.Account) error {
+func (r *AccountRepository) MarkLogin(ctx context.Context, account *model.Account) error {
 	var lastLoginTime time.Time
 	if account.LastLoginAt() != nil {
 		lastLoginTime = *account.LastLoginAt()
@@ -76,7 +76,7 @@ func (r *AccountsRepository) MarkLogin(ctx context.Context, account *model.Accou
 	return nil
 }
 
-func (r *AccountsRepository) VerifyEmail(ctx context.Context, account *model.Account) error {
+func (r *AccountRepository) VerifyEmail(ctx context.Context, account *model.Account) error {
 	params := sqlc.VerifyAccountEmailParams{
 		ID:        account.ID(),
 		UpdatedAt: account.UpdatedAt(),

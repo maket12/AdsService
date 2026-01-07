@@ -9,13 +9,13 @@ var ErrValueIsRequired = errors.New("value is required")
 
 type ValueRequiredError struct {
 	ParamName string
-	Cause     error
+	Reason    error
 }
 
 func NewValueRequiredErrorWithReason(paramName string, reason error) *ValueRequiredError {
 	return &ValueRequiredError{
 		ParamName: paramName,
-		Cause:     reason,
+		Reason:    reason,
 	}
 }
 
@@ -26,9 +26,9 @@ func NewValueRequiredError(paramName string) *ValueRequiredError {
 }
 
 func (e *ValueRequiredError) Error() string {
-	if e.Cause != nil {
-		return fmt.Sprintf("%s: %s (cause: %v)",
-			ErrValueIsRequired, e.ParamName, e.Cause,
+	if e.Reason != nil {
+		return fmt.Sprintf("%s: %s (reason: %v)",
+			ErrValueIsRequired, e.ParamName, e.Reason,
 		)
 	}
 	return fmt.Sprintf("%s: %s", ErrValueIsRequired, e.ParamName)

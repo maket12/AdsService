@@ -12,20 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccountRolesRepository struct {
+type AccountRoleRepository struct {
 	q *sqlc.Queries
 }
 
-func NewAccountRolesRepository(q *sqlc.Queries) *AccountRolesRepository {
-	return &AccountRolesRepository{q: q}
+func NewAccountRolesRepository(q *sqlc.Queries) *AccountRoleRepository {
+	return &AccountRoleRepository{q: q}
 }
 
-func (r *AccountRolesRepository) Create(ctx context.Context, accountRole *model.AccountRole) error {
+func (r *AccountRoleRepository) Create(ctx context.Context, accountRole *model.AccountRole) error {
 	params := mapper.MapAccountRoleToSQLCCreate(accountRole)
 	return r.q.CreateAccountRole(ctx, params)
 }
 
-func (r *AccountRolesRepository) Get(ctx context.Context, accountID uuid.UUID) (*model.AccountRole, error) {
+func (r *AccountRoleRepository) Get(ctx context.Context, accountID uuid.UUID) (*model.AccountRole, error) {
 	rawAccRole, err := r.q.GetAccountRole(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -39,7 +39,7 @@ func (r *AccountRolesRepository) Get(ctx context.Context, accountID uuid.UUID) (
 	return accountRole, nil
 }
 
-func (r *AccountRolesRepository) Update(ctx context.Context, accountRole *model.AccountRole) error {
+func (r *AccountRoleRepository) Update(ctx context.Context, accountRole *model.AccountRole) error {
 	var params = sqlc.UpdateAccountRoleParams{
 		AccountID: accountRole.AccountID(),
 		Role:      sqlc.RoleType(accountRole.Role()),
@@ -52,6 +52,6 @@ func (r *AccountRolesRepository) Update(ctx context.Context, accountRole *model.
 	return nil
 }
 
-func (r *AccountRolesRepository) Delete(ctx context.Context, accountID uuid.UUID) error {
+func (r *AccountRoleRepository) Delete(ctx context.Context, accountID uuid.UUID) error {
 	return r.q.DeleteAccountRole(ctx, accountID)
 }

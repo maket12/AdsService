@@ -9,13 +9,13 @@ var ErrValueIsInvalid = errors.New("value is invalid")
 
 type ValueInvalidError struct {
 	ParamName string
-	Cause     error
+	Reason    error
 }
 
 func NewValueInvalidErrorWithReason(paramName string, reason error) *ValueInvalidError {
 	return &ValueInvalidError{
 		ParamName: paramName,
-		Cause:     reason,
+		Reason:    reason,
 	}
 }
 
@@ -26,9 +26,9 @@ func NewValueInvalidError(paramName string) *ValueInvalidError {
 }
 
 func (e *ValueInvalidError) Error() string {
-	if e.Cause != nil {
-		return fmt.Sprintf("%s: %s (cause: %v)",
-			ErrValueIsRequired, e.ParamName, e.Cause,
+	if e.Reason != nil {
+		return fmt.Sprintf("%s: %s (reason: %v)",
+			ErrValueIsRequired, e.ParamName, e.Reason,
 		)
 	}
 	return fmt.Sprintf("%s: %s", ErrValueIsRequired, e.ParamName)

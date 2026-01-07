@@ -13,20 +13,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type RefreshSessionsRepository struct {
+type RefreshSessionRepository struct {
 	q *sqlc.Queries
 }
 
-func NewRefreshSessionsRepository(q *sqlc.Queries) *RefreshSessionsRepository {
-	return &RefreshSessionsRepository{q: q}
+func NewRefreshSessionsRepository(q *sqlc.Queries) *RefreshSessionRepository {
+	return &RefreshSessionRepository{q: q}
 }
 
-func (r *RefreshSessionsRepository) Create(ctx context.Context, session *model.RefreshSession) error {
+func (r *RefreshSessionRepository) Create(ctx context.Context, session *model.RefreshSession) error {
 	params := mapper.MapRefreshSessionToSQLCCreate(session)
 	return r.q.CreateRefreshSession(ctx, params)
 }
 
-func (r *RefreshSessionsRepository) GetByHash(ctx context.Context, tokenHash string) (*model.RefreshSession, error) {
+func (r *RefreshSessionRepository) GetByHash(ctx context.Context, tokenHash string) (*model.RefreshSession, error) {
 	rawSession, err := r.q.GetRefreshSessionByHash(ctx, tokenHash)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -38,7 +38,7 @@ func (r *RefreshSessionsRepository) GetByHash(ctx context.Context, tokenHash str
 	return refreshSession, nil
 }
 
-func (r *RefreshSessionsRepository) GetByID(ctx context.Context, tokenID uuid.UUID) (*model.RefreshSession, error) {
+func (r *RefreshSessionRepository) GetByID(ctx context.Context, tokenID uuid.UUID) (*model.RefreshSession, error) {
 	rawSession, err := r.q.GetRefreshSessionByID(ctx, tokenID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -50,7 +50,7 @@ func (r *RefreshSessionsRepository) GetByID(ctx context.Context, tokenID uuid.UU
 	return refreshSession, nil
 }
 
-func (r *RefreshSessionsRepository) Revoke(ctx context.Context, session *model.RefreshSession) error {
+func (r *RefreshSessionRepository) Revoke(ctx context.Context, session *model.RefreshSession) error {
 	var (
 		revokedAt    sql.NullTime
 		revokeReason sql.NullString
@@ -77,7 +77,7 @@ func (r *RefreshSessionsRepository) Revoke(ctx context.Context, session *model.R
 	return r.q.RevokeRefreshSession(ctx, params)
 }
 
-func (r *RefreshSessionsRepository) RevokeAllForAccount(ctx context.Context, accountID uuid.UUID, reason *string) error {
+func (r *RefreshSessionRepository) RevokeAllForAccount(ctx context.Context, accountID uuid.UUID, reason *string) error {
 	var revokeReason sql.NullString
 	if reason != nil {
 		revokeReason = sql.NullString{
@@ -96,7 +96,7 @@ func (r *RefreshSessionsRepository) RevokeAllForAccount(ctx context.Context, acc
 	return r.q.RevokeAllAccountRefreshSessions(ctx, params)
 }
 
-func (r *RefreshSessionsRepository) RevokeDescendants(ctx context.Context, sessionID uuid.UUID, reason *string) error {
+func (r *RefreshSessionRepository) RevokeDescendants(ctx context.Context, sessionID uuid.UUID, reason *string) error {
 	var revokeReason sql.NullString
 	if reason != nil {
 		revokeReason = sql.NullString{
@@ -115,11 +115,11 @@ func (r *RefreshSessionsRepository) RevokeDescendants(ctx context.Context, sessi
 	return r.q.RevokeRefreshSessionDescendants(ctx, params)
 }
 
-func (r *RefreshSessionsRepository) DeleteExpired(ctx context.Context, expiresAt time.Time) error {
+func (r *RefreshSessionRepository) DeleteExpired(ctx context.Context, expiresAt time.Time) error {
 	return r.q.DeleteExpiredRefreshSessions(ctx, expiresAt)
 }
 
-func (r *RefreshSessionsRepository) ListActiveForAccount(ctx context.Context, accountID uuid.UUID) ([]*model.RefreshSession, error) {
+func (r *RefreshSessionRepository) ListActiveForAccount(ctx context.Context, accountID uuid.UUID) ([]*model.RefreshSession, error) {
 	params := sqlc.ListAccountActiveRefreshSessionsParams{
 		AccountID: accountID,
 		ExpiresAt: time.Now(),

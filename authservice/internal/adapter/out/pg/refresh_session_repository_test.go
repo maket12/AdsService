@@ -22,7 +22,7 @@ import (
 type RefreshSessionsRepoSuite struct {
 	suite.Suite
 	db          *sql.DB
-	repo        *pg.RefreshSessionsRepository
+	repo        *pg.RefreshSessionRepository
 	ctx         context.Context
 	dsn         string
 	migrate     *migrate.Migrate
