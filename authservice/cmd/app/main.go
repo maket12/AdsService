@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ads/authservice/cmd/app/config"
 	"ads/authservice/infrastructure/postgres"
 	"ads/authservice/internal/adapter/jwt"
 	"ads/authservice/internal/adapter/out/pg"
@@ -23,7 +24,7 @@ import (
 )
 
 func main() {
-	cfg, err := pkg2.Load()
+	cfg, err := config.Load()
 	if err != nil {
 		_ = fmt.Errorf("failed to load config", "error", err)
 		return
@@ -48,7 +49,7 @@ func main() {
 	log.Info("👋 authservice stopped")
 }
 
-func initDependencies(cfg *pkg2.Config, log *slog.Logger) (*gorm.DB, error) {
+func initDependencies(cfg *config.Config, log *slog.Logger) (*gorm.DB, error) {
 	log.Info("initializing database connections...")
 
 	db, err := postgres.InitDB(cfg)
@@ -63,7 +64,7 @@ func closeDependencies(log *slog.Logger) {
 	log.Info("closing database connections...")
 }
 
-func initServices(db *gorm.DB, cfg *pkg2.Config, log *slog.Logger) *authgrpc.AuthService {
+func initServices(db *gorm.DB, cfg *config.Config, log *slog.Logger) *authgrpc.AuthService {
 	usersRepo := pg.NewUsersRepo(db, log)
 	sessionsRepo := pg.NewSessionsRepo(db, log)
 	profilesRepo := pg.NewProfilesRepo(db, log)
@@ -85,7 +86,7 @@ func initServices(db *gorm.DB, cfg *pkg2.Config, log *slog.Logger) *authgrpc.Aut
 	return authgrpc.NewAuthService(registerUC, loginUC, validateUC)
 }
 
-func startGRPCServer(authService *authgrpc.AuthService, cfg *pkg2.Config, log *slog.Logger) *grpc.Server {
+func startGRPCServer(authService *authgrpc.AuthService, cfg *config.Config, log *slog.Logger) *grpc.Server {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	if err != nil {
 		log.Error("failed to listen", "error", err)
