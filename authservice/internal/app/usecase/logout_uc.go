@@ -5,7 +5,7 @@ import (
 	"ads/authservice/internal/app/uc_errors"
 	"ads/authservice/internal/app/utils"
 	"ads/authservice/internal/domain/port"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"context"
 	"errors"
 )
@@ -55,14 +55,12 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.Logout) (dto.LogoutRespo
 
 	var reason = "logout"
 	if err := session.Revoke(&reason); err != nil {
-		return dto.LogoutResponse{}, uc_errors.Wrap(
-			uc_errors.ErrCannotRevoke, err,
-		)
+		return dto.LogoutResponse{}, uc_errors.ErrCannotRevoke
 	}
 
 	if err := uc.RefreshSession.Revoke(ctx, session); err != nil {
 		return dto.LogoutResponse{}, uc_errors.Wrap(
-			uc_errors.ErrRevokeRefreshSession, err,
+			uc_errors.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 

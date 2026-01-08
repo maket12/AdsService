@@ -6,7 +6,7 @@ import (
 	"ads/authservice/internal/app/utils"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/domain/port"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"context"
 	"errors"
 	"time"
@@ -73,7 +73,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 
 	if err := uc.RefreshSession.Revoke(ctx, oldSession); err != nil {
 		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
-			uc_errors.ErrRevokeRefreshSession, err,
+			uc_errors.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 
@@ -99,6 +99,11 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	refreshToken, err := uc.TokenGenerator.GenerateRefreshToken(
 		ctx, accountID, sessionID,
 	)
+	if err != nil {
+		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+			uc_errors.ErrGenerateRefreshToken, err,
+		)
+	}
 
 	hashedRefreshToken := utils.HashToken(refreshToken)
 
@@ -107,6 +112,11 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 		sessionID, accountID, hashedRefreshToken, &oldSessionID,
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
+	if err != nil {
+		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
+	}
 
 	if err := uc.RefreshSession.Create(ctx, refreshSession); err != nil {
 		return dto.RefreshSessionResponse{}, uc_errors.Wrap(

@@ -5,7 +5,9 @@ import (
 	"ads/authservice/internal/app/uc_errors"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/domain/port"
+	"ads/authservice/internal/pkg/errs"
 	"context"
+	"errors"
 )
 
 type RegisterUC struct {
@@ -30,25 +32,38 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 	// Hashing the password
 	hashedPassword, err := uc.PasswordHasher.Hash(in.Password)
 	if err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(uc_errors.ErrHashPassword, err)
+		return dto.RegisterResponse{}, uc_errors.Wrap(
+			uc_errors.ErrHashPassword, err,
+		)
 	}
 
 	// Creating rich-models with validation
 	account, err := model.NewAccount(in.Email, hashedPassword)
 	if err != nil {
-		return dto.RegisterResponse{}, err
+		return dto.RegisterResponse{}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
 	}
 	accountRole, err := model.NewAccountRole(account.ID())
 	if err != nil {
-		return dto.RegisterResponse{}, err
+		return dto.RegisterResponse{}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
 	}
 
 	// Save all into database
 	if err := uc.Account.Create(ctx, account); err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(uc_errors.ErrCreateAccountDB, err)
+		if errors.Is(err, errs.ErrObjectAlreadyExists) {
+			return dto.RegisterResponse{}, uc_errors.ErrAccountAlreadyExists
+		}
+		return dto.RegisterResponse{}, uc_errors.Wrap(
+			uc_errors.ErrCreateAccountDB, err,
+		)
 	}
 	if err := uc.AccountRole.Create(ctx, accountRole); err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(uc_errors.ErrCreateAccountRoleDB, err)
+		return dto.RegisterResponse{}, uc_errors.Wrap(
+			uc_errors.ErrCreateAccountRoleDB, err,
+		)
 	}
 
 	// Response

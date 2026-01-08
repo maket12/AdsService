@@ -2,7 +2,7 @@ package model_test
 
 import (
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"testing"
 
 	"github.com/google/uuid"

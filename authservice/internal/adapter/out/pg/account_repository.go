@@ -4,13 +4,14 @@ import (
 	"ads/authservice/internal/adapter/out/pg/mapper"
 	"ads/authservice/internal/adapter/out/pg/sqlc"
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"context"
 	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type AccountRepository struct {
@@ -23,7 +24,21 @@ func NewAccountsRepository(q *sqlc.Queries) *AccountRepository {
 
 func (r *AccountRepository) Create(ctx context.Context, account *model.Account) error {
 	params := mapper.MapAccountToSQLCCreate(account)
-	return r.q.CreateAccount(ctx, params)
+	err := r.q.CreateAccount(ctx, params)
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				return errs.NewObjectAlreadyExistsErrorWithReason(
+					"account", pgErr,
+				)
+			}
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (r *AccountRepository) GetByEmail(ctx context.Context, email string) (*model.Account, error) {

@@ -2,7 +2,7 @@ package model_test
 
 import (
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/pkg/errs"
+	errs2 "ads/authservice/internal/pkg/errs"
 	"testing"
 	"time"
 
@@ -46,7 +46,7 @@ func TestNewRefreshSession(t *testing.T) {
 			accountID: uuid.New(),
 			tokenHash: "hashed",
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    errs2.ErrValueIsInvalid,
 		},
 		{
 			name:      "nullable account id",
@@ -54,7 +54,7 @@ func TestNewRefreshSession(t *testing.T) {
 			accountID: uuid.Nil,
 			tokenHash: "hashed",
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    errs2.ErrValueIsInvalid,
 		},
 		{
 			name:      "empty token hash",
@@ -62,7 +62,7 @@ func TestNewRefreshSession(t *testing.T) {
 			accountID: uuid.New(),
 			tokenHash: "",
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsRequired,
+			expect:    errs2.ErrValueIsRequired,
 		},
 		{
 			name:        "nullable rotated from",
@@ -71,7 +71,7 @@ func TestNewRefreshSession(t *testing.T) {
 			tokenHash:   "hashed",
 			rotatedFrom: &uuid.Nil,
 			ttl:         time.Minute,
-			expect:      errs.ErrValueIsInvalid,
+			expect:      errs2.ErrValueIsInvalid,
 		},
 		{
 			name:      "empty ip",
@@ -80,7 +80,7 @@ func TestNewRefreshSession(t *testing.T) {
 			tokenHash: "hashed",
 			ip:        vPtr(""),
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    errs2.ErrValueIsInvalid,
 		},
 		{
 			name:      "empty user-agent",
@@ -90,7 +90,7 @@ func TestNewRefreshSession(t *testing.T) {
 			ip:        vPtr("123.021.234.0"),
 			userAgent: vPtr(""),
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    errs2.ErrValueIsInvalid,
 		},
 		{
 			name:      "invalid ttl (not positive)",
@@ -100,7 +100,7 @@ func TestNewRefreshSession(t *testing.T) {
 			ip:        vPtr("123.021.234.0"),
 			userAgent: vPtr("Mozilla/5.0"),
 			ttl:       time.Minute * -1,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    errs2.ErrValueIsInvalid,
 		},
 	}
 
@@ -261,7 +261,7 @@ func TestRefreshSession_Revoke(t *testing.T) {
 			name:      "error - empty reason",
 			revokedAt: nil,
 			reason:    vPtr(""),
-			expect:    errs.ErrValueIsInvalid,
+			expect:    errs2.ErrValueIsInvalid,
 		},
 	}
 

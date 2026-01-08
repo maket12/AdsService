@@ -4,7 +4,7 @@ import (
 	"ads/authservice/internal/app/dto"
 	"ads/authservice/internal/app/uc_errors"
 	"ads/authservice/internal/domain/port"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"context"
 	"errors"
 )

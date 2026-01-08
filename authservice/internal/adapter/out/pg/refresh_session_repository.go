@@ -4,7 +4,7 @@ import (
 	"ads/authservice/internal/adapter/out/pg/mapper"
 	"ads/authservice/internal/adapter/out/pg/sqlc"
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"context"
 	"database/sql"
 	"errors"

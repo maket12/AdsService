@@ -6,7 +6,7 @@ import (
 	"ads/authservice/internal/app/utils"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/domain/port"
-	"ads/authservice/pkg/errs"
+	"ads/authservice/internal/pkg/errs"
 	"context"
 	"errors"
 	"time"
@@ -74,7 +74,9 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 	// Update Account
 	account.MarkLogin()
 	if err := uc.Account.MarkLogin(ctx, account); err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(uc_errors.ErrUpdateAccountDB, err)
+		return dto.LoginResponse{}, uc_errors.Wrap(
+			uc_errors.ErrUpdateAccountDB, err,
+		)
 	}
 
 	// Find an account role
@@ -88,13 +90,20 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		ctx, account.ID(), accRole.Role().String(),
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(uc_errors.ErrGenerateAccessToken, err)
+		return dto.LoginResponse{}, uc_errors.Wrap(
+			uc_errors.ErrGenerateAccessToken, err,
+		)
 	}
 
 	var sessionID = uuid.New()
 	refreshToken, err := uc.TokenGenerator.GenerateRefreshToken(
 		ctx, account.ID(), sessionID,
 	)
+	if err != nil {
+		return dto.LoginResponse{}, uc_errors.Wrap(
+			uc_errors.ErrGenerateRefreshToken, err,
+		)
+	}
 
 	hashedRefreshToken := utils.HashToken(refreshToken)
 
@@ -103,6 +112,11 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		sessionID, account.ID(), hashedRefreshToken, nil,
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
+	if err != nil {
+		return dto.LoginResponse{}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
+	}
 
 	if err := uc.RefreshSession.Create(ctx, refreshSession); err != nil {
 		return dto.LoginResponse{}, uc_errors.Wrap(
