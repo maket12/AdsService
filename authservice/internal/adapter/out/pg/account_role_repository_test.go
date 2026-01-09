@@ -2,15 +2,13 @@ package pg_test
 
 import (
 	"ads/authservice/internal/adapter/out/pg"
-	"ads/authservice/internal/adapter/out/pg/sqlc"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/pkg/errs"
-	"ads/migrations"
+	"ads/authservice/migrations"
 	"context"
-	"database/sql"
 	"errors"
-	"os"
 	"testing"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
@@ -20,10 +18,9 @@ import (
 
 type AccountRolesRepoSuite struct {
 	suite.Suite
-	db       *sql.DB
+	dbClient *pg.PostgresClient
 	repo     *pg.AccountRoleRepository
 	ctx      context.Context
-	dsn      string
 	migrate  *migrate.Migrate
 	testRole *model.AccountRole
 }
@@ -36,13 +33,24 @@ func TestAccountRolesRepoSuite(t *testing.T) {
 }
 
 func (s *AccountRolesRepoSuite) setupDatabase() {
+	dbConfig := pg.NewPostgresConfig(
+		"localhost", 5432,
+		"test", "test", "testdb",
+		"disable", 25, 25, time.Minute*5,
+	)
+	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
+
+	dbClient, err := pg.NewPostgresClient(dbConfig)
+	s.Require().NoError(err)
+	s.dbClient = dbClient
+
 	sourceDriver, err := iofs.New(migrations.FS, ".")
 	s.Require().NoError(err, "failed to create iofs driver")
 
 	m, err := migrate.NewWithSourceInstance(
 		"iofs",
 		sourceDriver,
-		s.dsn,
+		dsn,
 	)
 	s.Require().NoError(err, "failed to create migration instance")
 
@@ -76,27 +84,13 @@ func (s *AccountRolesRepoSuite) setupDatabase() {
 }
 
 func (s *AccountRolesRepoSuite) SetupSuite() {
-	dsn := os.Getenv("TEST_DB_DSN")
-	if dsn == "" {
-		dsn = "postgres://test:test@localhost:5432/testdb?sslmode=disable"
-	}
-	s.dsn = dsn
-
-	pgClient, err := pg.NewPostgresClient(s.dsn, nil)
-	s.Require().NoError(err)
-	s.db = pgClient.DB
-
 	s.setupDatabase()
-
-	queries := sqlc.New(s.db)
-	s.repo = pg.NewAccountRolesRepository(queries)
-
+	s.repo = pg.NewAccountRolesRepository(s.dbClient)
 	s.ctx = context.Background()
-
 	testAccount, _ := model.NewAccount("new@email.com", "hashed-secret-pass")
 
 	// Create an account in the main table
-	accountsRepo := pg.NewAccountsRepository(queries)
+	accountsRepo := pg.NewAccountsRepository(s.dbClient)
 	_ = accountsRepo.Create(s.ctx, testAccount)
 
 	s.testRole, _ = model.NewAccountRole(testAccount.ID())
@@ -108,12 +102,12 @@ func (s *AccountRolesRepoSuite) TearDownSuite() {
 			s.Require().NoError(err, "failed to migrate down")
 		}
 	}
-	err := s.db.Close()
+	err := s.dbClient.Close()
 	s.Require().NoError(err, "failed to close db connection")
 }
 
 func (s *AccountRolesRepoSuite) SetupTest() {
-	_, err := s.db.Exec("TRUNCATE TABLE account_roles CASCADE")
+	_, err := s.dbClient.DB.Exec("TRUNCATE TABLE account_roles CASCADE")
 	s.Require().NoError(err)
 }
 

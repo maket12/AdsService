@@ -2,16 +2,14 @@ package pg_test
 
 import (
 	"ads/authservice/internal/adapter/out/pg"
-	"ads/authservice/internal/adapter/out/pg/sqlc"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/pkg/errs"
-	"ads/migrations"
+	"ads/authservice/migrations"
 	"context"
-	"database/sql"
 	"errors"
-	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -21,10 +19,9 @@ import (
 
 type AccountsRepoSuite struct {
 	suite.Suite
-	db          *sql.DB
+	dbClient    *pg.PostgresClient
 	repo        *pg.AccountRepository
 	ctx         context.Context
-	dsn         string
 	migrate     *migrate.Migrate
 	testAccount *model.Account
 }
@@ -39,13 +36,24 @@ func TestAccountsRepoSuite(t *testing.T) {
 func (s *AccountsRepoSuite) setupDatabase() {
 	const targetVersion = 1
 
+	dbConfig := pg.NewPostgresConfig(
+		"localhost", 5432,
+		"test", "test", "testdb",
+		"disable", 25, 25, time.Minute*5,
+	)
+	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
+
+	dbClient, err := pg.NewPostgresClient(dbConfig)
+	s.Require().NoError(err)
+	s.dbClient = dbClient
+
 	sourceDriver, err := iofs.New(migrations.FS, ".")
 	s.Require().NoError(err, "failed to create iofs driver")
 
 	m, err := migrate.NewWithSourceInstance(
 		"iofs",
 		sourceDriver,
-		s.dsn,
+		dsn,
 	)
 	s.Require().NoError(err, "failed to create migration instance")
 
@@ -79,23 +87,9 @@ func (s *AccountsRepoSuite) setupDatabase() {
 }
 
 func (s *AccountsRepoSuite) SetupSuite() {
-	dsn := os.Getenv("TEST_DB_DSN")
-	if dsn == "" {
-		dsn = "postgres://test:test@localhost:5432/testdb?sslmode=disable"
-	}
-	s.dsn = dsn
-
-	pgClient, err := pg.NewPostgresClient(s.dsn, nil)
-	s.Require().NoError(err)
-	s.db = pgClient.DB
-
 	s.setupDatabase()
-
-	queries := sqlc.New(s.db)
-	s.repo = pg.NewAccountsRepository(queries)
-
+	s.repo = pg.NewAccountsRepository(s.dbClient)
 	s.ctx = context.Background()
-
 	s.testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
 }
 
@@ -105,12 +99,12 @@ func (s *AccountsRepoSuite) TearDownSuite() {
 			s.Require().NoError(err, "failed to migrate down")
 		}
 	}
-	err := s.db.Close()
+	err := s.dbClient.Close()
 	s.Require().NoError(err, "failed to close db connection")
 }
 
 func (s *AccountsRepoSuite) SetupTest() {
-	_, err := s.db.Exec("TRUNCATE TABLE accounts CASCADE")
+	_, err := s.dbClient.DB.Exec("TRUNCATE TABLE accounts CASCADE")
 	s.Require().NoError(err)
 }
 

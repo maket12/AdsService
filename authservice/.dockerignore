@@ -1,0 +1,7 @@
+.gitignore
+.git
+.idea
+bin
+obj
+*.test
+Dockerfile

@@ -2,14 +2,11 @@ package pg_test
 
 import (
 	"ads/authservice/internal/adapter/out/pg"
-	"ads/authservice/internal/adapter/out/pg/sqlc"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/pkg/errs"
-	"ads/migrations"
+	"ads/authservice/migrations"
 	"context"
-	"database/sql"
 	"errors"
-	"os"
 	"testing"
 	"time"
 
@@ -21,10 +18,9 @@ import (
 
 type RefreshSessionsRepoSuite struct {
 	suite.Suite
-	db          *sql.DB
+	dbClient    *pg.PostgresClient
 	repo        *pg.RefreshSessionRepository
 	ctx         context.Context
-	dsn         string
 	migrate     *migrate.Migrate
 	testSession *model.RefreshSession
 }
@@ -39,13 +35,24 @@ func TestRefreshSessionRepoSuite(t *testing.T) {
 func (s *RefreshSessionsRepoSuite) setupDatabase() {
 	const targetVersion = 3
 
+	dbConfig := pg.NewPostgresConfig(
+		"localhost", 5432,
+		"test", "test", "testdb",
+		"disable", 25, 25, time.Minute*5,
+	)
+	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
+
+	dbClient, err := pg.NewPostgresClient(dbConfig)
+	s.Require().NoError(err)
+	s.dbClient = dbClient
+
 	sourceDriver, err := iofs.New(migrations.FS, ".")
 	s.Require().NoError(err, "failed to create iofs driver")
 
 	m, err := migrate.NewWithSourceInstance(
 		"iofs",
 		sourceDriver,
-		s.dsn,
+		dsn,
 	)
 	s.Require().NoError(err, "failed to create migration instance")
 
@@ -79,25 +86,13 @@ func (s *RefreshSessionsRepoSuite) setupDatabase() {
 }
 
 func (s *RefreshSessionsRepoSuite) SetupSuite() {
-	dsn := os.Getenv("TEST_DB_DSN")
-	if dsn == "" {
-		dsn = "postgres://test:test@localhost:5432/testdb?sslmode=disable"
-	}
-	s.dsn = dsn
-
-	pgClient, err := pg.NewPostgresClient(s.dsn, nil)
-	s.Require().NoError(err)
-	s.db = pgClient.DB
-
 	s.setupDatabase()
-
-	queries := sqlc.New(s.db)
-	s.repo = pg.NewRefreshSessionsRepository(queries)
-
+	s.repo = pg.NewRefreshSessionsRepository(s.dbClient)
 	s.ctx = context.Background()
 
 	var testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
 	s.testSession, _ = model.NewRefreshSession(
+		uuid.New(),
 		testAccount.ID(),
 		"hashed-secret-token",
 		nil,
@@ -107,7 +102,7 @@ func (s *RefreshSessionsRepoSuite) SetupSuite() {
 	)
 
 	// Create an account in the main table
-	accountsRepo := pg.NewAccountsRepository(queries)
+	accountsRepo := pg.NewAccountsRepository(s.dbClient)
 	_ = accountsRepo.Create(s.ctx, testAccount)
 }
 
@@ -117,12 +112,12 @@ func (s *RefreshSessionsRepoSuite) TearDownSuite() {
 			s.Require().NoError(err, "failed to migrate down")
 		}
 	}
-	err := s.db.Close()
+	err := s.dbClient.Close()
 	s.Require().NoError(err, "failed to close db connection")
 }
 
 func (s *RefreshSessionsRepoSuite) SetupTest() {
-	_, err := s.db.Exec("TRUNCATE TABLE refresh_sessions CASCADE")
+	_, err := s.dbClient.DB.Exec("TRUNCATE TABLE refresh_sessions CASCADE")
 	s.Require().NoError(err)
 }
 
@@ -142,6 +137,7 @@ func (s *RefreshSessionsRepoSuite) TestCreate_NonExistingAccount() {
 	// Trying to create a session for non-existing account
 	var anotherSession, _ = model.NewRefreshSession(
 		uuid.New(),
+		uuid.New(),
 		"hashed-token",
 		nil,
 		nil,
@@ -158,6 +154,7 @@ func (s *RefreshSessionsRepoSuite) TestCreate_DuplicateHash() {
 
 	// Trying to create a session with the same token hash
 	var anotherSession, _ = model.NewRefreshSession(
+		uuid.New(),
 		s.testSession.AccountID(),
 		s.testSession.RefreshTokenHash(),
 		nil,
@@ -208,6 +205,7 @@ func (s *RefreshSessionsRepoSuite) TestRevoke() {
 
 func (s *RefreshSessionsRepoSuite) TestRevokeAllForAccount() {
 	var anotherSession, _ = model.NewRefreshSession(
+		uuid.New(),
 		s.testSession.AccountID(),
 		"hashed",
 		nil,
@@ -238,6 +236,7 @@ func (s *RefreshSessionsRepoSuite) TestRevokeDescendants() {
 	var (
 		rotatedID         = s.testSession.ID()
 		anotherSession, _ = model.NewRefreshSession(
+			uuid.New(),
 			s.testSession.AccountID(),
 			"hashed",
 			&rotatedID,
@@ -277,6 +276,7 @@ func (s *RefreshSessionsRepoSuite) TestListActiveForAccount() {
 	const sessionsAmount = 2
 
 	var anotherSession, _ = model.NewRefreshSession(
+		uuid.New(),
 		s.testSession.AccountID(),
 		"hashed",
 		nil,
