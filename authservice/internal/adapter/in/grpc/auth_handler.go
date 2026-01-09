@@ -11,7 +11,7 @@ import (
 
 type AuthHandler struct {
 	auth_v1.UnimplementedAuthServiceServer
-	log                   slog.Logger
+	log                   *slog.Logger
 	registerUC            *usecase.RegisterUC
 	loginUC               *usecase.LoginUC
 	logoutUC              *usecase.LogoutUC
@@ -20,7 +20,7 @@ type AuthHandler struct {
 }
 
 func NewAuthHandler(
-	log slog.Logger,
+	log *slog.Logger,
 	registerUC *usecase.RegisterUC,
 	loginUC *usecase.LoginUC,
 	logoutUC *usecase.LogoutUC,

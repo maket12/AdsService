@@ -17,8 +17,9 @@ type RefreshSessionRepository struct {
 	q *sqlc.Queries
 }
 
-func NewRefreshSessionsRepository(q *sqlc.Queries) *RefreshSessionRepository {
-	return &RefreshSessionRepository{q: q}
+func NewRefreshSessionsRepository(pgClient *PostgresClient) *RefreshSessionRepository {
+	queries := sqlc.New(pgClient.DB)
+	return &RefreshSessionRepository{q: queries}
 }
 
 func (r *RefreshSessionRepository) Create(ctx context.Context, session *model.RefreshSession) error {

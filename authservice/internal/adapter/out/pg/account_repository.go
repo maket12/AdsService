@@ -18,8 +18,9 @@ type AccountRepository struct {
 	q *sqlc.Queries
 }
 
-func NewAccountsRepository(q *sqlc.Queries) *AccountRepository {
-	return &AccountRepository{q: q}
+func NewAccountsRepository(pgClient *PostgresClient) *AccountRepository {
+	queries := sqlc.New(pgClient.DB)
+	return &AccountRepository{q: queries}
 }
 
 func (r *AccountRepository) Create(ctx context.Context, account *model.Account) error {

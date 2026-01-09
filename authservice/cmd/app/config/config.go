@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -14,14 +14,24 @@ type Config struct {
 	DBUser     string `env:"DB_USER,required"`
 	DBPassword string `env:"DB_PASSWORD,required"`
 	DBName     string `env:"DB_NAME,required"`
+	SSLMode    string `env:"SSL_MODE" envDefault:"prefer"`
+
+	OpenConn     int           `env:"OPEN_CONNECTIONS" envDefault:"25"`
+	IdleConn     int           `env:"IDLE_CONNECTIONS" envDefault:"25"`
+	ConnLifeTime time.Duration `env:"CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// JWT
-	JWTAccessSecret  string `env:"JWT_ACCESS_SECRET,required"`
-	JWTRefreshSecret string `env:"JWT_REFRESH_SECRET,required"`
+	AccessSecret  string        `env:"ACCESS_SECRET,required"`
+	RefreshSecret string        `env:"REFRESH_SECRET,required"`
+	AccessTTL     time.Duration `env:"ACCESS_TTL" envDefault:"15m"`
+	RefreshTTL    time.Duration `env:"REFRESH_TTL" envDefault:"720h"`
+
+	// Password hasher
+	PasswordCost int `env:"PASSWORD_COST" envDefault:"4"`
 
 	// Service
 	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50051"`
-	LogLevel    string `env:"LOG_LEVEL" envDefault:"info"`
+	LogLevel    string `env:"LOG_LEVEL" envDefault:"INFO"`
 	Environment string `env:"ENVIRONMENT" envDefault:"development"`
 }
 
@@ -44,21 +54,11 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("DBName is required")
 	}
 
-	if cfg.JWTAccessSecret == "" {
-		return nil, fmt.Errorf("JWT_Access_SECRET is required")
+	if cfg.AccessSecret == "" {
+		return nil, fmt.Errorf("AccessSecret is required")
 	}
-	if cfg.JWTRefreshSecret == "" {
-		return nil, fmt.Errorf("JWTRefreshSecret is required")
-	}
-
-	validLevels := map[string]bool{
-		"debug": true,
-		"info":  true,
-		"warn":  true,
-		"error": true,
-	}
-	if !validLevels[cfg.LogLevel] {
-		return nil, fmt.Errorf("invalid LOG_LEVEL: %s, must be one of: debug, info, warn, error", cfg.LogLevel)
+	if cfg.RefreshSecret == "" {
+		return nil, fmt.Errorf("RefreshSecret is required")
 	}
 
 	fmt.Printf("Config loaded successfully\n")
@@ -68,19 +68,4 @@ func Load() (*Config, error) {
 	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
 
 	return cfg, nil
-}
-
-func (c *Config) GetSlogLevel() slog.Level {
-	switch c.LogLevel {
-	case "debug":
-		return slog.LevelDebug
-	case "info":
-		return slog.LevelInfo
-	case "warn":
-		return slog.LevelWarn
-	case "error":
-		return slog.LevelError
-	default:
-		return slog.LevelInfo
-	}
 }
