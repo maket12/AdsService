@@ -37,17 +37,27 @@ func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateRef
 			Valid: true,
 		}
 	}
-	if session.IP() != nil {
+	if session.IP() != nil && *session.IP() != "" {
 		parsedIP := net.ParseIP(*session.IP())
 		if parsedIP != nil {
+			mask := net.CIDRMask(32, 32)
+			if parsedIP.To4() == nil {
+				mask = net.CIDRMask(128, 128)
+			}
+
 			ip = pqtype.Inet{
 				IPNet: net.IPNet{
 					IP:   parsedIP,
-					Mask: nil,
+					Mask: mask,
 				},
 				Valid: true,
 			}
+		} else {
+			ip = pqtype.Inet{Valid: false}
 		}
+	} else {
+		// IP = nil
+		ip = pqtype.Inet{Valid: false}
 	}
 	if session.UserAgent() != nil {
 		userAgent = sql.NullString{
@@ -86,6 +96,10 @@ func MapSQLCToRefreshSession(rawSession sqlc.RefreshSession) *model.RefreshSessi
 	}
 	if rawSession.RotatedFrom.Valid {
 		rotatedFrom = &rawSession.RotatedFrom.UUID
+	}
+	if rawSession.Ip.Valid {
+		s := rawSession.Ip.IPNet.IP.String()
+		ip = &s
 	}
 	if rawSession.UserAgent.Valid {
 		userAgent = &rawSession.UserAgent.String

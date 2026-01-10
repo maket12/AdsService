@@ -14,11 +14,11 @@ type Config struct {
 	DBUser     string `env:"DB_USER,required"`
 	DBPassword string `env:"DB_PASSWORD,required"`
 	DBName     string `env:"DB_NAME,required"`
-	SSLMode    string `env:"SSL_MODE" envDefault:"prefer"`
+	DBSSLMode  string `env:"DB_SSL_MODE" envDefault:"prefer"`
 
-	OpenConn     int           `env:"OPEN_CONNECTIONS" envDefault:"25"`
-	IdleConn     int           `env:"IDLE_CONNECTIONS" envDefault:"25"`
-	ConnLifeTime time.Duration `env:"CONNECTION_LIFETIME" envDefault:"5m"`
+	DBOpenConn     int           `env:"DB_DB_OPEN_CONNECTIONS" envDefault:"25"`
+	DBIdleConn     int           `env:"DB_DB_IDLE_CONNECTIONS" envDefault:"25"`
+	DBConnLifeTime time.Duration `env:"DB_CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// JWT
 	AccessSecret  string        `env:"ACCESS_SECRET,required"`

@@ -43,16 +43,9 @@ func NewLoginUC(
 }
 
 func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse, error) {
-	// Hashing the password
-	hashedPassword, err := uc.PasswordHasher.Hash(in.Password)
-	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
-			uc_errors.ErrHashPassword, err,
-		)
-	}
-
 	// Find account
 	account, err := uc.Account.GetByEmail(ctx, in.Email)
+
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.LoginResponse{}, uc_errors.ErrInvalidCredentials
@@ -62,7 +55,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		)
 	}
 
-	if !uc.PasswordHasher.Compare(hashedPassword, account.PasswordHash()) {
+	if !uc.PasswordHasher.Compare(account.PasswordHash(), in.Password) {
 		return dto.LoginResponse{}, uc_errors.ErrInvalidCredentials
 	}
 

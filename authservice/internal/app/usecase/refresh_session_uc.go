@@ -46,6 +46,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	}
 
 	oldSession, err := uc.RefreshSession.GetByID(ctx, oldSessionID)
+
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
@@ -56,7 +57,9 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	}
 
 	// Validate and revoke
-	if !oldSession.IsActive() || *oldSession.IP() != *in.IP || *oldSession.UserAgent() != *in.UserAgent {
+	if !oldSession.IsActive() ||
+		!utils.ComparePtr(oldSession.IP(), in.IP) ||
+		!utils.ComparePtr(oldSession.UserAgent(), in.UserAgent) {
 		return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
 	}
 

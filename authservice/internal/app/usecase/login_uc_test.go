@@ -33,7 +33,6 @@ func TestLoginUC_Execute(t *testing.T) {
 
 	email := "user@test.com"
 	pass := "password123"
-	hashedInput := "hashed_input"
 	ttl := time.Hour * 24
 
 	account, _ := model.NewAccount(email, "hashed_db")
@@ -45,9 +44,8 @@ func TestLoginUC_Execute(t *testing.T) {
 			name:  "Success",
 			input: dto.Login{Email: email, Password: pass, IP: nil, UserAgent: nil},
 			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", pass).Return(hashedInput, nil)
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
-				a.passwordHasher.On("Compare", hashedInput, "hashed_db").Return(true)
+				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
 				a.account.On("MarkLogin", mock.Anything, mock.Anything).Return(nil)
 				a.accountRole.On("Get", mock.Anything, account.ID()).Return(role, nil)
 				a.tokenGenerator.On("GenerateAccessToken", mock.Anything, account.ID(), "user").
@@ -63,7 +61,6 @@ func TestLoginUC_Execute(t *testing.T) {
 			name:  "Fail - Account Not Found",
 			input: dto.Login{Email: "unknown@test.com", Password: pass},
 			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", pass).Return(hashedInput, nil)
 				a.account.On("GetByEmail", mock.Anything, "unknown@test.com").
 					Return(nil, errs.ErrObjectNotFound)
 			},
@@ -73,9 +70,8 @@ func TestLoginUC_Execute(t *testing.T) {
 			name:  "Fail - Password Mismatch",
 			input: dto.Login{Email: email, Password: "wrong_password"},
 			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", "wrong_password").Return("hashed_wrong", nil)
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
-				a.passwordHasher.On("Compare", "hashed_wrong", "hashed_db").Return(false)
+				a.passwordHasher.On("Compare", "hashed_db", "wrong_password").Return(false)
 			},
 			wantErr: uc_errors.ErrInvalidCredentials,
 		},
@@ -86,9 +82,8 @@ func TestLoginUC_Execute(t *testing.T) {
 				bannedAcc, _ := model.NewAccount(email, "hashed_db")
 				bannedAcc.Block()
 
-				a.passwordHasher.On("Hash", pass).Return(hashedInput, nil)
 				a.account.On("GetByEmail", mock.Anything, email).Return(bannedAcc, nil)
-				a.passwordHasher.On("Compare", hashedInput, "hashed_db").Return(true)
+				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
 			},
 			wantErr: uc_errors.ErrCannotLogin,
 		},
@@ -96,9 +91,8 @@ func TestLoginUC_Execute(t *testing.T) {
 			name:  "Fail - Token Generation Error",
 			input: dto.Login{Email: email, Password: pass},
 			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", pass).Return(hashedInput, nil)
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
-				a.passwordHasher.On("Compare", hashedInput, "hashed_db").Return(true)
+				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
 				a.account.On("MarkLogin", mock.Anything, mock.Anything).Return(nil)
 				a.accountRole.On("Get", mock.Anything, account.ID()).Return(role, nil)
 
