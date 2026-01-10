@@ -2,6 +2,7 @@ package model
 
 import (
 	"ads/authservice/internal/pkg/errs"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -46,4 +47,11 @@ func (a *AccountRole) Role() Role           { return a.role }
 
 // ================ Mutation ================
 
-func (a *AccountRole) Assign() { a.role = RoleAdmin }
+func (a *AccountRole) Assign(rawRole string) error {
+	lowerRawRole := strings.ToLower(rawRole)
+	if lowerRawRole != "user" && lowerRawRole != "admin" {
+		return errs.NewValueInvalidError("role")
+	}
+	a.role = Role(lowerRawRole)
+	return nil
+}

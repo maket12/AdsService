@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "ads/authservice/generated/auth_v1;auth_v1";
+option go_package = "authservice/internal/generated/auth_v1;auth_v1";
 
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse);
@@ -10,6 +10,7 @@ service AuthService {
   rpc Logout (LogoutRequest) returns (LogoutResponse);
   rpc RefreshSession (RefreshSessionRequest) returns (RefreshSessionResponse);
   rpc ValidateAccessToken (ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
+  rpc AssignRole (AssignRoleRequest) returns (AssignRoleResponse);
 }
 
 message RegisterRequest {
@@ -59,4 +60,13 @@ message ValidateAccessTokenRequest {
 message ValidateAccessTokenResponse {
   string account_id = 1;
   string role = 2;
+}
+
+message AssignRoleRequest {
+  string account_id = 1;
+  string role = 2;
+}
+
+message AssignRoleResponse {
+  bool assign = 1;
 }

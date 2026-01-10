@@ -17,6 +17,7 @@ func gRPCError(err error) (codes.Code, string, error) {
 			errors.Is(w.Public, uc_errors.ErrGetAccountByIDDB),
 			errors.Is(w.Public, uc_errors.ErrUpdateAccountDB),
 			errors.Is(w.Public, uc_errors.ErrGetAccountRoleDB),
+			errors.Is(w.Public, uc_errors.ErrUpdateAccountRoleDB),
 			errors.Is(w.Public, uc_errors.ErrCreateRefreshSessionDB),
 			errors.Is(w.Public, uc_errors.ErrGetRefreshSessionByIDDB),
 			errors.Is(w.Public, uc_errors.ErrRevokeRefreshSessionDB),
@@ -34,13 +35,15 @@ func gRPCError(err error) (codes.Code, string, error) {
 	}
 
 	switch {
-	case errors.Is(err, uc_errors.ErrInvalidCredentials):
+	case errors.Is(err, uc_errors.ErrInvalidCredentials),
+		errors.Is(err, uc_errors.ErrInvalidAccountID):
 		return codes.NotFound, err.Error(), nil
 
 	case errors.Is(err, uc_errors.ErrAccountAlreadyExists):
 		return codes.AlreadyExists, err.Error(), nil
 
 	case errors.Is(err, uc_errors.ErrCannotLogin),
+		errors.Is(err, uc_errors.ErrCannotAssign),
 		errors.Is(err, uc_errors.ErrCannotRevoke):
 		return codes.FailedPrecondition, err.Error(), nil
 
