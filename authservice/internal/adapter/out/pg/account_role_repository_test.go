@@ -142,7 +142,7 @@ func (s *AccountRolesRepoSuite) TestUpdate() {
 
 	// Copy value and assigned to not change test data
 	assignedRole := *s.testRole
-	assignedRole.Assign()
+	_ = assignedRole.Assign("admin")
 
 	err := s.repo.Update(s.ctx, &assignedRole)
 	s.Require().NoError(err)
