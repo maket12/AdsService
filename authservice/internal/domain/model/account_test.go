@@ -2,7 +2,7 @@ package model_test
 
 import (
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/pkg/errs"
+	"ads/pkg/errs"
 	"testing"
 	"time"
 

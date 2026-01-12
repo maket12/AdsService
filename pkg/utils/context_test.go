@@ -1,0 +1,70 @@
+package utils_test
+
+import (
+	"ads/pkg/utils"
+	"context"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
+)
+
+func TestExtractAccountID(t *testing.T) {
+	type testCase struct {
+		name    string
+		ctx     context.Context
+		expect  uuid.UUID
+		wantErr bool
+	}
+
+	var (
+		targetUID = uuid.New()
+		tests     = []testCase{
+			{
+				name: "success",
+				ctx: metadata.NewIncomingContext(context.Background(),
+					metadata.Pairs("x-user-id", targetUID.String()),
+				),
+				expect:  targetUID,
+				wantErr: false,
+			},
+			{
+				name:    "failure - missing metadata",
+				ctx:     context.Background(),
+				expect:  uuid.Nil,
+				wantErr: true,
+			},
+			{
+				name: "failure - user id is not specified",
+				ctx: metadata.NewIncomingContext(context.Background(),
+					metadata.Pairs("wants to be", "a digital nomad"),
+				),
+				expect:  uuid.Nil,
+				wantErr: true,
+			},
+			{
+				name: "failure - invalid user id",
+				ctx: metadata.NewIncomingContext(context.Background(),
+					metadata.Pairs("x-user-id", "not-valid-uuid"),
+				),
+				expect:  uuid.Nil,
+				wantErr: true,
+			},
+		}
+	)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uid, err := utils.ExtractAccountID(tt.ctx)
+
+			if !tt.wantErr {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+
+			assert.Equal(t, tt.expect, uid)
+		})
+	}
+}

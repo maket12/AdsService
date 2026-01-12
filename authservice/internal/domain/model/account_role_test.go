@@ -2,7 +2,8 @@ package model_test
 
 import (
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/pkg/errs"
+	"ads/pkg/errs"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -51,7 +52,50 @@ func TestNewAccountRole(t *testing.T) {
 
 func TestAccountRole_Assign(t *testing.T) {
 	t.Parallel()
-	var accRole = model.RestoreAccountRole(uuid.New(), model.RoleUser)
-	accRole.Assign()
-	assert.Equal(t, accRole.Role(), model.RoleAdmin)
+
+	type testCase struct {
+		name   string
+		role   string
+		expect error
+	}
+
+	var tests = []testCase{
+		{
+			name:   "success - admin",
+			role:   "admin",
+			expect: nil,
+		},
+		{
+			name:   "success - user",
+			role:   "user",
+			expect: nil,
+		},
+		{
+			name:   "success - in upper case",
+			role:   "ADMIN",
+			expect: nil,
+		},
+		{
+			name:   "invalid role value",
+			role:   "unknown",
+			expect: errs.ErrValueIsInvalid,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			accRole, _ := model.NewAccountRole(uuid.New())
+
+			err := accRole.Assign(tt.role)
+
+			if tt.expect == nil {
+				require.NoError(t, err)
+				assert.Equal(t, model.Role(strings.ToLower(tt.role)), accRole.Role())
+			} else {
+				require.Error(t, err)
+				assert.ErrorIs(t, err, errs.ErrValueIsInvalid)
+				assert.NotEqual(t, model.Role(tt.role), accRole.Role())
+			}
+		})
+	}
 }

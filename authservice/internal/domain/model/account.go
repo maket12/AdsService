@@ -1,7 +1,7 @@
 package model
 
 import (
-	"ads/authservice/internal/pkg/errs"
+	"ads/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"

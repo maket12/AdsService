@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.31.1
-// source: authservice.proto
+// source: authservice/api/proto/authservice.proto
 
 package auth_v1
 
@@ -24,6 +24,7 @@ const (
 	AuthService_Logout_FullMethodName              = "/auth.AuthService/Logout"
 	AuthService_RefreshSession_FullMethodName      = "/auth.AuthService/RefreshSession"
 	AuthService_ValidateAccessToken_FullMethodName = "/auth.AuthService/ValidateAccessToken"
+	AuthService_AssignRole_FullMethodName          = "/auth.AuthService/AssignRole"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -35,6 +36,7 @@ type AuthServiceClient interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	RefreshSession(ctx context.Context, in *RefreshSessionRequest, opts ...grpc.CallOption) (*RefreshSessionResponse, error)
 	ValidateAccessToken(ctx context.Context, in *ValidateAccessTokenRequest, opts ...grpc.CallOption) (*ValidateAccessTokenResponse, error)
+	AssignRole(ctx context.Context, in *AssignRoleRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error)
 }
 
 type authServiceClient struct {
@@ -95,6 +97,16 @@ func (c *authServiceClient) ValidateAccessToken(ctx context.Context, in *Validat
 	return out, nil
 }
 
+func (c *authServiceClient) AssignRole(ctx context.Context, in *AssignRoleRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AssignRoleResponse)
+	err := c.cc.Invoke(ctx, AuthService_AssignRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type AuthServiceServer interface {
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	RefreshSession(context.Context, *RefreshSessionRequest) (*RefreshSessionResponse, error)
 	ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error)
+	AssignRole(context.Context, *AssignRoleRequest) (*AssignRoleResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedAuthServiceServer) RefreshSession(context.Context, *RefreshSe
 }
 func (UnimplementedAuthServiceServer) ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateAccessToken not implemented")
+}
+func (UnimplementedAuthServiceServer) AssignRole(context.Context, *AssignRoleRequest) (*AssignRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AssignRole not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -240,6 +256,24 @@ func _AuthService_ValidateAccessToken_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_AssignRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssignRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AssignRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_AssignRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AssignRole(ctx, req.(*AssignRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -267,7 +301,11 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ValidateAccessToken",
 			Handler:    _AuthService_ValidateAccessToken_Handler,
 		},
+		{
+			MethodName: "AssignRole",
+			Handler:    _AuthService_AssignRole_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "authservice.proto",
+	Metadata: "authservice/api/proto/authservice.proto",
 }

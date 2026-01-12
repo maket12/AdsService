@@ -6,7 +6,7 @@ import (
 	"ads/authservice/internal/app/utils"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/domain/port"
-	"ads/authservice/internal/pkg/errs"
+	"ads/pkg/errs"
 	"context"
 	"errors"
 	"time"

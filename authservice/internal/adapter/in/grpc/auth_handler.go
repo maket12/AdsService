@@ -17,6 +17,7 @@ type AuthHandler struct {
 	logoutUC              *usecase.LogoutUC
 	refreshSessionUC      *usecase.RefreshSessionUC
 	validateAccessTokenUC *usecase.ValidateAccessTokenUC
+	//assignRoleUC          *usecase.AssignRoleUC
 }
 
 func NewAuthHandler(
@@ -26,6 +27,7 @@ func NewAuthHandler(
 	logoutUC *usecase.LogoutUC,
 	refreshSessionUC *usecase.RefreshSessionUC,
 	validateAccessTokenUC *usecase.ValidateAccessTokenUC,
+	// assignRoleUC *usecase.AssignRoleUC,
 ) *AuthHandler {
 	return &AuthHandler{
 		log:                   log,
@@ -34,6 +36,7 @@ func NewAuthHandler(
 		logoutUC:              logoutUC,
 		refreshSessionUC:      refreshSessionUC,
 		validateAccessTokenUC: validateAccessTokenUC,
+		//assignRoleUC:          assignRoleUC,
 	}
 }
 
@@ -116,3 +119,19 @@ func (h *AuthHandler) ValidateAccessToken(ctx context.Context, req *auth_v1.Vali
 
 	return MapValidateAccessTokenDTOToPb(ucResp), nil
 }
+
+//func (h *AuthHandler) AssignRole(ctx context.Context, req *auth_v1.AssignRoleRequest) (*auth_v1.AssignRoleResponse, error) {
+//	ucResp, err := h.assignRoleUC.Execute(ctx, MapAssignRolePbToDTO(req))
+//
+//	if err != nil {
+//		code, msg, internalErr := gRPCError(err)
+//		h.log.ErrorContext(ctx, "failed to assign account role",
+//			slog.Int("code", int(code)),
+//			slog.String("public_msg", msg),
+//			slog.Any("reason", internalErr),
+//		)
+//		return nil, status.Error(code, msg)
+//	}
+//
+//	return MapAssignRoleDTOToPb(ucResp), nil
+//}

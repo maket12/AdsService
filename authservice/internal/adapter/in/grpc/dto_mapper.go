@@ -3,6 +3,8 @@ package grpc
 import (
 	"ads/authservice/internal/app/dto"
 	"ads/authservice/internal/generated/auth_v1"
+
+	"github.com/google/uuid"
 )
 
 func MapRegisterPbToDTO(req *auth_v1.RegisterRequest) dto.Register {
@@ -66,4 +68,16 @@ func MapValidateAccessTokenDTOToPb(out dto.ValidateAccessTokenResponse) *auth_v1
 		AccountId: out.AccountID.String(),
 		Role:      out.Role,
 	}
+}
+
+func MapAssignRolePbToDTO(req *auth_v1.AssignRoleRequest) dto.AssignRole {
+	accID, _ := uuid.Parse(req.GetAccountId())
+	return dto.AssignRole{
+		AccountID: accID,
+		Role:      req.GetRole(),
+	}
+}
+
+func MapAssignRoleDTOToPb(out dto.AssignRoleResponse) *auth_v1.AssignRoleResponse {
+	return &auth_v1.AssignRoleResponse{Assign: out.Assign}
 }

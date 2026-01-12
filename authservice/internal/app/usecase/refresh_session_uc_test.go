@@ -7,7 +7,7 @@ import (
 	"ads/authservice/internal/app/utils"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/domain/port/mocks"
-	"ads/authservice/internal/pkg/errs"
+	"ads/pkg/errs"
 	"context"
 	"testing"
 	"time"

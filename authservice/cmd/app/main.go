@@ -3,11 +3,12 @@ package main
 import (
 	"ads/authservice/cmd/app/config"
 	"ads/authservice/internal/adapter/in/grpc"
+	adapterdb "ads/authservice/internal/adapter/out/db"
 	adapterph "ads/authservice/internal/adapter/out/hasher"
 	adaptertg "ads/authservice/internal/adapter/out/jwt"
-	adapterpg "ads/authservice/internal/adapter/out/pg"
 	"ads/authservice/internal/app/usecase"
 	"ads/authservice/internal/generated/auth_v1"
+	"ads/pkg/pg"
 	"context"
 	"fmt"
 	"log"
@@ -42,14 +43,14 @@ func newLogger(level string) *slog.Logger {
 	}))
 }
 
-func newPostgresClient(cfg *config.Config) (*adapterpg.PostgresClient, error) {
-	pgConfig := adapterpg.NewPostgresConfig(
+func newPostgresClient(cfg *config.Config) (*pg.PostgresClient, error) {
+	pgConfig := pg.NewPostgresConfig(
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
 		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
 		cfg.DBIdleConn, cfg.DBConnLifeTime,
 	)
 
-	pgClient, err := adapterpg.NewPostgresClient(pgConfig)
+	pgClient, err := pg.NewPostgresClient(pgConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +76,9 @@ func runServer(ctx context.Context, config *config.Config, logger *slog.Logger) 
 	}()
 
 	// Repositories
-	accountRepo := adapterpg.NewAccountsRepository(pgClient)
-	accountRoleRepo := adapterpg.NewAccountRolesRepository(pgClient)
-	refreshSessionRepo := adapterpg.NewRefreshSessionsRepository(pgClient)
+	accountRepo := adapterdb.NewAccountsRepository(pgClient)
+	accountRoleRepo := adapterdb.NewAccountRolesRepository(pgClient)
+	refreshSessionRepo := adapterdb.NewRefreshSessionsRepository(pgClient)
 	passwordHasher := adapterph.NewBcryptHasher(config.PasswordCost)
 	tokenGenerator := adaptertg.NewTokenGenerator(
 		config.AccessSecret, config.RefreshSecret,
