@@ -1,13 +1,15 @@
 syntax = "proto3";
 
-package authservice.v1;
+package auth;
 
-option go_package = "authservice/presentation/grpc/pb;pb";
+option go_package = "ads/authservice/generated/auth_v1;auth_v1";
 
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
-  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc Logout (LogoutRequest) returns (LogoutResponse);
+  rpc RefreshSession (RefreshSessionRequest) returns (RefreshSessionResponse);
+  rpc ValidateAccessToken (ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
 }
 
 message RegisterRequest {
@@ -15,14 +17,15 @@ message RegisterRequest {
   string password = 2;
 }
 
+message RegisterResponse {
+  string account_id = 1;
+}
+
 message LoginRequest {
   string email = 1;
   string password = 2;
-}
-
-message RegisterResponse {
-  string access_token = 1;
-  string refresh_token = 2;
+  optional string ip = 3;
+  optional string user_agent = 4;
 }
 
 message LoginResponse {
@@ -30,11 +33,30 @@ message LoginResponse {
   string refresh_token = 2;
 }
 
-message ValidateTokenRequest {
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool logout = 1;
+}
+
+message RefreshSessionRequest {
+  string old_refresh_token = 1;
+  optional string ip = 2;
+  optional string user_agent = 3;
+}
+
+message RefreshSessionResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message ValidateAccessTokenRequest {
   string access_token = 1;
 }
 
-message ValidateTokenResponse {
-  uint64 user_id = 1;
-  bool   valid = 2;
+message ValidateAccessTokenResponse {
+  string account_id = 1;
+  string role = 2;
 }

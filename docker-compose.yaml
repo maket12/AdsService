@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  auth-db:
+    image: postgres:15-alpine
+    container_name: auth-db
+    environment:
+      - POSTGRES_USER=${AUTH_DB_USER}
+      - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
+      - POSTGRES_DB=${AUTH_DB_NAME}
+    ports:
+      - "${AUTH_DB_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AUTH_DB_USER} -d ${AUTH_DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./authservice/Dockerfile
+    container_name: auth-service
+    ports:
+      - "${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=auth-db
+      - DB_PORT=5432
+      - DB_USER=${AUTH_DB_USER}
+      - DB_PASSWORD=${AUTH_DB_PASSWORD}
+      - DB_NAME=${AUTH_DB_NAME}
+      - DB_SSL_MODE=${AUTH_DB_SSL_MODE}
+      - DB_OPEN_CONNECTIONS=${AUTH_DB_OPEN_CONNECTIONS}
+      - DB_IDLE_CONNECTIONS=${AUTH_DB_IDLE_CONNECTIONS}
+      - DB_CONNECTION_LIFETIME=${AUTH_DB_CONNECTION_LIFETIME}
+      - ACCESS_SECRET=${AUTH_ACCESS_SECRET}
+      - REFRESH_SECRET=${AUTH_REFRESH_SECRET}
+      - ACCESS_TTL=${AUTH_ACCESS_TTL}
+      - REFRESH_TTL=${AUTH_REFRESH_TTL}
+      - PASSWORD_COST=${AUTH_PASSWORD_COST}
+      - GRPC_PORT=${AUTH_GRPC_PORT}
+      - LOG_LEVEL=${AUTH_LOG_LEVEL}
+      - ENVIRONMENT=${AUTH_ENVIRONMENT}
+
+  auth-migrations:
+    image: migrate/migrate:latest
+    container_name: auth-migrations
+    volumes:
+      - ./authservice/migrations:/migrations
+    command:
+      - -path=/migrations/
+      - -database=postgres://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@auth-db:5432/${AUTH_DB_NAME}?sslmode=disable
+      - up
+    depends_on:
+      auth-db:
+          condition: service_healthy
+
+volumes:
+  pg_data:

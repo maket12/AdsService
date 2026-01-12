@@ -1,25 +1,24 @@
 package grpc
 
 import (
+	dto2 "ads/authservice/internal/app/dto"
+	usecase2 "ads/authservice/internal/app/usecase"
 	pb "ads/authservice/presentation/grpc/pb"
 	"context"
-
-	"ads/authservice/app/dto"
-	"ads/authservice/app/usecase"
 )
 
 type AuthService struct {
 	pb.UnimplementedAuthServiceServer
 
-	RegisterUC      *usecase.RegisterUC
-	LoginUC         *usecase.LoginUC
-	ValidateTokenUC *usecase.ValidateTokenUC
+	RegisterUC      *usecase2.RegisterUC
+	LoginUC         *usecase2.LoginUC
+	ValidateTokenUC *usecase2.ValidateTokenUC
 }
 
 func NewAuthService(
-	register *usecase.RegisterUC,
-	login *usecase.LoginUC,
-	validate *usecase.ValidateTokenUC,
+	register *usecase2.RegisterUC,
+	login *usecase2.LoginUC,
+	validate *usecase2.ValidateTokenUC,
 ) *AuthService {
 	return &AuthService{
 		RegisterUC:      register,
@@ -29,7 +28,7 @@ func NewAuthService(
 }
 
 func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.AuthResponse, error) {
-	in := dto.Register{Email: req.Email, Password: req.Password}
+	in := dto2.Register{Email: req.Email, Password: req.Password}
 	tokens, err := s.RegisterUC.Execute(ctx, in)
 	if err != nil {
 		return nil, err
@@ -38,7 +37,7 @@ func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 }
 
 func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
-	in := dto.Login{Email: req.Email, Password: req.Password}
+	in := dto2.Login{Email: req.Email, Password: req.Password}
 	tokens, err := s.LoginUC.Execute(ctx, in)
 	if err != nil {
 		return nil, err
@@ -47,7 +46,7 @@ func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Auth
 }
 
 func (s *AuthService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
-	in := dto.ValidateToken{AccessToken: req.AccessToken}
+	in := dto2.ValidateToken{AccessToken: req.AccessToken}
 	out, err := s.ValidateTokenUC.Execute(ctx, in)
 	if err != nil {
 		return &pb.ValidateTokenResponse{Valid: false}, err

@@ -1,129 +1,166 @@
 package main
 
 import (
-	"ads/authservice/adapter/jwt"
-	"ads/authservice/adapter/pg"
-	"ads/authservice/app/usecase"
-	"ads/authservice/infrastructure/postgres"
-	"ads/authservice/pkg"
-	authgrpc "ads/authservice/presentation/grpc"
-	pb "ads/authservice/presentation/grpc/pb"
+	"ads/authservice/cmd/app/config"
+	"ads/authservice/internal/adapter/in/grpc"
+	adapterph "ads/authservice/internal/adapter/out/hasher"
+	adaptertg "ads/authservice/internal/adapter/out/jwt"
+	adapterpg "ads/authservice/internal/adapter/out/pg"
+	"ads/authservice/internal/app/usecase"
+	"ads/authservice/internal/generated/auth_v1"
+	"context"
 	"fmt"
+	"log"
 	"log/slog"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"gorm.io/gorm"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	googlegrpc "google.golang.org/grpc"
 )
 
-func main() {
-	cfg, err := pkg.Load()
-	if err != nil {
-		_ = fmt.Errorf("failed to load config", "error", err)
-		return
+func parseLogLevel(level string) slog.Level {
+	switch level {
+	case "DEBUG":
+		return slog.LevelDebug
+	case "INFO":
+		return slog.LevelInfo
+	case "WARN":
+		return slog.LevelWarn
+	case "ERROR":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
 	}
-
-	log := pkg.New(cfg.GetSlogLevel())
-	log.Info("🚀 starting authservice", "port", cfg.GRPCPort)
-
-	db, err := initDependencies(cfg, log)
-	if err != nil {
-		log.Error("failed to initialize dependencies", "error", err)
-		return
-	}
-	defer closeDependencies(log)
-
-	authService := initServices(db, cfg, log)
-
-	server := startGRPCServer(authService, cfg, log)
-
-	waitForShutdown(server, log)
-
-	log.Info("👋 authservice stopped")
 }
 
-func initDependencies(cfg *pkg.Config, log *slog.Logger) (*gorm.DB, error) {
-	log.Info("initializing database connections...")
+func newLogger(level string) *slog.Logger {
+	logLevel := parseLogLevel(level)
+	return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevel,
+	}))
+}
 
-	db, err := postgres.InitDB(cfg)
+func newPostgresClient(cfg *config.Config) (*adapterpg.PostgresClient, error) {
+	pgConfig := adapterpg.NewPostgresConfig(
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
+		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
+		cfg.DBIdleConn, cfg.DBConnLifeTime,
+	)
+
+	pgClient, err := adapterpg.NewPostgresClient(pgConfig)
 	if err != nil {
-		return nil, fmt.Errorf("postgres: %w", err)
+		return nil, err
 	}
 
-	return db, nil
+	return pgClient, nil
 }
 
-func closeDependencies(log *slog.Logger) {
-	log.Info("closing database connections...")
-}
-
-func initServices(db *gorm.DB, cfg *pkg.Config, log *slog.Logger) *authgrpc.AuthService {
-	usersRepo := pg.NewUsersRepo(db, log)
-	sessionsRepo := pg.NewSessionsRepo(db, log)
-	profilesRepo := pg.NewProfilesRepo(db, log)
-	tokensRepo := jwt.NewTokenRepository(cfg.JWTAccessSecret, cfg.JWTRefreshSecret, log)
-
-	registerUC := &usecase.RegisterUC{
-		Users:    usersRepo,
-		Sessions: sessionsRepo,
-		Tokens:   tokensRepo,
-		Profiles: profilesRepo,
-	}
-	loginUC := &usecase.LoginUC{
-		Users:    usersRepo,
-		Sessions: sessionsRepo,
-		Tokens:   tokensRepo,
-	}
-	validateUC := &usecase.ValidateTokenUC{Tokens: tokensRepo}
-
-	return authgrpc.NewAuthService(registerUC, loginUC, validateUC)
-}
-
-func startGRPCServer(authService *authgrpc.AuthService, cfg *pkg.Config, log *slog.Logger) *grpc.Server {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
+func runServer(ctx context.Context, config *config.Config, logger *slog.Logger) error {
+	// Postgres client
+	pgClient, err := newPostgresClient(config)
 	if err != nil {
-		log.Error("failed to listen", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to init postgres client: %w", err)
 	}
 
-	server := grpc.NewServer()
-	pb.RegisterAuthServiceServer(server, authService)
-	reflection.Register(server)
-
-	go func() {
-		log.Info("📡 gRPC server listening", "port", cfg.GRPCPort)
-		if err := server.Serve(lis); err != nil {
-			log.Error("gRPC server failed", "error", err)
+	// Close Postgres
+	defer func() {
+		logger.InfoContext(ctx, "closing postgres connection...")
+		if err := pgClient.Close(); err != nil {
+			logger.ErrorContext(ctx, "failed to close postgres",
+				slog.Any("error", err),
+			)
 		}
 	}()
 
-	return server
-}
+	// Repositories
+	accountRepo := adapterpg.NewAccountsRepository(pgClient)
+	accountRoleRepo := adapterpg.NewAccountRolesRepository(pgClient)
+	refreshSessionRepo := adapterpg.NewRefreshSessionsRepository(pgClient)
+	passwordHasher := adapterph.NewBcryptHasher(config.PasswordCost)
+	tokenGenerator := adaptertg.NewTokenGenerator(
+		config.AccessSecret, config.RefreshSecret,
+		config.AccessTTL, config.RefreshTTL,
+	)
 
-func waitForShutdown(server *grpc.Server, log *slog.Logger) {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	// Use-cases
+	registerUC := usecase.NewRegisterUC(accountRepo, accountRoleRepo, passwordHasher)
+	loginUC := usecase.NewLoginUC(
+		accountRepo, accountRoleRepo, refreshSessionRepo,
+		passwordHasher, tokenGenerator, config.RefreshTTL,
+	)
+	logoutUC := usecase.NewLogoutUC(refreshSessionRepo, tokenGenerator)
+	refreshSessionUC := usecase.NewRefreshSessionUC(
+		accountRoleRepo, refreshSessionRepo,
+		tokenGenerator, config.RefreshTTL,
+	)
+	validateAccessUC := usecase.NewValidateAccessTokenUC(
+		accountRepo, tokenGenerator,
+	)
 
-	log.Info("🛑 shutting down server...")
+	// Handler
+	authHandler := grpc.NewAuthHandler(
+		logger,
+		registerUC,
+		loginUC,
+		logoutUC,
+		refreshSessionUC,
+		validateAccessUC,
+	)
 
-	stopped := make(chan struct{})
+	// gRPC server
+	gRPCServer := googlegrpc.NewServer()
+	auth_v1.RegisterAuthServiceServer(gRPCServer, authHandler)
+
+	address := fmt.Sprintf(":%d", config.GRPCPort)
+	lis, err := net.Listen("tcp", address)
+	if err != nil {
+		return fmt.Errorf("failed to listen port %d: %w",
+			config.GRPCPort, err,
+		)
+	}
+
+	// Launch gRPC server
+	errChan := make(chan error, 1)
 	go func() {
-		server.GracefulStop()
-		close(stopped)
+		logger.InfoContext(
+			ctx, "starting grpc server", slog.String("address", address))
+		if err := gRPCServer.Serve(lis); err != nil {
+			errChan <- err
+		}
 	}()
 
+	// Graceful shutdown
 	select {
-	case <-stopped:
-		log.Info("✅ server stopped gracefully")
-	case <-time.After(10 * time.Second):
-		log.Warn("⏰ forcing server shutdown")
-		server.Stop()
+	case <-ctx.Done():
+		logger.InfoContext(
+			ctx, "received shutdown signal, stopping grpc server...",
+		)
+		gRPCServer.GracefulStop()
+		return nil
+	case err := <-errChan:
+		return fmt.Errorf("grpc server failed: %w", err)
 	}
+}
+
+func main() {
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	logger := newLogger(cfg.LogLevel)
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	if err := runServer(ctx, cfg, logger); err != nil {
+		logger.ErrorContext(
+			ctx, "authservice failed", slog.Any("error", err),
+		)
+		os.Exit(1)
+	}
+
+	logger.Info("authservice stopped successfully")
 }
