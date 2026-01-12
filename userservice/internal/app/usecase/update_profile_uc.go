@@ -1,10 +1,10 @@
 package usecase
 
 import (
+	"ads/pkg/errs"
 	"ads/userservice/internal/app/dto"
 	"ads/userservice/internal/app/uc_errors"
 	"ads/userservice/internal/domain/port"
-	"ads/userservice/pkg/errs"
 	"context"
 	"errors"
 )

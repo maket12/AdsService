@@ -3,17 +3,34 @@ package grpc
 import (
 	"ads/userservice/internal/app/dto"
 	"ads/userservice/internal/generated/user_v1"
+
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func MapGetProfilePbToDTO(req *user_v1.GetProfileRequest) dto.GetProfile {
-	//return dto.GetProfileOutput{
-	//	AccountID: req.,
-	//	FirstName: nil,
-	//	LastName:  nil,
-	//	Phone:     nil,
-	//	AvatarURl: nil,
-	//	Bio:       nil,
-	//	UpdatedAt: time.Time{},
-	//}
-	return dto.GetProfile{}
+func MapGetProfileDTOToPb(out dto.GetProfileOutput) *user_v1.GetProfileResponse {
+	return &user_v1.GetProfileResponse{
+		AccountId: out.AccountID.String(),
+		FirstName: out.FirstName,
+		LastName:  out.LastName,
+		Phone:     out.Phone,
+		AvatarUrl: out.AvatarURl,
+		Bio:       out.Bio,
+		UpdatedAt: timestamppb.New(out.UpdatedAt),
+	}
+}
+
+func MapUpdateProfilePbToDTO(accountID uuid.UUID, req *user_v1.UpdateProfileRequest) dto.UpdateProfile {
+	return dto.UpdateProfile{
+		AccountID: accountID,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Phone:     req.Phone,
+		AvatarURl: req.AvatarUrl,
+		Bio:       req.Bio,
+	}
+}
+
+func MapUpdateProfileDTOToPb(out dto.UpdateProfileOutput) *user_v1.UpdateProfileResponse {
+	return &user_v1.UpdateProfileResponse{Success: out.Success}
 }

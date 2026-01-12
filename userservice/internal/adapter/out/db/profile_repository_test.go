@@ -1,10 +1,11 @@
-package pg_test
+package db_test
 
 import (
-	"ads/userservice/internal/adapter/out/pg"
+	"ads/pkg/errs"
+	"ads/pkg/pg"
+	"ads/userservice/internal/adapter/out/db"
 	"ads/userservice/internal/domain/model"
 	"ads/userservice/migrations"
-	"ads/userservice/pkg/errs"
 	"context"
 	"errors"
 	"testing"
@@ -20,7 +21,7 @@ import (
 type AccountsRepoSuite struct {
 	suite.Suite
 	dbClient    *pg.PostgresClient
-	repo        *pg.ProfileRepository
+	repo        *db.ProfileRepository
 	ctx         context.Context
 	migrate     *migrate.Migrate
 	testProfile *model.Profile
@@ -88,7 +89,7 @@ func (s *AccountsRepoSuite) setupDatabase() {
 
 func (s *AccountsRepoSuite) SetupSuite() {
 	s.setupDatabase()
-	s.repo = pg.NewProfileRepository(s.dbClient)
+	s.repo = db.NewProfileRepository(s.dbClient)
 	s.ctx = context.Background()
 	s.testProfile, _ = model.NewProfile(uuid.New())
 }
@@ -185,37 +186,46 @@ func (s *AccountsRepoSuite) TestDelete() {
 }
 
 func (s *AccountsRepoSuite) TestListProfiles() {
-	const profilesAmount = 2
-
-	var anotherProfile, _ = model.NewProfile(uuid.New())
-
 	// Create profiles
-	_ = s.repo.Create(s.ctx, s.testProfile)
-	_ = s.repo.Create(s.ctx, anotherProfile)
+	ids := []uuid.UUID{uuid.New(), uuid.New(), uuid.New()}
+	for _, id := range ids {
+		p, _ := model.NewProfile(id)
+		_ = s.repo.Create(s.ctx, p)
+	}
 
+	// Testing limit
 	var (
-		testLimit  = 10
+		testLimit  = 2
 		testOffset = 0
 	)
 
-	// List of active
 	profiles, err := s.repo.ListProfiles(s.ctx, testLimit, testOffset)
 	s.Require().NoError(err)
-	s.Require().Len(profiles, profilesAmount)
+	s.Require().Len(profiles, 2, "limit should restrict result count")
 
 	var fstFound, sndFound bool
 	for i := range profiles {
 		value := *profiles[i]
-		if value.AccountID() == s.testProfile.AccountID() {
+		if value.AccountID() == ids[0] {
 			fstFound = true
 		}
-		if value.AccountID() == anotherProfile.AccountID() {
+		if value.AccountID() == ids[1] {
 			sndFound = true
 		}
 	}
 
-	s.Require().Truef(fstFound, "expected %v\n in %v",
-		s.testProfile, profiles)
-	s.Require().Truef(sndFound, "expected %v\n in %v",
-		anotherProfile, profiles)
+	s.Require().Truef(fstFound, "expected account with id %v\n in %v",
+		ids[0], profiles)
+	s.Require().Truef(sndFound, "expected account with id %v\n in %v",
+		ids[1], profiles)
+
+	// Testing offset
+	testLimit = 10
+	testOffset = 2
+
+	profiles, err = s.repo.ListProfiles(s.ctx, testLimit, testOffset)
+	s.Require().NoError(err)
+	s.Require().Len(profiles, 1, "offset should skip records")
+	s.Require().Equal(ids[2], profiles[0].AccountID(),
+		"expected account with id %v\n in %v", ids[2], profiles)
 }

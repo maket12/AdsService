@@ -1,11 +1,11 @@
 package usecase
 
 import (
+	"ads/pkg/errs"
 	"ads/userservice/internal/app/dto"
 	"ads/userservice/internal/app/uc_errors"
 	"ads/userservice/internal/domain/model"
 	"ads/userservice/internal/domain/port"
-	"ads/userservice/pkg/errs"
 	"context"
 	"errors"
 )
@@ -29,7 +29,7 @@ func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfile) er
 		if errors.Is(err, errs.ErrObjectAlreadyExists) {
 			return nil
 		}
-		return uc_errors.ErrCreateProfileDB
+		return uc_errors.Wrap(uc_errors.ErrCreateProfileDB, err)
 	}
 
 	return nil

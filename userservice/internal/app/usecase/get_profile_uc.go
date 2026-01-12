@@ -1,10 +1,10 @@
 package usecase
 
 import (
+	"ads/pkg/errs"
 	"ads/userservice/internal/app/dto"
 	"ads/userservice/internal/app/uc_errors"
 	"ads/userservice/internal/domain/port"
-	"ads/userservice/pkg/errs"
 	"context"
 	"errors"
 )
@@ -23,7 +23,8 @@ func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfile) (dto.Get
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.GetProfileOutput{}, uc_errors.ErrInvalidAccountID
 		}
-		return dto.GetProfileOutput{}, uc_errors.ErrGetProfileDB
+		return dto.GetProfileOutput{},
+			uc_errors.Wrap(uc_errors.ErrGetProfileDB, err)
 	}
 	return dto.GetProfileOutput{
 		AccountID: profile.AccountID(),

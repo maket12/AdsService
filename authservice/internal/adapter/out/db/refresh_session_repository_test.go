@@ -1,10 +1,11 @@
-package pg_test
+package db_test
 
 import (
-	"ads/authservice/internal/adapter/out/pg"
+	"ads/authservice/internal/adapter/out/db"
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/pkg/errs"
 	"ads/authservice/migrations"
+	"ads/pkg/errs"
+	"ads/pkg/pg"
 	"context"
 	"errors"
 	"testing"
@@ -19,7 +20,7 @@ import (
 type RefreshSessionsRepoSuite struct {
 	suite.Suite
 	dbClient    *pg.PostgresClient
-	repo        *pg.RefreshSessionRepository
+	repo        *db.RefreshSessionRepository
 	ctx         context.Context
 	migrate     *migrate.Migrate
 	testSession *model.RefreshSession
@@ -87,7 +88,7 @@ func (s *RefreshSessionsRepoSuite) setupDatabase() {
 
 func (s *RefreshSessionsRepoSuite) SetupSuite() {
 	s.setupDatabase()
-	s.repo = pg.NewRefreshSessionsRepository(s.dbClient)
+	s.repo = db.NewRefreshSessionsRepository(s.dbClient)
 	s.ctx = context.Background()
 
 	var testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
@@ -102,7 +103,7 @@ func (s *RefreshSessionsRepoSuite) SetupSuite() {
 	)
 
 	// Create an account in the main table
-	accountsRepo := pg.NewAccountsRepository(s.dbClient)
+	accountsRepo := db.NewAccountsRepository(s.dbClient)
 	_ = accountsRepo.Create(s.ctx, testAccount)
 }
 

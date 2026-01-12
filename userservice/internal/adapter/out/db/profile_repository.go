@@ -1,10 +1,11 @@
-package pg
+package db
 
 import (
-	"ads/userservice/internal/adapter/out/pg/mapper"
-	"ads/userservice/internal/adapter/out/pg/sqlc"
+	"ads/pkg/errs"
+	"ads/pkg/pg"
+	"ads/userservice/internal/adapter/out/db/mapper"
+	"ads/userservice/internal/adapter/out/db/sqlc"
 	"ads/userservice/internal/domain/model"
-	"ads/userservice/pkg/errs"
 	"context"
 	"database/sql"
 	"errors"
@@ -17,14 +18,14 @@ type ProfileRepository struct {
 	q *sqlc.Queries
 }
 
-func NewProfileRepository(pgClient *PostgresClient) *ProfileRepository {
+func NewProfileRepository(pgClient *pg.PostgresClient) *ProfileRepository {
 	queries := sqlc.New(pgClient.DB)
 	return &ProfileRepository{q: queries}
 }
 
 func (r *ProfileRepository) Create(ctx context.Context, profile *model.Profile) error {
 	params := mapper.MapProfileToSQLCCreate(profile)
-	
+
 	err := r.q.CreateProfile(ctx, params)
 	if err != nil {
 		var pgErr *pgconn.PgError

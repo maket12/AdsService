@@ -1,10 +1,11 @@
-package pg_test
+package db_test
 
 import (
-	"ads/authservice/internal/adapter/out/pg"
+	"ads/authservice/internal/adapter/out/db"
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/pkg/errs"
 	"ads/authservice/migrations"
+	"ads/pkg/errs"
+	"ads/pkg/pg"
 	"context"
 	"errors"
 	"testing"
@@ -19,7 +20,7 @@ import (
 type AccountRolesRepoSuite struct {
 	suite.Suite
 	dbClient *pg.PostgresClient
-	repo     *pg.AccountRoleRepository
+	repo     *db.AccountRoleRepository
 	ctx      context.Context
 	migrate  *migrate.Migrate
 	testRole *model.AccountRole
@@ -85,12 +86,12 @@ func (s *AccountRolesRepoSuite) setupDatabase() {
 
 func (s *AccountRolesRepoSuite) SetupSuite() {
 	s.setupDatabase()
-	s.repo = pg.NewAccountRolesRepository(s.dbClient)
+	s.repo = db.NewAccountRolesRepository(s.dbClient)
 	s.ctx = context.Background()
 	testAccount, _ := model.NewAccount("new@email.com", "hashed-secret-pass")
 
 	// Create an account in the main table
-	accountsRepo := pg.NewAccountsRepository(s.dbClient)
+	accountsRepo := db.NewAccountsRepository(s.dbClient)
 	_ = accountsRepo.Create(s.ctx, testAccount)
 
 	s.testRole, _ = model.NewAccountRole(testAccount.ID())

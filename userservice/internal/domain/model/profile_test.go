@@ -1,8 +1,8 @@
 package model_test
 
 import (
+	"ads/pkg/errs"
 	"ads/userservice/internal/domain/model"
-	"ads/userservice/pkg/errs"
 	"testing"
 	"time"
 

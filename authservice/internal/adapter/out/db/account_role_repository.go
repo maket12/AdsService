@@ -1,10 +1,11 @@
-package pg
+package db
 
 import (
-	"ads/authservice/internal/adapter/out/pg/mapper"
-	"ads/authservice/internal/adapter/out/pg/sqlc"
+	"ads/authservice/internal/adapter/out/db/mapper"
+	"ads/authservice/internal/adapter/out/db/sqlc"
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/pkg/errs"
+	"ads/pkg/errs"
+	"ads/pkg/pg"
 	"context"
 	"database/sql"
 	"errors"
@@ -16,7 +17,7 @@ type AccountRoleRepository struct {
 	q *sqlc.Queries
 }
 
-func NewAccountRolesRepository(pgClient *PostgresClient) *AccountRoleRepository {
+func NewAccountRolesRepository(pgClient *pg.PostgresClient) *AccountRoleRepository {
 	queries := sqlc.New(pgClient.DB)
 	return &AccountRoleRepository{q: queries}
 }

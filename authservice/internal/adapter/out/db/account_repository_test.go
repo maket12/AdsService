@@ -1,10 +1,11 @@
-package pg_test
+package db_test
 
 import (
-	"ads/authservice/internal/adapter/out/pg"
+	"ads/authservice/internal/adapter/out/db"
 	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/pkg/errs"
 	"ads/authservice/migrations"
+	"ads/pkg/errs"
+	"ads/pkg/pg"
 	"context"
 	"errors"
 	"strings"
@@ -20,7 +21,7 @@ import (
 type AccountsRepoSuite struct {
 	suite.Suite
 	dbClient    *pg.PostgresClient
-	repo        *pg.AccountRepository
+	repo        *db.AccountRepository
 	ctx         context.Context
 	migrate     *migrate.Migrate
 	testAccount *model.Account
@@ -88,7 +89,7 @@ func (s *AccountsRepoSuite) setupDatabase() {
 
 func (s *AccountsRepoSuite) SetupSuite() {
 	s.setupDatabase()
-	s.repo = pg.NewAccountsRepository(s.dbClient)
+	s.repo = db.NewAccountsRepository(s.dbClient)
 	s.ctx = context.Background()
 	s.testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
 }

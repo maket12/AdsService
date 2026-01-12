@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"ads/userservice/pkg/errs"
+	"ads/pkg/errs"
 	"context"
 
 	"github.com/nyaruka/phonenumbers"
