@@ -1,9 +1,9 @@
-package db_test
+package pg_test
 
 import (
 	"ads/pkg/errs"
 	"ads/pkg/pg"
-	"ads/userservice/internal/adapter/out/db"
+	"ads/userservice/internal/adapter/out/pg"
 	"ads/userservice/internal/domain/model"
 	"ads/userservice/migrations"
 	"context"
@@ -21,7 +21,7 @@ import (
 type AccountsRepoSuite struct {
 	suite.Suite
 	dbClient    *pg.PostgresClient
-	repo        *db.ProfileRepository
+	repo        *pg.ProfileRepository
 	ctx         context.Context
 	migrate     *migrate.Migrate
 	testProfile *model.Profile
@@ -89,7 +89,7 @@ func (s *AccountsRepoSuite) setupDatabase() {
 
 func (s *AccountsRepoSuite) SetupSuite() {
 	s.setupDatabase()
-	s.repo = db.NewProfileRepository(s.dbClient)
+	s.repo = pg.NewProfileRepository(s.dbClient)
 	s.ctx = context.Background()
 	s.testProfile, _ = model.NewProfile(uuid.New())
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"ads/authservice/cmd/app/config"
-	"ads/authservice/internal/adapter/in/grpc"
+	adaptergrpc "ads/authservice/internal/adapter/in/grpc"
 	adapterdb "ads/authservice/internal/adapter/out/db"
 	adapterph "ads/authservice/internal/adapter/out/hasher"
 	adaptertg "ads/authservice/internal/adapter/out/jwt"
@@ -18,7 +18,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	googlegrpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func parseLogLevel(level string) slog.Level {
@@ -58,9 +59,9 @@ func newPostgresClient(cfg *config.Config) (*pg.PostgresClient, error) {
 	return pgClient, nil
 }
 
-func runServer(ctx context.Context, config *config.Config, logger *slog.Logger) error {
+func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
-	pgClient, err := newPostgresClient(config)
+	pgClient, err := newPostgresClient(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to init postgres client: %w", err)
 	}
@@ -79,29 +80,29 @@ func runServer(ctx context.Context, config *config.Config, logger *slog.Logger) 
 	accountRepo := adapterdb.NewAccountsRepository(pgClient)
 	accountRoleRepo := adapterdb.NewAccountRolesRepository(pgClient)
 	refreshSessionRepo := adapterdb.NewRefreshSessionsRepository(pgClient)
-	passwordHasher := adapterph.NewBcryptHasher(config.PasswordCost)
+	passwordHasher := adapterph.NewBcryptHasher(cfg.PasswordCost)
 	tokenGenerator := adaptertg.NewTokenGenerator(
-		config.AccessSecret, config.RefreshSecret,
-		config.AccessTTL, config.RefreshTTL,
+		cfg.AccessSecret, cfg.RefreshSecret,
+		cfg.AccessTTL, cfg.RefreshTTL,
 	)
 
 	// Use-cases
 	registerUC := usecase.NewRegisterUC(accountRepo, accountRoleRepo, passwordHasher)
 	loginUC := usecase.NewLoginUC(
 		accountRepo, accountRoleRepo, refreshSessionRepo,
-		passwordHasher, tokenGenerator, config.RefreshTTL,
+		passwordHasher, tokenGenerator, cfg.RefreshTTL,
 	)
 	logoutUC := usecase.NewLogoutUC(refreshSessionRepo, tokenGenerator)
 	refreshSessionUC := usecase.NewRefreshSessionUC(
 		accountRoleRepo, refreshSessionRepo,
-		tokenGenerator, config.RefreshTTL,
+		tokenGenerator, cfg.RefreshTTL,
 	)
 	validateAccessUC := usecase.NewValidateAccessTokenUC(
 		accountRepo, tokenGenerator,
 	)
 
 	// Handler
-	authHandler := grpc.NewAuthHandler(
+	authHandler := adaptergrpc.NewAuthHandler(
 		logger,
 		registerUC,
 		loginUC,
@@ -111,14 +112,15 @@ func runServer(ctx context.Context, config *config.Config, logger *slog.Logger) 
 	)
 
 	// gRPC server
-	gRPCServer := googlegrpc.NewServer()
+	gRPCServer := grpc.NewServer()
 	auth_v1.RegisterAuthServiceServer(gRPCServer, authHandler)
+	reflection.Register(gRPCServer)
 
-	address := fmt.Sprintf(":%d", config.GRPCPort)
+	address := fmt.Sprintf(":%d", cfg.GRPCPort)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		return fmt.Errorf("failed to listen port %d: %w",
-			config.GRPCPort, err,
+			cfg.GRPCPort, err,
 		)
 	}
 

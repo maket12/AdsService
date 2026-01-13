@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectTasksOptions">
+    <TaskOptions isEnabled="false">
+      <option name="arguments" value="run --fix --out-format=colored-line-number $FileDir$" />
+      <option name="checkSyntaxErrors" value="true" />
+      <option name="description" />
+      <option name="exitCodeBehavior" value="ERROR" />
+      <option name="fileExtension" value="go" />
+      <option name="immediateSync" value="true" />
+      <option name="name" value="GoLinter" />
+      <option name="output" value="" />
+      <option name="outputFilters">
+        <array>
+          <FilterInfo>
+            <option name="description" value="" />
+            <option name="name" value="" />
+            <option name="regExp" value="Show in console" />
+          </FilterInfo>
+        </array>
+      </option>
+      <option name="outputFromStdout" value="false" />
+      <option name="program" value="$USER_HOME$/go/bin/golangci-lint" />
+      <option name="runOnExternalChanges" value="true" />
+      <option name="scopeName" value="Project Files" />
+      <option name="trackOnlyRoot" value="false" />
+      <option name="workingDir" value="$ProjectFileDir$" />
+      <envs />
+    </TaskOptions>
+  </component>
+</project>

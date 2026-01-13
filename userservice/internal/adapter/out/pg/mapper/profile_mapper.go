@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"ads/userservice/internal/adapter/out/db/sqlc"
+	"ads/userservice/internal/adapter/out/pg/sqlc"
 	"ads/userservice/internal/domain/model"
 	"database/sql"
 	"time"

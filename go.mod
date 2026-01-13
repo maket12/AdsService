@@ -37,6 +37,7 @@ require (
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect

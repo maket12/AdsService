@@ -20,17 +20,24 @@ type Config struct {
 	DBIdleConn     int           `env:"DB_IDLE_CONNECTIONS" envDefault:"25"`
 	DBConnLifeTime time.Duration `env:"DB_CONNECTION_LIFETIME" envDefault:"5m"`
 
-	// JWT
-	AccessSecret  string        `env:"ACCESS_SECRET,required"`
-	RefreshSecret string        `env:"REFRESH_SECRET,required"`
-	AccessTTL     time.Duration `env:"ACCESS_TTL" envDefault:"15m"`
-	RefreshTTL    time.Duration `env:"REFRESH_TTL" envDefault:"720h"`
+	// RabbitMQ
+	RabbitHost     string `env:"RABBIT_HOST,required"`
+	RabbitPort     int    `env:"RABBIT_PORT" envDefault:"5672"`
+	RabbitUser     string `env:"RABBIT_USER,required"`
+	RabbitPassword string `env:"RABBIT_PASSWORD,required"`
 
-	// Password hasher
-	PasswordCost int `env:"PASSWORD_COST" envDefault:"4"`
+	RabbitWaitTime time.Duration `env:"RABBIT_WAIT_TIME" envDefault:"30s"`
+	RabbitAttempts int           `env:"RABBIT_ATTEMPTS" envDefault:"5"`
+
+	SubscriberExchangeName string `env:"SUBSCRIBER_EXCHANGE_NAME" envDefault:"account_topic"`
+	SubscriberQueueName    string `env:"SUBSCRIBER_QUEUE_NAME" envDefault:"account_create"`
+	SubscriberRoutingKey   string `env:"SUBSCRIBER_ROUTING_KEY,required"`
+
+	// Phone validator
+	PhoneDefaultRegion string `env:"PHONE_DEFAULT_REGION"`
 
 	// Service
-	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50051"`
+	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50052"`
 	LogLevel    string `env:"LOG_LEVEL" envDefault:"INFO"`
 	Environment string `env:"ENVIRONMENT" envDefault:"development"`
 }
@@ -54,17 +61,25 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("DBName is required")
 	}
 
-	if cfg.AccessSecret == "" {
-		return nil, fmt.Errorf("AccessSecret is required")
+	if cfg.RabbitHost == "" {
+		return nil, fmt.Errorf("RabbitUser is required")
 	}
-	if cfg.RefreshSecret == "" {
-		return nil, fmt.Errorf("RefreshSecret is required")
+	if cfg.RabbitUser == "" {
+		return nil, fmt.Errorf("RabbitUser is required")
+	}
+	if cfg.RabbitPassword == "" {
+		return nil, fmt.Errorf("RabbitPassword is required")
+	}
+
+	if cfg.SubscriberRoutingKey == "" {
+		return nil, fmt.Errorf("SubscriberRoutingKey is required")
 	}
 
 	fmt.Printf("Config loaded successfully\n")
 	fmt.Printf("   Environment: %s\n", cfg.Environment)
 	fmt.Printf("   Log Level: %s\n", cfg.LogLevel)
 	fmt.Printf("   DB Host: %s\n", cfg.DBHost)
+	fmt.Printf("   RabbitMQ Host: %s\n", cfg.RabbitHost)
 	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
 
 	return cfg, nil
