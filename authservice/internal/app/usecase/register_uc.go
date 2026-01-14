@@ -11,20 +11,23 @@ import (
 )
 
 type RegisterUC struct {
-	Account        port.AccountRepository
-	AccountRole    port.AccountRoleRepository
-	PasswordHasher port.PasswordHasher
+	Account          port.AccountRepository
+	AccountRole      port.AccountRoleRepository
+	PasswordHasher   port.PasswordHasher
+	AccountPublisher port.AccountPublisher
 }
 
 func NewRegisterUC(
 	account port.AccountRepository,
 	accountRole port.AccountRoleRepository,
 	passwordHasher port.PasswordHasher,
+	accountPublisher port.AccountPublisher,
 ) *RegisterUC {
 	return &RegisterUC{
-		Account:        account,
-		AccountRole:    accountRole,
-		PasswordHasher: passwordHasher,
+		Account:          account,
+		AccountRole:      accountRole,
+		PasswordHasher:   passwordHasher,
+		AccountPublisher: accountPublisher,
 	}
 }
 
@@ -64,6 +67,13 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 		return dto.RegisterResponse{}, uc_errors.Wrap(
 			uc_errors.ErrCreateAccountRoleDB, err,
 		)
+	}
+
+	// Send even to rabbitmq (create profile)
+	event := model.NewAccountCreatedEvent(account.ID())
+	if err := uc.AccountPublisher.PublishAccountCreate(ctx, event); err != nil {
+		return dto.RegisterResponse{},
+			uc_errors.Wrap(uc_errors.ErrPublishEvent, err)
 	}
 
 	// Response

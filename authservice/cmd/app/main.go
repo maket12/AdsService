@@ -6,9 +6,11 @@ import (
 	adapterdb "ads/authservice/internal/adapter/out/db"
 	adapterph "ads/authservice/internal/adapter/out/hasher"
 	adaptertg "ads/authservice/internal/adapter/out/jwt"
+	adaptermq "ads/authservice/internal/adapter/out/rabbitmq"
 	"ads/authservice/internal/app/usecase"
 	"ads/authservice/internal/generated/auth_v1"
 	"ads/pkg/pg"
+	"ads/pkg/rabbitmq"
 	"context"
 	"fmt"
 	"log"
@@ -59,6 +61,78 @@ func newPostgresClient(cfg *config.Config) (*pg.PostgresClient, error) {
 	return pgClient, nil
 }
 
+func closePostgresClient(
+	ctx context.Context,
+	logger *slog.Logger,
+	pgClient *pg.PostgresClient,
+) {
+	logger.InfoContext(ctx, "closing postgres connection...")
+	if err := pgClient.Close(); err != nil {
+		logger.ErrorContext(ctx, "failed to close postgres",
+			slog.Any("error", err),
+		)
+	}
+}
+
+func newRabbitMQClient(cfg *config.Config) (*rabbitmq.RabbitClient, error) {
+	rabbitConfig := rabbitmq.NewRabbitConfig(
+		cfg.RabbitHost,
+		cfg.RabbitPort,
+		cfg.RabbitUser,
+		cfg.RabbitPassword,
+		cfg.RabbitWaitTime,
+		cfg.RabbitAttempts,
+	)
+
+	rabbitClient, err := rabbitmq.NewRabbitClient(rabbitConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return rabbitClient, nil
+}
+
+func closeRabbitMQClient(
+	ctx context.Context,
+	logger *slog.Logger,
+	rabbitClient *rabbitmq.RabbitClient,
+) {
+	logger.InfoContext(ctx, "closing rabbitmq connection...")
+	if err := rabbitClient.Close(); err != nil {
+		logger.ErrorContext(ctx, "failed to close rabbitmq",
+			slog.Any("error", err),
+		)
+	}
+}
+
+func newAccountPublisher(
+	cfg *config.Config, rabbitClient *rabbitmq.RabbitClient,
+) (*adaptermq.AccountPublisher, error) {
+	publisherConfig := adaptermq.NewPublisherConfig(
+		cfg.ExchangeName, cfg.RoutingKey,
+	)
+
+	pub, err := adaptermq.NewAccountPublisher(publisherConfig, rabbitClient)
+	if err != nil {
+		return nil, err
+	}
+
+	return pub, nil
+}
+
+func closeAccountPublisher(
+	ctx context.Context,
+	logger *slog.Logger,
+	accountPublisher *adaptermq.AccountPublisher,
+) {
+	logger.InfoContext(ctx, "closing account publisher...")
+	if err := accountPublisher.Close(); err != nil {
+		logger.ErrorContext(ctx, "failed to close account publisher",
+			slog.Any("error", err),
+		)
+	}
+}
+
 func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
 	pgClient, err := newPostgresClient(cfg)
@@ -67,14 +141,16 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	}
 
 	// Close Postgres
-	defer func() {
-		logger.InfoContext(ctx, "closing postgres connection...")
-		if err := pgClient.Close(); err != nil {
-			logger.ErrorContext(ctx, "failed to close postgres",
-				slog.Any("error", err),
-			)
-		}
-	}()
+	defer closePostgresClient(ctx, logger, pgClient)
+
+	// RabbitMQ client
+	rabbitClient, err := newRabbitMQClient(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to init rabbitmq client: %w", err)
+	}
+
+	// Close RabbitMQ
+	defer closeRabbitMQClient(ctx, logger, rabbitClient)
 
 	// Repositories
 	accountRepo := adapterdb.NewAccountsRepository(pgClient)
@@ -86,8 +162,17 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 		cfg.AccessTTL, cfg.RefreshTTL,
 	)
 
+	// RabbitMQ Publisher
+	accountPublisher, err := newAccountPublisher(cfg, rabbitClient)
+	if err != nil {
+		return fmt.Errorf("failed to init event publisher: %w", err)
+	}
+	defer closeAccountPublisher(ctx, logger, accountPublisher)
+
 	// Use-cases
-	registerUC := usecase.NewRegisterUC(accountRepo, accountRoleRepo, passwordHasher)
+	registerUC := usecase.NewRegisterUC(
+		accountRepo, accountRoleRepo, passwordHasher, accountPublisher,
+	)
 	loginUC := usecase.NewLoginUC(
 		accountRepo, accountRoleRepo, refreshSessionRepo,
 		passwordHasher, tokenGenerator, cfg.RefreshTTL,

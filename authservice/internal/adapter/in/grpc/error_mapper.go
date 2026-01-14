@@ -23,7 +23,8 @@ func gRPCError(err error) (codes.Code, string, error) {
 			errors.Is(w.Public, uc_errors.ErrRevokeRefreshSessionDB),
 			errors.Is(w.Public, uc_errors.ErrCreateAccountRoleDB),
 			errors.Is(w.Public, uc_errors.ErrGenerateAccessToken),
-			errors.Is(w.Public, uc_errors.ErrGenerateRefreshToken):
+			errors.Is(w.Public, uc_errors.ErrGenerateRefreshToken),
+			errors.Is(w.Public, uc_errors.ErrPublishEvent):
 			return codes.Internal, w.Public.Error(), w.Reason
 
 		case errors.Is(w.Public, uc_errors.ErrInvalidInput):

@@ -29,9 +29,9 @@ type Config struct {
 	RabbitWaitTime time.Duration `env:"RABBIT_WAIT_TIME" envDefault:"30s"`
 	RabbitAttempts int           `env:"RABBIT_ATTEMPTS" envDefault:"5"`
 
-	SubscriberExchangeName string `env:"SUBSCRIBER_EXCHANGE_NAME" envDefault:"account_topic"`
-	SubscriberQueueName    string `env:"SUBSCRIBER_QUEUE_NAME" envDefault:"account_create"`
-	SubscriberRoutingKey   string `env:"SUBSCRIBER_ROUTING_KEY,required"`
+	ExchangeName string `env:"EXCHANGE_NAME" envDefault:"account_topic"`
+	QueueName    string `env:"QUEUE_NAME" envDefault:"account_create"`
+	RoutingKey   string `env:"ROUTING_KEY,required"`
 
 	// Phone validator
 	PhoneDefaultRegion string `env:"PHONE_DEFAULT_REGION"`
@@ -71,8 +71,8 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("RabbitPassword is required")
 	}
 
-	if cfg.SubscriberRoutingKey == "" {
-		return nil, fmt.Errorf("SubscriberRoutingKey is required")
+	if cfg.RoutingKey == "" {
+		return nil, fmt.Errorf("RoutingKey is required")
 	}
 
 	fmt.Printf("Config loaded successfully\n")

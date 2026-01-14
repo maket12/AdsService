@@ -27,20 +27,20 @@ func NewSubscriberConfig(exchange, queue, routingKey string) *SubscriberConfig {
 }
 
 type AccountSubscriber struct {
-	config   *SubscriberConfig
+	cfg      *SubscriberConfig
 	log      *slog.Logger
 	client   *rabbitmq.RabbitClient
 	createUC *usecase.CreateProfileUC
 }
 
 func NewAccountSubscriber(
-	config *SubscriberConfig,
+	cfg *SubscriberConfig,
 	log *slog.Logger,
 	client *rabbitmq.RabbitClient,
 	createUC *usecase.CreateProfileUC,
 ) *AccountSubscriber {
 	return &AccountSubscriber{
-		config:   config,
+		cfg:      cfg,
 		log:      log,
 		client:   client,
 		createUC: createUC,
@@ -55,7 +55,7 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 
 	// Exchange
 	if err = ch.ExchangeDeclare(
-		s.config.Exchange,
+		s.cfg.Exchange,
 		"topic",
 		true,
 		false,
@@ -68,7 +68,7 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 
 	// Queue
 	q, err := ch.QueueDeclare(
-		s.config.Queue,
+		s.cfg.Queue,
 		true,
 		false,
 		false,
@@ -82,8 +82,8 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 	// Bind queue
 	if err = ch.QueueBind(
 		q.Name,
-		s.config.RoutingKey,
-		s.config.Exchange,
+		s.cfg.RoutingKey,
+		s.cfg.Exchange,
 		false,
 		nil,
 	); err != nil {
@@ -117,7 +117,7 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 
 func (s *AccountSubscriber) handleMessage(ctx context.Context, d *amqp.Delivery) {
 	// Deserialisation json to DTO
-	var event AccountCreateEvent
+	var event rabbitmq.AccountCreatedEvent
 	if err := json.Unmarshal(d.Body, &event); err != nil {
 		s.log.ErrorContext(ctx, "failed to unmarshal account event",
 			slog.String("body", string(d.Body)),

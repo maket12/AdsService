@@ -85,9 +85,9 @@ func newRabbitMQSubscriber(
 	createProfileUC *usecase.CreateProfileUC,
 ) *adaptermq.AccountSubscriber {
 	subConfig := adaptermq.NewSubscriberConfig(
-		cfg.SubscriberExchangeName,
-		cfg.SubscriberQueueName,
-		cfg.SubscriberRoutingKey,
+		cfg.ExchangeName,
+		cfg.QueueName,
+		cfg.RoutingKey,
 	)
 
 	sub := adaptermq.NewAccountSubscriber(
