@@ -1,21 +1,28 @@
 schema:
-  - infrastructure/graphql/schema.graphqls
+  - graph/*.graphqls
 
 exec:
-  filename: app/resolvers/generated.go
-  package: resolvers
+  filename: graph/generated.go
+  package: graph
 
 model:
-  filename: app/resolvers/models_gen.go
-  package: resolvers
+  filename: graph/model/models_gen.go
+  package: model
 
 resolver:
   layout: follow-schema
-  dir: app/resolvers
-  package: resolvers
+  dir: graph
+  package: graph
 
 models:
-  Time:
-    model: github.com/99designs/gqlgen/graphql.Time
-  Upload:
-    model: github.com/99designs/gqlgen/graphql.Upload
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
+
+  User:
+    model:
+      - ads/userservice/internal/generated/user_v1.GetProfileResponse
+
+  AuthPayload:
+    model:
+      - ads/authservice/internal/generated/auth_v1.LoginResponse

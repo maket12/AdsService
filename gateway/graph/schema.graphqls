@@ -1,0 +1,64 @@
+""" User (Account + Role + Profile) """
+type User {
+    id: ID!
+    role: String
+    firstName: String
+    lastName: String
+    phone: String
+    avatarUrl: String
+    bio: String
+    updatedAt: String
+}
+
+""" Login Response """
+type AuthPayload {
+    accessToken: String!
+    refreshToken: String!
+}
+
+type Query {
+    # rpc GetProfile
+    me: User!
+}
+
+type Mutation {
+    # --- Auth Service methods ---
+
+    # rpc Register
+    register(email: String!, password: String!): ID!
+
+    # rpc Login
+    login(
+        email: String!,
+        password: String!,
+        ip: String,
+        userAgent: String
+    ): AuthPayload!
+
+    # rpc Logout
+    logout(refreshToken: String!): Boolean!
+
+    # rpc RefreshSession
+    refreshSession(
+        oldRefreshToken: String!,
+        ip: String,
+        userAgent: String
+    ): AuthPayload!
+
+    # rpc AssignRole
+    assignRole(
+        accountId: ID!,
+        role: String!
+    ): Boolean!
+
+    # --- User Service methods ---
+
+    # rpc UpdateProfile
+    updateProfile(
+        firstName: String
+        lastName: String
+        phone: String
+        avatarUrl: String
+        bio: String
+    ): Boolean!
+}

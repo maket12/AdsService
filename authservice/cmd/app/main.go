@@ -8,7 +8,8 @@ import (
 	adaptertg "ads/authservice/internal/adapter/out/jwt"
 	adaptermq "ads/authservice/internal/adapter/out/rabbitmq"
 	"ads/authservice/internal/app/usecase"
-	"ads/authservice/internal/generated/auth_v1"
+	"ads/pkg/generated/auth_v1"
+
 	"ads/pkg/pg"
 	"ads/pkg/rabbitmq"
 	"context"
@@ -185,6 +186,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	validateAccessUC := usecase.NewValidateAccessTokenUC(
 		accountRepo, tokenGenerator,
 	)
+	assignRoleUC := usecase.NewAssignRoleUC(accountRoleRepo)
 
 	// Handler
 	authHandler := adaptergrpc.NewAuthHandler(
@@ -194,6 +196,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 		logoutUC,
 		refreshSessionUC,
 		validateAccessUC,
+		assignRoleUC,
 	)
 
 	// gRPC server
