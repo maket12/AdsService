@@ -23,7 +23,7 @@ func ExtractAccountID(ctx context.Context) (uuid.UUID, error) {
 		return uuid.Nil, errs.NewNotAuthenticatedErrorWithReason(ErrMetadataIsMissing)
 	}
 
-	vals := md.Get("x-user-id")
+	vals := md.Get("x-account-id")
 	if len(vals) == 0 {
 		return uuid.Nil, errs.NewNotAuthenticatedErrorWithReason(ErrAccountIDNotSpecified)
 	}

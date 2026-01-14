@@ -41,7 +41,7 @@ func (h *UserHandler) extractID(ctx context.Context) (uuid.UUID, error) {
 	return accountID, nil
 }
 
-func (h *UserHandler) GetProfile(ctx context.Context) (*user_v1.GetProfileResponse, error) {
+func (h *UserHandler) GetProfile(ctx context.Context, _ *user_v1.GetProfileRequest) (*user_v1.GetProfileResponse, error) {
 	accountID, gRPCErr := h.extractID(ctx)
 	if gRPCErr != nil {
 		return nil, gRPCErr

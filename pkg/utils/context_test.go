@@ -24,7 +24,7 @@ func TestExtractAccountID(t *testing.T) {
 			{
 				name: "success",
 				ctx: metadata.NewIncomingContext(context.Background(),
-					metadata.Pairs("x-user-id", targetUID.String()),
+					metadata.Pairs("x-account-id", targetUID.String()),
 				),
 				expect:  targetUID,
 				wantErr: false,
@@ -46,7 +46,7 @@ func TestExtractAccountID(t *testing.T) {
 			{
 				name: "failure - invalid user id",
 				ctx: metadata.NewIncomingContext(context.Background(),
-					metadata.Pairs("x-user-id", "not-valid-uuid"),
+					metadata.Pairs("x-account-id", "not-valid-uuid"),
 				),
 				expect:  uuid.Nil,
 				wantErr: true,

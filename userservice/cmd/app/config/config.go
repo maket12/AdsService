@@ -20,15 +20,6 @@ type Config struct {
 	DBIdleConn     int           `env:"DB_IDLE_CONNECTIONS" envDefault:"25"`
 	DBConnLifeTime time.Duration `env:"DB_CONNECTION_LIFETIME" envDefault:"5m"`
 
-	// JWT
-	AccessSecret  string        `env:"ACCESS_SECRET,required"`
-	RefreshSecret string        `env:"REFRESH_SECRET,required"`
-	AccessTTL     time.Duration `env:"ACCESS_TTL" envDefault:"15m"`
-	RefreshTTL    time.Duration `env:"REFRESH_TTL" envDefault:"720h"`
-
-	// Password hasher
-	PasswordCost int `env:"PASSWORD_COST" envDefault:"4"`
-
 	// RabbitMQ
 	RabbitHost     string `env:"RABBIT_HOST,required"`
 	RabbitPort     int    `env:"RABBIT_PORT" envDefault:"5672"`
@@ -39,10 +30,14 @@ type Config struct {
 	RabbitAttempts int           `env:"RABBIT_ATTEMPTS" envDefault:"5"`
 
 	ExchangeName string `env:"EXCHANGE_NAME" envDefault:"account_topic"`
+	QueueName    string `env:"QUEUE_NAME" envDefault:"account_create"`
 	RoutingKey   string `env:"ROUTING_KEY,required"`
 
+	// Phone validator
+	PhoneDefaultRegion string `env:"PHONE_DEFAULT_REGION"`
+
 	// Service
-	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50051"`
+	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50052"`
 	LogLevel    string `env:"LOG_LEVEL" envDefault:"INFO"`
 	Environment string `env:"ENVIRONMENT" envDefault:"development"`
 }
@@ -64,13 +59,6 @@ func Load() (*Config, error) {
 	}
 	if cfg.DBName == "" {
 		return nil, fmt.Errorf("DBName is required")
-	}
-
-	if cfg.AccessSecret == "" {
-		return nil, fmt.Errorf("AccessSecret is required")
-	}
-	if cfg.RefreshSecret == "" {
-		return nil, fmt.Errorf("RefreshSecret is required")
 	}
 
 	if cfg.RabbitHost == "" {
