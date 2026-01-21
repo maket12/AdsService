@@ -4,6 +4,83 @@ package ad;
 
 option go_package = "ads/pkg/generated/ad_v1;ad_v1";
 
+import "google/protobuf/timestamp.proto";
+
 service AdService {
-  rpc CreateAd
+  rpc CreateAd(CreateAdRequest) returns (CreateAdResponse);
+  rpc GetAd(GetAdRequest) returns (GetAdResponse);
+  rpc UpdateAd(UpdateAdRequest) returns (UpdateAdResponse);
+  rpc PublishAd(PublishAdRequest) returns (PublishAdResponse);
+  rpc RejectAd(RejectAdRequest) returns (RejectAdResponse);
+  rpc DeleteAd(DeleteAdRequest) returns (DeleteAdResponse);
+  rpc DeleteAllAds(DeleteAllAdsRequest) returns (DeleteAllAdsResponse);
+}
+
+message CreateAdRequest {
+  string seller_id = 1;
+  string title = 2;
+  optional string description = 3;
+  int64 price = 4;
+}
+
+message CreateAdResponse {
+  string ad_id = 1;
+}
+
+message GetAdRequest {
+  string ad_id = 1;
+}
+
+message GetAdResponse {
+  string ad_id = 1;
+  string seller_id = 2;
+  string title = 3;
+  optional string description = 4;
+  int64 price = 5;
+  string status = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message UpdateAdRequest {
+  string ad_id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional int64 price = 4;
+}
+
+message UpdateAdResponse {
+  bool success = 1;
+}
+
+message PublishAdRequest {
+  string ad_id = 1;
+}
+
+message PublishAdResponse {
+  bool success = 1;
+}
+
+message RejectAdRequest {
+  string ad_id = 1;
+}
+
+message RejectAdResponse {
+  bool success = 1;
+}
+
+message DeleteAdRequest {
+  string ad_id = 1;
+}
+
+message DeleteAdResponse {
+  bool success = 1;
+}
+
+message DeleteAllAdsRequest {
+  string seller_id = 1;
+}
+
+message DeleteAllAdsResponse {
+  bool success = 1;
 }

@@ -128,7 +128,10 @@ func (ad *Ad) Publish() error {
 	if !ad.CanBePublished() {
 		return ErrAdCantBePublished
 	}
+
 	ad.status = AdPublished
+	ad.updatedAt = time.Now()
+
 	return nil
 }
 
@@ -136,7 +139,10 @@ func (ad *Ad) Reject() error {
 	if !ad.CanBeRejected() {
 		return ErrAdCantBeRejected
 	}
+
 	ad.status = AdRejected
+	ad.updatedAt = time.Now()
+
 	return nil
 }
 
@@ -144,7 +150,10 @@ func (ad *Ad) Delete() error {
 	if !ad.CanBeDeleted() {
 		return ErrAdCantBeDeleted
 	}
+
 	ad.status = AdDeleted
+	ad.updatedAt = time.Now()
+
 	return nil
 }
 
