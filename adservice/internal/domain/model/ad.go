@@ -1,0 +1,175 @@
+package model
+
+import (
+	"ads/pkg/errs"
+	"errors"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+var (
+	ErrAdCantBePublished = errors.New("ad cannot be published")
+	ErrAdCantBeRejected  = errors.New("ad cannot be rejected")
+	ErrAdCantBeDeleted   = errors.New("ad cannot be deleted")
+)
+
+type AdStatus string
+
+const (
+	AdPublished    AdStatus = "published"
+	AdOnModeration AdStatus = "on_moderation"
+	AdRejected     AdStatus = "rejected"
+	AdDeleted      AdStatus = "deleted"
+)
+
+const (
+	minTitleLen       = 5
+	maxDescriptionLen = 2048
+)
+
+// ================ Rich model for Ad ================
+
+type Ad struct {
+	id          uuid.UUID
+	sellerID    uuid.UUID
+	title       string
+	description *string
+	price       int64 // in cents
+	status      AdStatus
+	createdAt   time.Time
+	updatedAt   time.Time
+}
+
+func NewAd(
+	sellerID uuid.UUID,
+	title string,
+	description *string,
+	price int64,
+) (*Ad, error) {
+	if sellerID == uuid.Nil {
+		return nil, errs.NewValueInvalidError("seller_id")
+	}
+	if title == "" {
+		return nil, errs.NewValueRequiredError("title")
+	}
+	if len(title) < minTitleLen {
+		return nil, errs.NewValueInvalidError("title")
+	}
+	if description != nil {
+		if len(*description) == 0 {
+			return nil, errs.NewValueRequiredError("description")
+		} else if len(*description) > maxDescriptionLen {
+			return nil, errs.NewValueInvalidError("description")
+		}
+	}
+	if price < 0 {
+		return nil, errs.NewValueInvalidError("price")
+	}
+
+	now := time.Now()
+
+	return &Ad{
+		id:          uuid.New(),
+		sellerID:    sellerID,
+		title:       title,
+		description: description,
+		price:       price,
+		status:      AdOnModeration,
+		createdAt:   now,
+		updatedAt:   now,
+	}, nil
+}
+
+func RestoreAd(
+	id, sellerID uuid.UUID,
+	title string,
+	description *string,
+	price int64,
+	status AdStatus,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *Ad {
+	return &Ad{
+		id:          id,
+		sellerID:    sellerID,
+		title:       title,
+		description: description,
+		price:       price,
+		status:      status,
+		createdAt:   createdAt,
+		updatedAt:   updatedAt,
+	}
+}
+
+// ================ Read-Only ================
+
+func (ad *Ad) ID() uuid.UUID        { return ad.id }
+func (ad *Ad) SellerID() uuid.UUID  { return ad.sellerID }
+func (ad *Ad) Title() string        { return ad.title }
+func (ad *Ad) Description() *string { return ad.description }
+func (ad *Ad) Price() int64         { return ad.price }
+func (ad *Ad) Status() AdStatus     { return ad.status }
+func (ad *Ad) CreatedAt() time.Time { return ad.createdAt }
+func (ad *Ad) UpdatedAt() time.Time { return ad.updatedAt }
+
+func (ad *Ad) IsPublished() bool    { return ad.status == AdPublished }
+func (ad *Ad) IsOnModeration() bool { return ad.status == AdOnModeration }
+func (ad *Ad) IsRejected() bool     { return ad.status == AdRejected }
+func (ad *Ad) IsDeleted() bool      { return ad.status == AdDeleted }
+
+func (ad *Ad) CanBePublished() bool { return ad.IsOnModeration() }
+func (ad *Ad) CanBeRejected() bool  { return ad.IsOnModeration() }
+func (ad *Ad) CanBeDeleted() bool   { return ad.IsPublished() }
+
+// ================ Mutation ================
+
+func (ad *Ad) Publish() error {
+	if !ad.CanBePublished() {
+		return ErrAdCantBePublished
+	}
+	ad.status = AdPublished
+	return nil
+}
+
+func (ad *Ad) Reject() error {
+	if !ad.CanBeRejected() {
+		return ErrAdCantBeRejected
+	}
+	ad.status = AdRejected
+	return nil
+}
+
+func (ad *Ad) Delete() error {
+	if !ad.CanBeDeleted() {
+		return ErrAdCantBeDeleted
+	}
+	ad.status = AdDeleted
+	return nil
+}
+
+func (ad *Ad) Update(title, description *string, price *int64) error {
+	if title != nil && len(*title) < minTitleLen {
+		return errs.NewValueInvalidError("title")
+	}
+	if description != nil && len(*description) > maxDescriptionLen {
+		return errs.NewValueInvalidError("description")
+	}
+	if price != nil && *price < 0 {
+		return errs.NewValueInvalidError("price")
+	}
+
+	if title != nil {
+		ad.title = *title
+	}
+	if description != nil {
+		ad.description = description
+	}
+	if price != nil {
+		ad.price = *price
+	}
+
+	ad.updatedAt = time.Now()
+
+	return nil
+}

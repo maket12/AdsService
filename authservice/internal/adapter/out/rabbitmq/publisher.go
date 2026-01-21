@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"ads/authservice/internal/domain/model"
+	"ads/authservice/internal/domain/entity"
 	"ads/pkg/rabbitmq"
 	"context"
 	"encoding/json"
@@ -57,7 +57,7 @@ func NewAccountPublisher(
 	}, nil
 }
 
-func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, event *model.AccountCreatedEvent) error {
+func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, event *entity.AccountCreatedEvent) error {
 	eventJson := rabbitmq.AccountCreatedEvent{AccountID: event.AccountID}
 
 	body, err := json.Marshal(eventJson)
