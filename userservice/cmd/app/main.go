@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ads/pkg/generated/user_v1"
 	"ads/pkg/pg"
 	"ads/pkg/rabbitmq"
 	"ads/userservice/cmd/app/config"
@@ -9,7 +10,6 @@ import (
 	adapterpg "ads/userservice/internal/adapter/out/pg"
 	adapterphone "ads/userservice/internal/adapter/out/validator"
 	"ads/userservice/internal/app/usecase"
-	"ads/userservice/internal/generated/user_v1"
 	"context"
 	"fmt"
 	"log"

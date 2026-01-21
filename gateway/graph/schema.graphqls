@@ -11,7 +11,13 @@ type User {
 }
 
 """ Login Response """
-type AuthPayload {
+type LoginResponse {
+    accessToken: String!
+    refreshToken: String!
+}
+
+""" Refresh Session Response """
+type RefreshSessionResponse {
     accessToken: String!
     refreshToken: String!
 }
@@ -33,7 +39,7 @@ type Mutation {
         password: String!,
         ip: String,
         userAgent: String
-    ): AuthPayload!
+    ): LoginResponse!
 
     # rpc Logout
     logout(refreshToken: String!): Boolean!
@@ -43,7 +49,7 @@ type Mutation {
         oldRefreshToken: String!,
         ip: String,
         userAgent: String
-    ): AuthPayload!
+    ): RefreshSessionResponse!
 
     # rpc AssignRole
     assignRole(

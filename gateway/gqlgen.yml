@@ -21,8 +21,12 @@ models:
 
   User:
     model:
-      - ads/userservice/internal/generated/user_v1.GetProfileResponse
+      - ads/pkg/generated/user_v1.GetProfileResponse
 
-  AuthPayload:
+  LoginResponse:
     model:
-      - ads/authservice/internal/generated/auth_v1.LoginResponse
+      - ads/pkg/generated/auth_v1.LoginResponse
+
+  RefreshSessionResponse:
+    model:
+      - ads/pkg/generated/auth_v1.RefreshSessionResponse

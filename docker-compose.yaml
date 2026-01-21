@@ -150,6 +150,20 @@ services:
       user-db:
         condition: service_healthy
 
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: ads-gateway
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    environment:
+      - AUTH_GRPC_ADDR=auth-service:50051
+      - USER_GRPC_ADDR=user-service:50052
+    depends_on:
+      - auth-service
+      - user-service
+
 volumes:
   auth_pg_data:
   user_pg_data:

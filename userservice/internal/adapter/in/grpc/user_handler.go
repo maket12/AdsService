@@ -1,10 +1,10 @@
 package grpc
 
 import (
+	"ads/pkg/generated/user_v1"
 	"ads/pkg/utils"
 	"ads/userservice/internal/app/dto"
 	"ads/userservice/internal/app/usecase"
-	"ads/userservice/internal/generated/user_v1"
 	"context"
 	"log/slog"
 
