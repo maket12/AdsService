@@ -9,6 +9,14 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// Context keys
+type contextKey string
+
+const (
+	AccountIDKey contextKey = "account_id"
+	RoleKey      contextKey = "role"
+)
+
 // Custom errors
 var (
 	ErrMetadataIsMissing     = errors.New("metadata is missing")
@@ -34,4 +42,19 @@ func ExtractAccountID(ctx context.Context) (uuid.UUID, error) {
 	}
 
 	return id, nil
+}
+
+// PackAccountIDForGRPC Packs account id into outgoing context (metadata)
+func PackAccountIDForGRPC(ctx context.Context, accountID string) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, "x-account-id", accountID)
+}
+
+// SetAccountIDInCtx Sets account id in context (gateway)
+func SetAccountIDInCtx(ctx context.Context, accountID string) context.Context {
+	return context.WithValue(ctx, AccountIDKey, accountID)
+}
+
+// SetAccountRoleInCtx Sets account role in context (gateway)
+func SetAccountRoleInCtx(ctx context.Context, role string) context.Context {
+	return context.WithValue(ctx, RoleKey, role)
 }

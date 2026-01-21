@@ -1,8 +1,8 @@
 package grpc
 
 import (
+	"ads/pkg/generated/user_v1"
 	"ads/userservice/internal/app/dto"
-	"ads/userservice/internal/generated/user_v1"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"

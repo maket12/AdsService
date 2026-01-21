@@ -7,16 +7,17 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+COPY gateway/ ./gateway/
 COPY pkg/ ./pkg/
-COPY userservice/ ./userservice/
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/userservice ./userservice/cmd/app/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/gateway ./gateway/cmd/app/server.go
 
 FROM alpine:latest
 WORKDIR /app
 
 RUN apk --no-cache add ca-certificates
-COPY --from=builder /bin/userservice /app/userservice
 
-EXPOSE 50052
-CMD ["/app/userservice"]
+COPY --from=builder /app/bin/gateway .
+
+EXPOSE 8080
+CMD ["./gateway"]

@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/generated/auth_v1"
+	"ads/pkg/generated/auth_v1"
 
 	"github.com/google/uuid"
 )
