@@ -18,5 +18,3 @@ CREATE TABLE IF NOT EXISTS accounts (
     updated_at timestamptz NOT NULL DEFAULT now(),
     last_login_at timestamptz
 );
-
-CREATE INDEX idx_accounts_status ON accounts(status);

@@ -1,8 +1,8 @@
 package mapper_test
 
 import (
-	"ads/userservice/internal/adapter/out/pg/mapper"
-	"ads/userservice/internal/adapter/out/pg/sqlc"
+	"ads/userservice/internal/adapter/out/postgres/mapper"
+	"ads/userservice/internal/adapter/out/postgres/sqlc"
 	"ads/userservice/internal/domain/model"
 	"database/sql"
 	"testing"

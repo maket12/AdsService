@@ -2,12 +2,12 @@ package main
 
 import (
 	"ads/pkg/generated/user_v1"
-	"ads/pkg/pg"
+	"ads/pkg/postgres"
 	"ads/pkg/rabbitmq"
 	"ads/userservice/cmd/app/config"
 	adaptergrpc "ads/userservice/internal/adapter/in/grpc"
 	adaptermq "ads/userservice/internal/adapter/in/rabbitmq"
-	adapterpg "ads/userservice/internal/adapter/out/pg"
+	adapterpg "ads/userservice/internal/adapter/out/postgres"
 	adapterphone "ads/userservice/internal/adapter/out/validator"
 	"ads/userservice/internal/app/usecase"
 	"context"
@@ -45,14 +45,14 @@ func newLogger(level string) *slog.Logger {
 	}))
 }
 
-func newPostgresClient(cfg *config.Config) (*pg.PostgresClient, error) {
-	pgConfig := pg.NewPostgresConfig(
+func newPostgresClient(cfg *config.Config) (*postgres.Client, error) {
+	pgConfig := postgres.NewConfig(
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
 		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
 		cfg.DBIdleConn, cfg.DBConnLifeTime,
 	)
 
-	pgClient, err := pg.NewPostgresClient(pgConfig)
+	pgClient, err := postgres.NewClient(pgConfig)
 	if err != nil {
 		return nil, err
 	}

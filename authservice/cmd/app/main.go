@@ -3,14 +3,14 @@ package main
 import (
 	"ads/authservice/cmd/app/config"
 	adaptergrpc "ads/authservice/internal/adapter/in/grpc"
-	adapterdb "ads/authservice/internal/adapter/out/db"
 	adapterph "ads/authservice/internal/adapter/out/hasher"
 	adaptertg "ads/authservice/internal/adapter/out/jwt"
+	adapterdb "ads/authservice/internal/adapter/out/postgres"
 	adaptermq "ads/authservice/internal/adapter/out/rabbitmq"
 	"ads/authservice/internal/app/usecase"
 	"ads/pkg/generated/auth_v1"
 
-	"ads/pkg/pg"
+	"ads/pkg/postgres"
 	"ads/pkg/rabbitmq"
 	"context"
 	"fmt"
@@ -47,14 +47,14 @@ func newLogger(level string) *slog.Logger {
 	}))
 }
 
-func newPostgresClient(cfg *config.Config) (*pg.PostgresClient, error) {
-	pgConfig := pg.NewPostgresConfig(
+func newPostgresClient(cfg *config.Config) (*postgres.Client, error) {
+	pgConfig := postgres.NewConfig(
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
 		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
 		cfg.DBIdleConn, cfg.DBConnLifeTime,
 	)
 
-	pgClient, err := pg.NewPostgresClient(pgConfig)
+	pgClient, err := postgres.NewClient(pgConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func newPostgresClient(cfg *config.Config) (*pg.PostgresClient, error) {
 func closePostgresClient(
 	ctx context.Context,
 	logger *slog.Logger,
-	pgClient *pg.PostgresClient,
+	pgClient *postgres.Client,
 ) {
 	logger.InfoContext(ctx, "closing postgres connection...")
 	if err := pgClient.Close(); err != nil {

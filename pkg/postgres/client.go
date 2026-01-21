@@ -1,4 +1,4 @@
-package pg
+package postgres
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type PostgresConfig struct {
+type Config struct {
 	DBHost     string
 	DBPort     int
 	DBUser     string
@@ -22,10 +22,10 @@ type PostgresConfig struct {
 	ConnLifeTime time.Duration
 }
 
-func NewPostgresConfig(
+func NewConfig(
 	host string, port int, user, password, name, ssl string,
-	openConn, idleConn int, connLifeTime time.Duration) *PostgresConfig {
-	return &PostgresConfig{
+	openConn, idleConn int, connLifeTime time.Duration) *Config {
+	return &Config{
 		DBHost:       host,
 		DBPort:       port,
 		DBUser:       user,
@@ -38,18 +38,18 @@ func NewPostgresConfig(
 	}
 }
 
-func (pc *PostgresConfig) dsn() string {
+func (pc *Config) dsn() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		pc.DBHost, pc.DBPort, pc.DBUser, pc.DBPassword, pc.DBName, pc.SSLMode,
 	)
 }
 
-type PostgresClient struct {
+type Client struct {
 	DB *sql.DB
 }
 
-func NewPostgresClient(config *PostgresConfig) (*PostgresClient, error) {
+func NewClient(config *Config) (*Client, error) {
 	var dsn = config.dsn()
 
 	db, err := sql.Open("pgx", dsn)
@@ -75,9 +75,9 @@ func NewPostgresClient(config *PostgresConfig) (*PostgresClient, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return &PostgresClient{DB: db}, nil
+	return &Client{DB: db}, nil
 }
 
-func (c *PostgresClient) Close() error {
+func (c *Client) Close() error {
 	return c.DB.Close()
 }

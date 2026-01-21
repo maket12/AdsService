@@ -18,3 +18,5 @@ sql:
         package: "sqlc"
         out: "userservice/internal/adapter/out/pg/sqlc"
         sql_package: "database/sql"
+
+  - engine: "postgresql"

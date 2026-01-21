@@ -1,11 +1,11 @@
-package db
+package postgres
 
 import (
-	"ads/authservice/internal/adapter/out/db/mapper"
-	"ads/authservice/internal/adapter/out/db/sqlc"
+	"ads/authservice/internal/adapter/out/postgres/mapper"
+	"ads/authservice/internal/adapter/out/postgres/sqlc"
 	"ads/authservice/internal/domain/model"
 	"ads/pkg/errs"
-	"ads/pkg/pg"
+	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"database/sql"
 	"errors"
@@ -18,7 +18,7 @@ type RefreshSessionRepository struct {
 	q *sqlc.Queries
 }
 
-func NewRefreshSessionsRepository(pgClient *pg.PostgresClient) *RefreshSessionRepository {
+func NewRefreshSessionsRepository(pgClient *pkgpostgres.Client) *RefreshSessionRepository {
 	queries := sqlc.New(pgClient.DB)
 	return &RefreshSessionRepository{q: queries}
 }

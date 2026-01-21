@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS ads;
+DROP TYPE IF EXISTS ad_status;

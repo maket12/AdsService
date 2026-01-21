@@ -1,10 +1,10 @@
-package pg
+package postgres
 
 import (
 	"ads/pkg/errs"
-	"ads/pkg/pg"
-	"ads/userservice/internal/adapter/out/pg/mapper"
-	"ads/userservice/internal/adapter/out/pg/sqlc"
+	pkgpostgres "ads/pkg/postgres"
+	"ads/userservice/internal/adapter/out/postgres/mapper"
+	"ads/userservice/internal/adapter/out/postgres/sqlc"
 	"ads/userservice/internal/domain/model"
 	"context"
 	"database/sql"
@@ -18,7 +18,7 @@ type ProfileRepository struct {
 	q *sqlc.Queries
 }
 
-func NewProfileRepository(pgClient *pg.PostgresClient) *ProfileRepository {
+func NewProfileRepository(pgClient *pkgpostgres.Client) *ProfileRepository {
 	queries := sqlc.New(pgClient.DB)
 	return &ProfileRepository{q: queries}
 }

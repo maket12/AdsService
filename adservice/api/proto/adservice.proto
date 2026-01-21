@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ad;
+
+option go_package = "ads/pkg/generated/ad_v1;ad_v1";
+
+service AdService {
+  rpc CreateAd
+}
