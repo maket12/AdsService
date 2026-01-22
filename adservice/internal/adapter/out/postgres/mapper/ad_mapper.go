@@ -19,6 +19,7 @@ func MapSQLCToAd(rawAd sqlc.Ad) *model.Ad {
 		description,
 		rawAd.Price,
 		model.AdStatus(rawAd.Status),
+		nil,
 		rawAd.CreatedAt,
 		rawAd.UpdatedAt,
 	)

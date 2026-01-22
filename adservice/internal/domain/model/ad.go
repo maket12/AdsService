@@ -37,6 +37,7 @@ type Ad struct {
 	description *string
 	price       int64 // in cents
 	status      AdStatus
+	images      []string
 	createdAt   time.Time
 	updatedAt   time.Time
 }
@@ -46,6 +47,7 @@ func NewAd(
 	title string,
 	description *string,
 	price int64,
+	images []string,
 ) (*Ad, error) {
 	if sellerID == uuid.Nil {
 		return nil, errs.NewValueInvalidError("seller_id")
@@ -66,6 +68,17 @@ func NewAd(
 	if price < 0 {
 		return nil, errs.NewValueInvalidError("price")
 	}
+	if images != nil {
+		if len(images) == 0 {
+			return nil, errs.NewValueInvalidError("images")
+		}
+	}
+
+	var imagesCopy []string
+	if images != nil {
+		imagesCopy = make([]string, len(images))
+		copy(imagesCopy, images)
+	}
 
 	now := time.Now()
 
@@ -76,6 +89,7 @@ func NewAd(
 		description: description,
 		price:       price,
 		status:      AdOnModeration,
+		images:      imagesCopy,
 		createdAt:   now,
 		updatedAt:   now,
 	}, nil
@@ -87,9 +101,15 @@ func RestoreAd(
 	description *string,
 	price int64,
 	status AdStatus,
+	images []string,
 	createdAt time.Time,
 	updatedAt time.Time,
 ) *Ad {
+	var imagesCopy []string
+	if images != nil {
+		imagesCopy = make([]string, len(images))
+		copy(imagesCopy, images)
+	}
 	return &Ad{
 		id:          id,
 		sellerID:    sellerID,
@@ -97,6 +117,7 @@ func RestoreAd(
 		description: description,
 		price:       price,
 		status:      status,
+		images:      imagesCopy,
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,
 	}
@@ -110,6 +131,14 @@ func (ad *Ad) Title() string        { return ad.title }
 func (ad *Ad) Description() *string { return ad.description }
 func (ad *Ad) Price() int64         { return ad.price }
 func (ad *Ad) Status() AdStatus     { return ad.status }
+func (ad *Ad) Images() []string {
+	if ad.images == nil {
+		return nil
+	}
+	cp := make([]string, len(ad.images))
+	copy(cp, ad.images)
+	return cp
+}
 func (ad *Ad) CreatedAt() time.Time { return ad.createdAt }
 func (ad *Ad) UpdatedAt() time.Time { return ad.updatedAt }
 
@@ -157,7 +186,7 @@ func (ad *Ad) Delete() error {
 	return nil
 }
 
-func (ad *Ad) Update(title, description *string, price *int64) error {
+func (ad *Ad) Update(title, description *string, price *int64, images []string) error {
 	if title != nil && len(*title) < minTitleLen {
 		return errs.NewValueInvalidError("title")
 	}
@@ -166,6 +195,9 @@ func (ad *Ad) Update(title, description *string, price *int64) error {
 	}
 	if price != nil && *price < 0 {
 		return errs.NewValueInvalidError("price")
+	}
+	if images != nil && len(images) == 0 {
+		return errs.NewValueInvalidError("images")
 	}
 
 	if title != nil {
@@ -176,6 +208,10 @@ func (ad *Ad) Update(title, description *string, price *int64) error {
 	}
 	if price != nil {
 		ad.price = *price
+	}
+	if images != nil {
+		ad.images = make([]string, len(images))
+		copy(ad.images, images)
 	}
 
 	ad.updatedAt = time.Now()

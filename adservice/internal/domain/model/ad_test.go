@@ -25,14 +25,16 @@ func TestNewAd(t *testing.T) {
 		title       string
 		description *string
 		price       int64
+		images      []string
 		expect      error
 	}
 
 	var (
-		testSelID = uuid.New()
-		testTitle = "Apartment in the center of Shanghai"
-		testDesc  = "We are selling an apartment in the center of Shanghai."
-		testPrice = int64(1000000)
+		testSelID  = uuid.New()
+		testTitle  = "Apartment in the center of Shanghai"
+		testDesc   = "We are selling an apartment in the center of Shanghai."
+		testPrice  = int64(1000000)
+		testImages = []string{"image1.png", "image2.png"}
 	)
 
 	var tests = []testCase{
@@ -42,6 +44,7 @@ func TestNewAd(t *testing.T) {
 			title:       testTitle,
 			description: vPtr(testDesc),
 			price:       testPrice,
+			images:      testImages,
 			expect:      nil,
 		},
 		{
@@ -83,6 +86,15 @@ func TestNewAd(t *testing.T) {
 			price:       testPrice * -1, // negative price
 			expect:      errs.ErrValueIsInvalid,
 		},
+		{
+			name:        "invalid images",
+			sellerID:    testSelID,
+			title:       testTitle,
+			description: nil,
+			price:       testPrice,
+			images:      make([]string, 0),
+			expect:      errs.ErrValueIsInvalid,
+		},
 	}
 
 	for _, tt := range tests {
@@ -90,6 +102,7 @@ func TestNewAd(t *testing.T) {
 			ad, err := model.NewAd(
 				tt.sellerID, tt.title,
 				tt.description, tt.price,
+				tt.images,
 			)
 			if tt.expect == nil {
 				require.NoError(t, err)
@@ -97,6 +110,7 @@ func TestNewAd(t *testing.T) {
 				assert.Equal(t, tt.sellerID, ad.SellerID())
 				assert.Equal(t, tt.title, ad.Title())
 				assert.Equal(t, tt.price, ad.Price())
+				assert.Equal(t, tt.images, ad.Images())
 				assert.Equal(t, ad.CreatedAt(), ad.UpdatedAt())
 			} else {
 				require.Error(t, err)
@@ -112,7 +126,8 @@ func TestAd_Publish(t *testing.T) {
 
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
-		int64(100000), model.AdOnModeration, time.Now(), time.Now(),
+		int64(100000), model.AdOnModeration, nil,
+		time.Now(), time.Now(),
 	)
 
 	// Publish for the first time - correct
@@ -131,7 +146,8 @@ func TestAd_Reject(t *testing.T) {
 
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
-		int64(100000), model.AdOnModeration, time.Now(), time.Now(),
+		int64(100000), model.AdOnModeration, nil,
+		time.Now(), time.Now(),
 	)
 
 	// Reject for the first time - correct
@@ -150,7 +166,8 @@ func TestAd_Delete(t *testing.T) {
 
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
-		int64(100000), model.AdPublished, time.Now(), time.Now(),
+		int64(100000), model.AdPublished, nil,
+		time.Now(), time.Now(),
 	)
 
 	// Delete for the first time - correct
@@ -172,13 +189,15 @@ func TestAd_Update(t *testing.T) {
 		title       *string
 		description *string
 		price       *int64
+		images      []string
 		expect      error
 	}
 
 	var (
-		testTitle = "Apartment in the center of Shanghai"
-		testDesc  = "We are selling an apartment in the center of Shanghai."
-		testPrice = int64(1000000)
+		testTitle  = "Apartment in the center of Shanghai"
+		testDesc   = "We are selling an apartment in the center of Shanghai."
+		testPrice  = int64(1000000)
+		testImages = []string{"image1.jpg", "image2.png"}
 	)
 
 	var tests = []testCase{
@@ -187,6 +206,7 @@ func TestAd_Update(t *testing.T) {
 			title:       vPtr(testTitle),
 			description: vPtr(testDesc),
 			price:       vPtr(testPrice),
+			images:      testImages,
 			expect:      nil,
 		},
 		{
@@ -194,6 +214,7 @@ func TestAd_Update(t *testing.T) {
 			title:       nil,
 			description: nil,
 			price:       nil,
+			images:      nil,
 			expect:      nil,
 		},
 		{
@@ -214,19 +235,28 @@ func TestAd_Update(t *testing.T) {
 			price:       vPtr(testPrice * -1), // negative price
 			expect:      errs.ErrValueIsInvalid,
 		},
+		{
+			name:        "invalid images",
+			title:       vPtr(testTitle),
+			description: nil,
+			price:       vPtr(testPrice),
+			images:      make([]string, 0),
+			expect:      errs.ErrValueIsInvalid,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ad, _ := model.NewAd(
 				uuid.New(), "Shanghai night tour",
-				vPtr("You will never forget it!"), int64(1000),
+				vPtr("You will never forget it!"),
+				int64(1000), nil,
 			)
 
 			updAt := ad.UpdatedAt()
 			time.Sleep(time.Millisecond) // wait to change time
 
-			err := ad.Update(tt.title, tt.description, tt.price)
+			err := ad.Update(tt.title, tt.description, tt.price, tt.images)
 
 			if tt.expect == nil {
 				require.NoError(t, err)
@@ -239,6 +269,9 @@ func TestAd_Update(t *testing.T) {
 				if tt.description != nil {
 					adDesc := ad.Description()
 					assert.Equal(t, *tt.description, *adDesc)
+				}
+				if tt.images != nil {
+					assert.Equal(t, tt.images, ad.Images())
 				}
 				assert.NotEqual(t, ad.UpdatedAt(), updAt)
 			} else {

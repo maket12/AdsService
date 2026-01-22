@@ -3,7 +3,6 @@ package usecase
 import (
 	"ads/authservice/internal/app/dto"
 	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/domain/entity"
 	"ads/authservice/internal/domain/model"
 	"ads/authservice/internal/domain/port"
 	"ads/pkg/errs"
@@ -71,8 +70,7 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 	}
 
 	// Send even to rabbitmq (create profile)
-	event := entity.NewAccountCreatedEvent(account.ID())
-	if err := uc.AccountPublisher.PublishAccountCreate(ctx, event); err != nil {
+	if err := uc.AccountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
 		return dto.RegisterResponse{},
 			uc_errors.Wrap(uc_errors.ErrPublishEvent, err)
 	}
