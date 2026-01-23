@@ -70,8 +70,7 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 	}
 
 	// Send even to rabbitmq (create profile)
-	event := model.NewAccountCreatedEvent(account.ID())
-	if err := uc.AccountPublisher.PublishAccountCreate(ctx, event); err != nil {
+	if err := uc.AccountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
 		return dto.RegisterResponse{},
 			uc_errors.Wrap(uc_errors.ErrPublishEvent, err)
 	}
