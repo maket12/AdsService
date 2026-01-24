@@ -28,6 +28,7 @@ type CreateAdRequest struct {
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	Images        []string               `protobuf:"bytes,5,rep,name=images,proto3" json:"images,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -88,6 +89,13 @@ func (x *CreateAdRequest) GetPrice() int64 {
 		return x.Price
 	}
 	return 0
+}
+
+func (x *CreateAdRequest) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
 }
 
 type CreateAdResponse struct {
@@ -186,8 +194,9 @@ type GetAdResponse struct {
 	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Price         int64                  `protobuf:"varint,5,opt,name=price,proto3" json:"price,omitempty"`
 	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Images        []string               `protobuf:"bytes,7,rep,name=images,proto3" json:"images,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -264,6 +273,13 @@ func (x *GetAdResponse) GetStatus() string {
 	return ""
 }
 
+func (x *GetAdResponse) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
+}
+
 func (x *GetAdResponse) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
@@ -284,6 +300,7 @@ type UpdateAdRequest struct {
 	Title         *string                `protobuf:"bytes,2,opt,name=title,proto3,oneof" json:"title,omitempty"`
 	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Price         *int64                 `protobuf:"varint,4,opt,name=price,proto3,oneof" json:"price,omitempty"`
+	Images        []string               `protobuf:"bytes,5,rep,name=images,proto3" json:"images,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -344,6 +361,13 @@ func (x *UpdateAdRequest) GetPrice() int64 {
 		return *x.Price
 	}
 	return 0
+}
+
+func (x *UpdateAdRequest) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
 }
 
 type UpdateAdResponse struct {
@@ -746,34 +770,37 @@ var File_adservice_proto protoreflect.FileDescriptor
 
 const file_adservice_proto_rawDesc = "" +
 	"\n" +
-	"\x0fadservice.proto\x12\x02ad\x1a\x1fgoogle/protobuf/timestamp.proto\"\x91\x01\n" +
+	"\x0fadservice.proto\x12\x02ad\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa9\x01\n" +
 	"\x0fCreateAdRequest\x12\x1b\n" +
 	"\tseller_id\x18\x01 \x01(\tR\bsellerId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
-	"\x05price\x18\x04 \x01(\x03R\x05priceB\x0e\n" +
+	"\x05price\x18\x04 \x01(\x03R\x05price\x12\x16\n" +
+	"\x06images\x18\x05 \x03(\tR\x06imagesB\x0e\n" +
 	"\f_description\"'\n" +
 	"\x10CreateAdResponse\x12\x13\n" +
 	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"#\n" +
 	"\fGetAdRequest\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"\xb2\x02\n" +
+	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"\xca\x02\n" +
 	"\rGetAdResponse\x12\x13\n" +
 	"\x05ad_id\x18\x01 \x01(\tR\x04adId\x12\x1b\n" +
 	"\tseller_id\x18\x02 \x01(\tR\bsellerId\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12%\n" +
 	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
 	"\x05price\x18\x05 \x01(\x03R\x05price\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\tR\x06status\x129\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12\x16\n" +
+	"\x06images\x18\a \x03(\tR\x06images\x129\n" +
 	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
-	"\f_description\"\xa7\x01\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
+	"\f_description\"\xbf\x01\n" +
 	"\x0fUpdateAdRequest\x12\x13\n" +
 	"\x05ad_id\x18\x01 \x01(\tR\x04adId\x12\x19\n" +
 	"\x05title\x18\x02 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x01R\vdescription\x88\x01\x01\x12\x19\n" +
-	"\x05price\x18\x04 \x01(\x03H\x02R\x05price\x88\x01\x01B\b\n" +
+	"\x05price\x18\x04 \x01(\x03H\x02R\x05price\x88\x01\x01\x12\x16\n" +
+	"\x06images\x18\x05 \x03(\tR\x06imagesB\b\n" +
 	"\x06_titleB\x0e\n" +
 	"\f_descriptionB\b\n" +
 	"\x06_price\",\n" +

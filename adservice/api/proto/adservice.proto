@@ -21,6 +21,7 @@ message CreateAdRequest {
   string title = 2;
   optional string description = 3;
   int64 price = 4;
+  repeated string images = 5;
 }
 
 message CreateAdResponse {
@@ -38,8 +39,9 @@ message GetAdResponse {
   optional string description = 4;
   int64 price = 5;
   string status = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  repeated string images = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }
 
 message UpdateAdRequest {
@@ -47,6 +49,7 @@ message UpdateAdRequest {
   optional string title = 2;
   optional string description = 3;
   optional int64 price = 4;
+  repeated string images = 5;
 }
 
 message UpdateAdResponse {
