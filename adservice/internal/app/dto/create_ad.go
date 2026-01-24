@@ -3,13 +3,13 @@ package dto
 import "github.com/google/uuid"
 
 type CreateAdRequest struct {
-	sellerID    uuid.UUID
-	title       string
-	description *string
-	price       int64
-	images      []string
+	SellerID    uuid.UUID
+	Title       string
+	Description *string
+	Price       int64
+	Images      []string
 }
 
 type CreateAdResponse struct {
-	adID uuid.UUID
+	AdID uuid.UUID
 }

@@ -11,10 +11,10 @@ import (
 )
 
 type RegisterUC struct {
-	Account          port.AccountRepository
-	AccountRole      port.AccountRoleRepository
-	PasswordHasher   port.PasswordHasher
-	AccountPublisher port.AccountPublisher
+	account          port.AccountRepository
+	accountRole      port.AccountRoleRepository
+	passwordHasher   port.PasswordHasher
+	accountPublisher port.AccountPublisher
 }
 
 func NewRegisterUC(
@@ -24,16 +24,16 @@ func NewRegisterUC(
 	accountPublisher port.AccountPublisher,
 ) *RegisterUC {
 	return &RegisterUC{
-		Account:          account,
-		AccountRole:      accountRole,
-		PasswordHasher:   passwordHasher,
-		AccountPublisher: accountPublisher,
+		account:          account,
+		accountRole:      accountRole,
+		passwordHasher:   passwordHasher,
+		accountPublisher: accountPublisher,
 	}
 }
 
 func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.RegisterResponse, error) {
 	// Hashing the password
-	hashedPassword, err := uc.PasswordHasher.Hash(in.Password)
+	hashedPassword, err := uc.passwordHasher.Hash(in.Password)
 	if err != nil {
 		return dto.RegisterResponse{}, uc_errors.Wrap(
 			uc_errors.ErrHashPassword, err,
@@ -55,7 +55,7 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 	}
 
 	// Save all into database
-	if err := uc.Account.Create(ctx, account); err != nil {
+	if err := uc.account.Create(ctx, account); err != nil {
 		if errors.Is(err, errs.ErrObjectAlreadyExists) {
 			return dto.RegisterResponse{}, uc_errors.ErrAccountAlreadyExists
 		}
@@ -63,14 +63,14 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 			uc_errors.ErrCreateAccountDB, err,
 		)
 	}
-	if err := uc.AccountRole.Create(ctx, accountRole); err != nil {
+	if err := uc.accountRole.Create(ctx, accountRole); err != nil {
 		return dto.RegisterResponse{}, uc_errors.Wrap(
 			uc_errors.ErrCreateAccountRoleDB, err,
 		)
 	}
 
 	// Send even to rabbitmq (create profile)
-	if err := uc.AccountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
+	if err := uc.accountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
 		return dto.RegisterResponse{},
 			uc_errors.Wrap(uc_errors.ErrPublishEvent, err)
 	}

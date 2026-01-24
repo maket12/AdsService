@@ -10,8 +10,8 @@ import (
 )
 
 type ValidateAccessTokenUC struct {
-	Account        port.AccountRepository
-	TokenGenerator port.TokenGenerator
+	account        port.AccountRepository
+	tokenGenerator port.TokenGenerator
 }
 
 func NewValidateAccessTokenUC(
@@ -19,14 +19,14 @@ func NewValidateAccessTokenUC(
 	tokenGenerator port.TokenGenerator,
 ) *ValidateAccessTokenUC {
 	return &ValidateAccessTokenUC{
-		Account:        account,
-		TokenGenerator: tokenGenerator,
+		account:        account,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
 func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAccessToken) (dto.ValidateAccessTokenResponse, error) {
 	// Parse access token
-	accountID, role, err := uc.TokenGenerator.ValidateAccessToken(
+	accountID, role, err := uc.tokenGenerator.ValidateAccessToken(
 		ctx, in.AccessToken,
 	)
 	if err != nil {
@@ -34,7 +34,7 @@ func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAcc
 	}
 
 	// Get account and check if it is not active
-	account, err := uc.Account.GetByID(ctx, accountID)
+	account, err := uc.account.GetByID(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.ValidateAccessTokenResponse{}, uc_errors.ErrInvalidAccessToken

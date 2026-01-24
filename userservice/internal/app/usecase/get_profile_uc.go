@@ -10,15 +10,15 @@ import (
 )
 
 type GetProfileUC struct {
-	Profile port.ProfileRepository
+	profile port.ProfileRepository
 }
 
 func NewGetProfileUC(profile port.ProfileRepository) *GetProfileUC {
-	return &GetProfileUC{Profile: profile}
+	return &GetProfileUC{profile: profile}
 }
 
 func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfile) (dto.GetProfileOutput, error) {
-	profile, err := uc.Profile.Get(ctx, in.AccountID)
+	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.GetProfileOutput{}, uc_errors.ErrInvalidAccountID

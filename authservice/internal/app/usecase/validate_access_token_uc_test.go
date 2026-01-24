@@ -63,7 +63,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 			wantErr: uc_errors.ErrInvalidAccessToken,
 		},
 		{
-			name: "Fail - Account Not Found In DB",
+			name: "Fail - account Not Found In DB",
 			input: dto.ValidateAccessToken{
 				AccessToken: accessToken,
 			},
@@ -76,7 +76,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 			wantErr: uc_errors.ErrInvalidAccessToken,
 		},
 		{
-			name: "Fail - Account Is Banned",
+			name: "Fail - account Is Banned",
 			input: dto.ValidateAccessToken{
 				AccessToken: accessToken,
 			},

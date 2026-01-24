@@ -58,7 +58,7 @@ func TestLoginUC_Execute(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:  "Fail - Account Not Found",
+			name:  "Fail - account Not Found",
 			input: dto.Login{Email: "unknown@test.com", Password: pass},
 			prepare: func(a adapter) {
 				a.account.On("GetByEmail", mock.Anything, "unknown@test.com").
@@ -76,7 +76,7 @@ func TestLoginUC_Execute(t *testing.T) {
 			wantErr: uc_errors.ErrInvalidCredentials,
 		},
 		{
-			name:  "Fail - Account Banned",
+			name:  "Fail - account Banned",
 			input: dto.Login{Email: email, Password: pass},
 			prepare: func(a adapter) {
 				bannedAcc, _ := model.NewAccount(email, "hashed_db")

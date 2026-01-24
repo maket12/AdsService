@@ -3,9 +3,9 @@ package dto
 import "github.com/google/uuid"
 
 type DeleteAdRequest struct {
-	adID uuid.UUID
+	AdID uuid.UUID
 }
 
 type DeleteAdResponse struct {
-	success bool
+	Success bool
 }

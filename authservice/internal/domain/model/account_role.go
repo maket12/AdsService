@@ -16,7 +16,7 @@ const (
 	RoleAdmin Role = "admin"
 )
 
-// ================ Rich model for Account's Role ================
+// ================ Rich model for account's Role ================
 
 type AccountRole struct {
 	accountID uuid.UUID

@@ -15,9 +15,9 @@ import (
 )
 
 type RefreshSessionUC struct {
-	AccountRole    port.AccountRoleRepository
-	RefreshSession port.RefreshSessionRepository
-	TokenGenerator port.TokenGenerator
+	accountRole    port.AccountRoleRepository
+	refreshSession port.RefreshSessionRepository
+	tokenGenerator port.TokenGenerator
 
 	refreshSessionTTL time.Duration
 }
@@ -29,23 +29,23 @@ func NewRefreshSessionUC(
 	refreshSessionTTL time.Duration,
 ) *RefreshSessionUC {
 	return &RefreshSessionUC{
-		AccountRole:       accountRole,
-		RefreshSession:    refreshSession,
-		TokenGenerator:    tokenGenerator,
+		accountRole:       accountRole,
+		refreshSession:    refreshSession,
+		tokenGenerator:    tokenGenerator,
 		refreshSessionTTL: refreshSessionTTL,
 	}
 }
 
 func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) (dto.RefreshSessionResponse, error) {
 	// Find old session
-	accountID, oldSessionID, err := uc.TokenGenerator.ValidateRefreshToken(
+	accountID, oldSessionID, err := uc.tokenGenerator.ValidateRefreshToken(
 		ctx, in.OldRefreshToken,
 	)
 	if err != nil {
 		return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
 	}
 
-	oldSession, err := uc.RefreshSession.GetByID(ctx, oldSessionID)
+	oldSession, err := uc.refreshSession.GetByID(ctx, oldSessionID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
@@ -74,14 +74,14 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 		)
 	}
 
-	if err := uc.RefreshSession.Revoke(ctx, oldSession); err != nil {
+	if err := uc.refreshSession.Revoke(ctx, oldSession); err != nil {
 		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
 			uc_errors.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 
 	// Get account role
-	accRole, err := uc.AccountRole.Get(ctx, accountID)
+	accRole, err := uc.accountRole.Get(ctx, accountID)
 	if err != nil {
 		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
 			uc_errors.ErrGetAccountRoleDB, err,
@@ -89,7 +89,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	}
 
 	// Generate new tokens
-	accessToken, err := uc.TokenGenerator.GenerateAccessToken(
+	accessToken, err := uc.tokenGenerator.GenerateAccessToken(
 		ctx, accountID, accRole.Role().String(),
 	)
 	if err != nil {
@@ -99,7 +99,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	}
 
 	var sessionID = uuid.New()
-	refreshToken, err := uc.TokenGenerator.GenerateRefreshToken(
+	refreshToken, err := uc.tokenGenerator.GenerateRefreshToken(
 		ctx, accountID, sessionID,
 	)
 	if err != nil {
@@ -121,7 +121,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 		)
 	}
 
-	if err := uc.RefreshSession.Create(ctx, refreshSession); err != nil {
+	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
 		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
 			uc_errors.ErrCreateRefreshSessionDB, err,
 		)

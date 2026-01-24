@@ -11,8 +11,8 @@ import (
 )
 
 type LogoutUC struct {
-	RefreshSession port.RefreshSessionRepository
-	TokenGenerator port.TokenGenerator
+	refreshSession port.RefreshSessionRepository
+	tokenGenerator port.TokenGenerator
 }
 
 func NewLogoutUC(
@@ -20,21 +20,21 @@ func NewLogoutUC(
 	tokenGenerator port.TokenGenerator,
 ) *LogoutUC {
 	return &LogoutUC{
-		RefreshSession: refreshSession,
-		TokenGenerator: tokenGenerator,
+		refreshSession: refreshSession,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
 func (uc *LogoutUC) Execute(ctx context.Context, in dto.Logout) (dto.LogoutResponse, error) {
 	// Find session
-	_, oldSessionID, err := uc.TokenGenerator.ValidateRefreshToken(
+	_, oldSessionID, err := uc.tokenGenerator.ValidateRefreshToken(
 		ctx, in.RefreshToken,
 	)
 	if err != nil {
 		return dto.LogoutResponse{}, uc_errors.ErrInvalidRefreshToken
 	}
 
-	session, err := uc.RefreshSession.GetByID(ctx, oldSessionID)
+	session, err := uc.refreshSession.GetByID(ctx, oldSessionID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.LogoutResponse{}, uc_errors.ErrInvalidRefreshToken
@@ -58,7 +58,7 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.Logout) (dto.LogoutRespo
 		return dto.LogoutResponse{}, uc_errors.ErrCannotRevoke
 	}
 
-	if err := uc.RefreshSession.Revoke(ctx, session); err != nil {
+	if err := uc.refreshSession.Revoke(ctx, session); err != nil {
 		return dto.LogoutResponse{}, uc_errors.Wrap(
 			uc_errors.ErrRevokeRefreshSessionDB, err,
 		)
