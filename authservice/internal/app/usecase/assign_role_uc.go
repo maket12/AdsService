@@ -10,16 +10,16 @@ import (
 )
 
 type AssignRoleUC struct {
-	AccountRole port.AccountRoleRepository
+	accountRole port.AccountRoleRepository
 }
 
 func NewAssignRoleUC(accountRole port.AccountRoleRepository) *AssignRoleUC {
-	return &AssignRoleUC{AccountRole: accountRole}
+	return &AssignRoleUC{accountRole: accountRole}
 }
 
 func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRole) (dto.AssignRoleResponse, error) {
 	// Get role
-	accRole, err := uc.AccountRole.Get(ctx, in.AccountID)
+	accRole, err := uc.accountRole.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.AssignRoleResponse{Assign: false},
@@ -36,7 +36,7 @@ func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRole) (dto.Ass
 	}
 
 	// Update db
-	if err := uc.AccountRole.Update(ctx, accRole); err != nil {
+	if err := uc.accountRole.Update(ctx, accRole); err != nil {
 		return dto.AssignRoleResponse{Assign: false},
 			uc_errors.Wrap(uc_errors.ErrUpdateAccountRoleDB, err)
 	}
