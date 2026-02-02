@@ -3,9 +3,9 @@ package dto
 import "github.com/google/uuid"
 
 type PublishAdRequest struct {
-	adID uuid.UUID
+	AdID uuid.UUID
 }
 
 type PublishAdResponse struct {
-	success bool
+	Success bool
 }

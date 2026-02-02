@@ -7,17 +7,17 @@ import (
 )
 
 type GetAdRequest struct {
-	adID uuid.UUID
+	AdID uuid.UUID
 }
 
 type GetAdResponse struct {
-	adID        uuid.UUID
-	sellerID    uuid.UUID
-	title       string
-	description *string
-	price       int64
-	status      string
-	images      []string
-	createdAt   time.Time
-	updatedAt   time.Time
+	AdID        uuid.UUID
+	SellerID    uuid.UUID
+	Title       string
+	Description *string
+	Price       int64
+	Status      string
+	Images      []string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }

@@ -235,14 +235,6 @@ func TestAd_Update(t *testing.T) {
 			price:       vPtr(testPrice * -1), // negative price
 			expect:      errs.ErrValueIsInvalid,
 		},
-		{
-			name:        "invalid images",
-			title:       vPtr(testTitle),
-			description: nil,
-			price:       vPtr(testPrice),
-			images:      make([]string, 0),
-			expect:      errs.ErrValueIsInvalid,
-		},
 	}
 
 	for _, tt := range tests {

@@ -41,8 +41,9 @@ func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdRequest) (dto.
 
 	// Save images into database
 	if err := uc.media.Save(ctx, ad.ID(), ad.Images()); err != nil {
-		return dto.CreateAdResponse{}, uc_errors.Wrap(uc_errors.ErrSaveImages, err)
+		return dto.CreateAdResponse{}, uc_errors.Wrap(uc_errors.ErrSaveImagesDB, err)
 	}
 
+	// Response
 	return dto.CreateAdResponse{AdID: ad.ID()}, nil
 }

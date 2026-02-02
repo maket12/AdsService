@@ -196,9 +196,6 @@ func (ad *Ad) Update(title, description *string, price *int64, images []string) 
 	if price != nil && *price < 0 {
 		return errs.NewValueInvalidError("price")
 	}
-	if images != nil && len(images) == 0 {
-		return errs.NewValueInvalidError("images")
-	}
 
 	if title != nil {
 		ad.title = *title
