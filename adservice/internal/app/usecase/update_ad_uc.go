@@ -38,7 +38,9 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdRequest) (dto.
 	// Update
 	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
 	if err != nil {
-		return dto.UpdateAdResponse{Success: false}, uc_errors.ErrInvalidInput
+		return dto.UpdateAdResponse{Success: false}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
 	}
 
 	// Update in db

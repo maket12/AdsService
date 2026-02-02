@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"ads/authservice/internal/app/uc_errors"
+	"ads/adservice/internal/app/uc_errors"
 	"errors"
 
 	"google.golang.org/grpc/codes"
@@ -11,20 +11,13 @@ func gRPCError(err error) (codes.Code, string, error) {
 	var w *uc_errors.WrappedError
 	if errors.As(err, &w) {
 		switch {
-		case errors.Is(w.Public, uc_errors.ErrHashPassword),
-			errors.Is(w.Public, uc_errors.ErrCreateAccountDB),
-			errors.Is(w.Public, uc_errors.ErrGetAccountByEmailDB),
-			errors.Is(w.Public, uc_errors.ErrGetAccountByIDDB),
-			errors.Is(w.Public, uc_errors.ErrUpdateAccountDB),
-			errors.Is(w.Public, uc_errors.ErrGetAccountRoleDB),
-			errors.Is(w.Public, uc_errors.ErrUpdateAccountRoleDB),
-			errors.Is(w.Public, uc_errors.ErrCreateRefreshSessionDB),
-			errors.Is(w.Public, uc_errors.ErrGetRefreshSessionByIDDB),
-			errors.Is(w.Public, uc_errors.ErrRevokeRefreshSessionDB),
-			errors.Is(w.Public, uc_errors.ErrCreateAccountRoleDB),
-			errors.Is(w.Public, uc_errors.ErrGenerateAccessToken),
-			errors.Is(w.Public, uc_errors.ErrGenerateRefreshToken),
-			errors.Is(w.Public, uc_errors.ErrPublishEvent):
+		case errors.Is(w.Public, uc_errors.ErrSaveImagesDB),
+			errors.Is(w.Public, uc_errors.ErrGetImagesDB),
+			errors.Is(w.Public, uc_errors.ErrCreateAdDB),
+			errors.Is(w.Public, uc_errors.ErrGetAdDB),
+			errors.Is(w.Public, uc_errors.ErrUpdateAdDB),
+			errors.Is(w.Public, uc_errors.ErrUpdateAdStatusDB),
+			errors.Is(w.Public, uc_errors.ErrDeleteAllAdsDB):
 			return codes.Internal, w.Public.Error(), w.Reason
 
 		case errors.Is(w.Public, uc_errors.ErrInvalidInput):
@@ -36,21 +29,13 @@ func gRPCError(err error) (codes.Code, string, error) {
 	}
 
 	switch {
-	case errors.Is(err, uc_errors.ErrInvalidCredentials),
-		errors.Is(err, uc_errors.ErrInvalidAccountID):
+	case errors.Is(err, uc_errors.ErrInvalidAdID):
 		return codes.NotFound, err.Error(), nil
 
-	case errors.Is(err, uc_errors.ErrAccountAlreadyExists):
-		return codes.AlreadyExists, err.Error(), nil
-
-	case errors.Is(err, uc_errors.ErrCannotLogin),
-		errors.Is(err, uc_errors.ErrCannotAssign),
-		errors.Is(err, uc_errors.ErrCannotRevoke):
+	case errors.Is(err, uc_errors.ErrCannotPublish),
+		errors.Is(err, uc_errors.ErrCannotReject),
+		errors.Is(err, uc_errors.ErrCannotDelete):
 		return codes.FailedPrecondition, err.Error(), nil
-
-	case errors.Is(err, uc_errors.ErrInvalidAccessToken),
-		errors.Is(err, uc_errors.ErrInvalidRefreshToken):
-		return codes.Unauthenticated, err.Error(), nil
 	}
 
 	return codes.Internal, "internal error", nil

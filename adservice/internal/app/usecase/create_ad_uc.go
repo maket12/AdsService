@@ -29,7 +29,9 @@ func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdRequest) (dto.
 		in.Description, in.Price, in.Images,
 	)
 	if err != nil {
-		return dto.CreateAdResponse{}, uc_errors.ErrInvalidInput
+		return dto.CreateAdResponse{}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
 	}
 
 	// Save into database

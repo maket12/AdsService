@@ -46,7 +46,9 @@ func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdRequest) (dto.GetAdR
 	// Add images into rich model
 	err = ad.Update(nil, nil, nil, images)
 	if err != nil {
-		return dto.GetAdResponse{}, uc_errors.ErrInvalidInput
+		return dto.GetAdResponse{}, uc_errors.Wrap(
+			uc_errors.ErrInvalidInput, err,
+		)
 	}
 
 	// Response
