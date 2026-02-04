@@ -18,7 +18,7 @@ func NewCreateProfileUC(profile port.ProfileRepository) *CreateProfileUC {
 	return &CreateProfileUC{profile: profile}
 }
 
-func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfile) error {
+func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfileInput) error {
 	// Create profile
 	profile, err := model.NewProfile(in.AccountID)
 	if err != nil {

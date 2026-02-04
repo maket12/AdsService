@@ -26,7 +26,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 	// Приводим к твоему формату: название testCase
 	type testCase struct {
 		name    string
-		input   dto.Register
+		input   dto.RegisterInput
 		prepare func(a adapter)
 		wantErr error
 	}
@@ -34,7 +34,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 	var tests = []testCase{
 		{
 			name: "Success",
-			input: dto.Register{
+			input: dto.RegisterInput{
 				Email:    "test@example.com",
 				Password: "securePassword123",
 			},
@@ -53,7 +53,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Error - hashing password",
-			input: dto.Register{
+			input: dto.RegisterInput{
 				Email:    "test@example.com",
 				Password: "123",
 			},
@@ -65,7 +65,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Error - create account",
-			input: dto.Register{
+			input: dto.RegisterInput{
 				Email:    "exists@example.com",
 				Password: "password",
 			},
@@ -79,7 +79,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Error - create account role",
-			input: dto.Register{
+			input: dto.RegisterInput{
 				Email:    "fail@example.com",
 				Password: "password",
 			},

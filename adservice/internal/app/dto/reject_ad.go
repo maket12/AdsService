@@ -2,10 +2,10 @@ package dto
 
 import "github.com/google/uuid"
 
-type RejectAdRequest struct {
+type RejectAdInput struct {
 	AdID uuid.UUID
 }
 
-type RejectAdResponse struct {
+type RejectAdOutput struct {
 	Success bool
 }

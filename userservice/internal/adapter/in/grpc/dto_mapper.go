@@ -20,8 +20,8 @@ func MapGetProfileDTOToPb(out dto.GetProfileOutput) *user_v1.GetProfileResponse 
 	}
 }
 
-func MapUpdateProfilePbToDTO(accountID uuid.UUID, req *user_v1.UpdateProfileRequest) dto.UpdateProfile {
-	return dto.UpdateProfile{
+func MapUpdateProfilePbToDTO(accountID uuid.UUID, req *user_v1.UpdateProfileRequest) dto.UpdateProfileInput {
+	return dto.UpdateProfileInput{
 		AccountID: accountID,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,

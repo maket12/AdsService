@@ -2,10 +2,10 @@ package dto
 
 import "github.com/google/uuid"
 
-type DeleteAdRequest struct {
+type DeleteAdInput struct {
 	AdID uuid.UUID
 }
 
-type DeleteAdResponse struct {
+type DeleteAdOutput struct {
 	Success bool
 }

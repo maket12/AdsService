@@ -17,14 +17,14 @@ func NewDeleteAdUC(ad port.AdRepository) *DeleteAdUC {
 	return &DeleteAdUC{ad: ad}
 }
 
-func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdRequest) (dto.DeleteAdResponse, error) {
+func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.DeleteAdOutput, error) {
 	// Get from db
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.DeleteAdResponse{Success: false}, uc_errors.ErrInvalidAdID
+			return dto.DeleteAdOutput{Success: false}, uc_errors.ErrInvalidAdID
 		}
-		return dto.DeleteAdResponse{Success: false}, uc_errors.Wrap(
+		return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrGetAdDB, err,
 		)
 	}
@@ -32,17 +32,17 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdRequest) (dto.
 	// Update status (deleted)
 	err = ad.Delete()
 	if err != nil {
-		return dto.DeleteAdResponse{Success: false}, uc_errors.ErrCannotDelete
+		return dto.DeleteAdOutput{Success: false}, uc_errors.ErrCannotDelete
 	}
 
 	// Update status in db
 	err = uc.ad.UpdateStatus(ctx, ad)
 	if err != nil {
-		return dto.DeleteAdResponse{Success: false}, uc_errors.Wrap(
+		return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrUpdateAdStatusDB, err,
 		)
 	}
 
 	// Response
-	return dto.DeleteAdResponse{Success: true}, nil
+	return dto.DeleteAdOutput{Success: true}, nil
 }

@@ -15,14 +15,14 @@ func NewDeleteAllAdsUC(ad port.AdRepository) *DeleteAllAdsUC {
 	return &DeleteAllAdsUC{ad: ad}
 }
 
-func (uc *DeleteAllAdsUC) Execute(ctx context.Context, in dto.DeleteAllAdsRequest) (dto.DeleteAllAdsResponse, error) {
+func (uc *DeleteAllAdsUC) Execute(ctx context.Context, in dto.DeleteAllAdsInput) (dto.DeleteAllAdsOutput, error) {
 	// Delete all ads
 	if err := uc.ad.DeleteAll(ctx, in.SellerID); err != nil {
-		return dto.DeleteAllAdsResponse{Success: false}, uc_errors.Wrap(
+		return dto.DeleteAllAdsOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrDeleteAllAdsDB, err,
 		)
 	}
 
 	// Response
-	return dto.DeleteAllAdsResponse{Success: true}, nil
+	return dto.DeleteAllAdsOutput{Success: true}, nil
 }

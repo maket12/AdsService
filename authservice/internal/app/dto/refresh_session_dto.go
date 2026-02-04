@@ -1,12 +1,12 @@
 package dto
 
-type RefreshSession struct {
+type RefreshSessionInput struct {
 	OldRefreshToken string
 	IP              *string
 	UserAgent       *string
 }
 
-type RefreshSessionResponse struct {
+type RefreshSessionOutput struct {
 	AccessToken  string
 	RefreshToken string
 }

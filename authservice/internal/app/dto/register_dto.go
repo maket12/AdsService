@@ -2,11 +2,11 @@ package dto
 
 import "github.com/google/uuid"
 
-type Register struct {
+type RegisterInput struct {
 	Email    string
 	Password string
 }
 
-type RegisterResponse struct {
+type RegisterOutput struct {
 	AccountID uuid.UUID
 }

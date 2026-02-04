@@ -23,14 +23,14 @@ func NewGetAdUC(
 	}
 }
 
-func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdRequest) (dto.GetAdResponse, error) {
+func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdInput) (dto.GetAdOutput, error) {
 	// Get from db
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.GetAdResponse{}, uc_errors.ErrInvalidAdID
+			return dto.GetAdOutput{}, uc_errors.ErrInvalidAdID
 		}
-		return dto.GetAdResponse{}, uc_errors.Wrap(
+		return dto.GetAdOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetAdDB, err,
 		)
 	}
@@ -38,7 +38,7 @@ func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdRequest) (dto.GetAdR
 	// Get images from db
 	images, err := uc.media.Get(ctx, ad.ID())
 	if err != nil {
-		return dto.GetAdResponse{}, uc_errors.Wrap(
+		return dto.GetAdOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetImagesDB, err,
 		)
 	}
@@ -46,13 +46,13 @@ func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdRequest) (dto.GetAdR
 	// Add images into rich model
 	err = ad.Update(nil, nil, nil, images)
 	if err != nil {
-		return dto.GetAdResponse{}, uc_errors.Wrap(
+		return dto.GetAdOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 
 	// Response
-	return dto.GetAdResponse{
+	return dto.GetAdOutput{
 		AdID:        ad.ID(),
 		SellerID:    ad.SellerID(),
 		Title:       ad.Title(),

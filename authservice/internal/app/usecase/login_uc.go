@@ -42,32 +42,32 @@ func NewLoginUC(
 	}
 }
 
-func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse, error) {
+func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOutput, error) {
 	// Find account
 	account, err := uc.account.GetByEmail(ctx, in.Email)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.LoginResponse{}, uc_errors.ErrInvalidCredentials
+			return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
 		}
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetAccountByEmailDB, err,
 		)
 	}
 
 	if !uc.passwordHasher.Compare(account.PasswordHash(), in.Password) {
-		return dto.LoginResponse{}, uc_errors.ErrInvalidCredentials
+		return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
 	}
 
 	// account validation
 	if ok := account.CanLogin(); !ok {
-		return dto.LoginResponse{}, uc_errors.ErrCannotLogin
+		return dto.LoginOutput{}, uc_errors.ErrCannotLogin
 	}
 
 	// Update account
 	account.MarkLogin()
 	if err := uc.account.MarkLogin(ctx, account); err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrUpdateAccountDB, err,
 		)
 	}
@@ -75,7 +75,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 	// Find an account role
 	accRole, err := uc.accountRole.Get(ctx, account.ID())
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(uc_errors.ErrGetAccountRoleDB, err)
+		return dto.LoginOutput{}, uc_errors.Wrap(uc_errors.ErrGetAccountRoleDB, err)
 	}
 
 	// Generate tokens
@@ -83,7 +83,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		ctx, account.ID(), accRole.Role().String(),
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGenerateAccessToken, err,
 		)
 	}
@@ -93,7 +93,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		ctx, account.ID(), sessionID,
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGenerateRefreshToken, err,
 		)
 	}
@@ -106,19 +106,19 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 
 	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCreateRefreshSessionDB, err,
 		)
 	}
 
 	// Output
-	return dto.LoginResponse{
+	return dto.LoginOutput{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

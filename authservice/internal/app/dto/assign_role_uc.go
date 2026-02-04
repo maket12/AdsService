@@ -2,11 +2,11 @@ package dto
 
 import "github.com/google/uuid"
 
-type AssignRole struct {
+type AssignRoleInput struct {
 	AccountID uuid.UUID
 	Role      string
 }
 
-type AssignRoleResponse struct {
+type AssignRoleOutput struct {
 	Assign bool
 }

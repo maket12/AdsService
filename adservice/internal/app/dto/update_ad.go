@@ -2,7 +2,7 @@ package dto
 
 import "github.com/google/uuid"
 
-type UpdateAdRequest struct {
+type UpdateAdInput struct {
 	AdID        uuid.UUID
 	Title       *string
 	Description *string
@@ -10,6 +10,6 @@ type UpdateAdRequest struct {
 	Images      []string
 }
 
-type UpdateAdResponse struct {
+type UpdateAdOutput struct {
 	Success bool
 }

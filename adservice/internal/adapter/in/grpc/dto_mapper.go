@@ -8,9 +8,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func MapCreateAdPbToDTO(req *ad_v1.CreateAdRequest) dto.CreateAdRequest {
+func MapCreateAdPbToDTO(req *ad_v1.CreateAdRequest) dto.CreateAdInput {
 	sellerID, _ := uuid.Parse(req.GetSellerId())
-	return dto.CreateAdRequest{
+	return dto.CreateAdInput{
 		SellerID:    sellerID,
 		Title:       req.GetTitle(),
 		Description: req.Description,
@@ -19,16 +19,16 @@ func MapCreateAdPbToDTO(req *ad_v1.CreateAdRequest) dto.CreateAdRequest {
 	}
 }
 
-func MapCreateAdDTOToPb(out dto.CreateAdResponse) *ad_v1.CreateAdResponse {
+func MapCreateAdDTOToPb(out dto.CreateAdOutput) *ad_v1.CreateAdResponse {
 	return &ad_v1.CreateAdResponse{AdId: out.AdID.String()}
 }
 
-func MapGetAdPbToDTO(req *ad_v1.GetAdRequest) dto.GetAdRequest {
+func MapGetAdPbToDTO(req *ad_v1.GetAdRequest) dto.GetAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
-	return dto.GetAdRequest{AdID: adID}
+	return dto.GetAdInput{AdID: adID}
 }
 
-func MapGetAdDTOToPb(out dto.GetAdResponse) *ad_v1.GetAdResponse {
+func MapGetAdDTOToPb(out dto.GetAdOutput) *ad_v1.GetAdResponse {
 	return &ad_v1.GetAdResponse{
 		AdId:        out.AdID.String(),
 		SellerId:    out.SellerID.String(),
@@ -42,9 +42,9 @@ func MapGetAdDTOToPb(out dto.GetAdResponse) *ad_v1.GetAdResponse {
 	}
 }
 
-func MapUpdateAdPbToDTO(req *ad_v1.UpdateAdRequest) dto.UpdateAdRequest {
+func MapUpdateAdPbToDTO(req *ad_v1.UpdateAdRequest) dto.UpdateAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
-	return dto.UpdateAdRequest{
+	return dto.UpdateAdInput{
 		AdID:        adID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -53,42 +53,42 @@ func MapUpdateAdPbToDTO(req *ad_v1.UpdateAdRequest) dto.UpdateAdRequest {
 	}
 }
 
-func MapUpdateAdDTOToPb(out dto.UpdateAdResponse) *ad_v1.UpdateAdResponse {
+func MapUpdateAdDTOToPb(out dto.UpdateAdOutput) *ad_v1.UpdateAdResponse {
 	return &ad_v1.UpdateAdResponse{Success: out.Success}
 }
 
-func MapPublishAdPbToDTO(req *ad_v1.PublishAdRequest) dto.PublishAdRequest {
+func MapPublishAdPbToDTO(req *ad_v1.PublishAdRequest) dto.PublishAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
-	return dto.PublishAdRequest{AdID: adID}
+	return dto.PublishAdInput{AdID: adID}
 }
 
-func MapPublishAdDTOToPb(out dto.PublishAdResponse) *ad_v1.PublishAdResponse {
+func MapPublishAdDTOToPb(out dto.PublishAdOutput) *ad_v1.PublishAdResponse {
 	return &ad_v1.PublishAdResponse{Success: out.Success}
 }
 
-func MapRejectAdPbToDTO(req *ad_v1.RejectAdRequest) dto.RejectAdRequest {
+func MapRejectAdPbToDTO(req *ad_v1.RejectAdRequest) dto.RejectAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
-	return dto.RejectAdRequest{AdID: adID}
+	return dto.RejectAdInput{AdID: adID}
 }
 
-func MapRejectAdDTOToPb(out dto.RejectAdResponse) *ad_v1.RejectAdResponse {
+func MapRejectAdDTOToPb(out dto.RejectAdOutput) *ad_v1.RejectAdResponse {
 	return &ad_v1.RejectAdResponse{Success: out.Success}
 }
 
-func MapDeleteAdPbToDTO(req *ad_v1.DeleteAdRequest) dto.DeleteAdRequest {
+func MapDeleteAdPbToDTO(req *ad_v1.DeleteAdRequest) dto.DeleteAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
-	return dto.DeleteAdRequest{AdID: adID}
+	return dto.DeleteAdInput{AdID: adID}
 }
 
-func MapDeleteAdDTOToPb(out dto.DeleteAdResponse) *ad_v1.DeleteAdResponse {
+func MapDeleteAdDTOToPb(out dto.DeleteAdOutput) *ad_v1.DeleteAdResponse {
 	return &ad_v1.DeleteAdResponse{Success: out.Success}
 }
 
-func MapDeleteAllAdsPbToDTO(req *ad_v1.DeleteAllAdsRequest) dto.DeleteAllAdsRequest {
+func MapDeleteAllAdsPbToDTO(req *ad_v1.DeleteAllAdsRequest) dto.DeleteAllAdsInput {
 	sellerID, _ := uuid.Parse(req.GetSellerId())
-	return dto.DeleteAllAdsRequest{SellerID: sellerID}
+	return dto.DeleteAllAdsInput{SellerID: sellerID}
 }
 
-func MapDeleteAllAdsDTOToPb(out dto.DeleteAllAdsResponse) *ad_v1.DeleteAllAdsResponse {
+func MapDeleteAllAdsDTOToPb(out dto.DeleteAllAdsOutput) *ad_v1.DeleteAllAdsResponse {
 	return &ad_v1.DeleteAllAdsResponse{Success: out.Success}
 }

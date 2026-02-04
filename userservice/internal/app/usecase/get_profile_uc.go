@@ -17,7 +17,7 @@ func NewGetProfileUC(profile port.ProfileRepository) *GetProfileUC {
 	return &GetProfileUC{profile: profile}
 }
 
-func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfile) (dto.GetProfileOutput, error) {
+func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfileInput) (dto.GetProfileOutput, error) {
 	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {

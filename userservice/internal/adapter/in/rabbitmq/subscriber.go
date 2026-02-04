@@ -129,7 +129,7 @@ func (s *AccountSubscriber) handleMessage(ctx context.Context, d *amqp.Delivery)
 
 	// Calling UC
 	if err := s.createUC.Execute(
-		ctx, dto.CreateProfile{AccountID: event.AccountID},
+		ctx, dto.CreateProfileInput{AccountID: event.AccountID},
 	); err != nil {
 		s.log.ErrorContext(ctx, "failed to create profile from event",
 			slog.String("account_id", event.AccountID.String()),

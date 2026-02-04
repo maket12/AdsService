@@ -6,11 +6,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type GetAdRequest struct {
+type GetAdInput struct {
 	AdID uuid.UUID
 }
 
-type GetAdResponse struct {
+type GetAdOutput struct {
 	AdID        uuid.UUID
 	SellerID    uuid.UUID
 	Title       string

@@ -23,14 +23,14 @@ func NewUpdateAdUC(
 	}
 }
 
-func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdRequest) (dto.UpdateAdResponse, error) {
+func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.UpdateAdOutput, error) {
 	// Get from db
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.UpdateAdResponse{Success: false}, uc_errors.ErrInvalidAdID
+			return dto.UpdateAdOutput{Success: false}, uc_errors.ErrInvalidAdID
 		}
-		return dto.UpdateAdResponse{Success: false}, uc_errors.Wrap(
+		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrGetAdDB, err,
 		)
 	}
@@ -38,7 +38,7 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdRequest) (dto.
 	// Update
 	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
 	if err != nil {
-		return dto.UpdateAdResponse{Success: false}, uc_errors.Wrap(
+		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
@@ -46,7 +46,7 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdRequest) (dto.
 	// Update in db
 	err = uc.ad.Update(ctx, ad)
 	if err != nil {
-		return dto.UpdateAdResponse{Success: false}, uc_errors.Wrap(
+		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrUpdateAdDB, err,
 		)
 	}
@@ -54,11 +54,11 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdRequest) (dto.
 	// Update images in db
 	err = uc.media.Save(ctx, ad.ID(), ad.Images())
 	if err != nil {
-		return dto.UpdateAdResponse{Success: false}, uc_errors.Wrap(
+		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
 			uc_errors.ErrSaveImagesDB, err,
 		)
 	}
 
 	// Response
-	return dto.UpdateAdResponse{Success: true}, nil
+	return dto.UpdateAdOutput{Success: true}, nil
 }

@@ -24,7 +24,7 @@ func NewUpdateProfileUC(
 	}
 }
 
-func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfile) (dto.UpdateProfileOutput, error) {
+func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInput) (dto.UpdateProfileOutput, error) {
 	// Get from db
 	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {

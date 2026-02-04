@@ -23,7 +23,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 
 	type testCase struct {
 		name    string
-		input   dto.ValidateAccessToken
+		input   dto.ValidateAccessTokenInput
 		prepare func(a adapter)
 		wantErr error
 	}
@@ -40,11 +40,11 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 	var tests = []testCase{
 		{
 			name: "Success",
-			input: dto.ValidateAccessToken{
+			input: dto.ValidateAccessTokenInput{
 				AccessToken: accessToken,
 			},
 			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessToken", mock.Anything, accessToken).
+				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
 					Return(accountID, role, nil)
 				a.account.On("GetByID", mock.Anything, accountID).
 					Return(activeAcc, nil)
@@ -53,22 +53,22 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Fail - Invalid Token",
-			input: dto.ValidateAccessToken{
+			input: dto.ValidateAccessTokenInput{
 				AccessToken: "expired-or-fake-token",
 			},
 			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessToken", mock.Anything, "expired-or-fake-token").
+				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, "expired-or-fake-token").
 					Return(uuid.Nil, "", assert.AnError)
 			},
 			wantErr: uc_errors.ErrInvalidAccessToken,
 		},
 		{
 			name: "Fail - account Not Found In DB",
-			input: dto.ValidateAccessToken{
+			input: dto.ValidateAccessTokenInput{
 				AccessToken: accessToken,
 			},
 			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessToken", mock.Anything, accessToken).
+				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
 					Return(accountID, role, nil)
 				a.account.On("GetByID", mock.Anything, accountID).
 					Return(nil, errs.ErrObjectNotFound)
@@ -77,11 +77,11 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Fail - account Is Banned",
-			input: dto.ValidateAccessToken{
+			input: dto.ValidateAccessTokenInput{
 				AccessToken: accessToken,
 			},
 			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessToken", mock.Anything, accessToken).
+				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
 					Return(accountID, role, nil)
 				a.account.On("GetByID", mock.Anything, accountID).
 					Return(bannedAcc, nil)
@@ -90,11 +90,11 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Fail - Database Error",
-			input: dto.ValidateAccessToken{
+			input: dto.ValidateAccessTokenInput{
 				AccessToken: accessToken,
 			},
 			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessToken", mock.Anything, accessToken).
+				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
 					Return(accountID, role, nil)
 				a.account.On("GetByID", mock.Anything, accountID).
 					Return(nil, assert.AnError)

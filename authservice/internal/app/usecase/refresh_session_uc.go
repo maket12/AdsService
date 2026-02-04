@@ -36,22 +36,22 @@ func NewRefreshSessionUC(
 	}
 }
 
-func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) (dto.RefreshSessionResponse, error) {
+func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionInput) (dto.RefreshSessionOutput, error) {
 	// Find old session
 	accountID, oldSessionID, err := uc.tokenGenerator.ValidateRefreshToken(
 		ctx, in.OldRefreshToken,
 	)
 	if err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
+		return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
 	}
 
 	oldSession, err := uc.refreshSession.GetByID(ctx, oldSessionID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
+			return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
 		}
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetRefreshSessionByIDDB, err,
 		)
 	}
@@ -60,22 +60,22 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	if !oldSession.IsActive() ||
 		!utils.ComparePtr(oldSession.IP(), in.IP) ||
 		!utils.ComparePtr(oldSession.UserAgent(), in.UserAgent) {
-		return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
+		return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
 	}
 
 	if utils.HashToken(in.OldRefreshToken) != oldSession.RefreshTokenHash() {
-		return dto.RefreshSessionResponse{}, uc_errors.ErrInvalidRefreshToken
+		return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
 	}
 
 	var reason = "token rotation"
 	if err := oldSession.Revoke(&reason); err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCannotRevoke, err,
 		)
 	}
 
 	if err := uc.refreshSession.Revoke(ctx, oldSession); err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrRevokeRefreshSessionDB, err,
 		)
 	}
@@ -83,7 +83,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 	// Get account role
 	accRole, err := uc.accountRole.Get(ctx, accountID)
 	if err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetAccountRoleDB, err,
 		)
 	}
@@ -93,7 +93,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 		ctx, accountID, accRole.Role().String(),
 	)
 	if err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGenerateAccessToken, err,
 		)
 	}
@@ -103,7 +103,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 		ctx, accountID, sessionID,
 	)
 	if err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGenerateRefreshToken, err,
 		)
 	}
@@ -116,19 +116,19 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSession) 
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
 	if err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 
 	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
-		return dto.RefreshSessionResponse{}, uc_errors.Wrap(
+		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCreateRefreshSessionDB, err,
 		)
 	}
 
 	// Output
-	return dto.RefreshSessionResponse{
+	return dto.RefreshSessionOutput{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

@@ -25,44 +25,44 @@ func NewLogoutUC(
 	}
 }
 
-func (uc *LogoutUC) Execute(ctx context.Context, in dto.Logout) (dto.LogoutResponse, error) {
+func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.LogoutOutput, error) {
 	// Find session
 	_, oldSessionID, err := uc.tokenGenerator.ValidateRefreshToken(
 		ctx, in.RefreshToken,
 	)
 	if err != nil {
-		return dto.LogoutResponse{}, uc_errors.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
 	}
 
 	session, err := uc.refreshSession.GetByID(ctx, oldSessionID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.LogoutResponse{}, uc_errors.ErrInvalidRefreshToken
+			return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
 		}
-		return dto.LogoutResponse{}, uc_errors.Wrap(
+		return dto.LogoutOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetRefreshSessionByIDDB, err,
 		)
 	}
 
 	// Validate and revoke
 	if !session.IsActive() {
-		return dto.LogoutResponse{}, uc_errors.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
 	}
 
 	if utils.HashToken(in.RefreshToken) != session.RefreshTokenHash() {
-		return dto.LogoutResponse{}, uc_errors.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
 	}
 
 	var reason = "logout"
 	if err := session.Revoke(&reason); err != nil {
-		return dto.LogoutResponse{}, uc_errors.ErrCannotRevoke
+		return dto.LogoutOutput{}, uc_errors.ErrCannotRevoke
 	}
 
 	if err := uc.refreshSession.Revoke(ctx, session); err != nil {
-		return dto.LogoutResponse{}, uc_errors.Wrap(
+		return dto.LogoutOutput{}, uc_errors.Wrap(
 			uc_errors.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 
-	return dto.LogoutResponse{Logout: true}, nil
+	return dto.LogoutOutput{Logout: true}, nil
 }

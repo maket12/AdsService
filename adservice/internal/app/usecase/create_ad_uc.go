@@ -22,30 +22,30 @@ func NewCreateAdUC(
 	}
 }
 
-func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdRequest) (dto.CreateAdResponse, error) {
+func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdInput) (dto.CreateAdOutput, error) {
 	// Create ad
 	ad, err := model.NewAd(
 		in.SellerID, in.Title,
 		in.Description, in.Price, in.Images,
 	)
 	if err != nil {
-		return dto.CreateAdResponse{}, uc_errors.Wrap(
+		return dto.CreateAdOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 
 	// Save into database
 	if err := uc.ad.Create(ctx, ad); err != nil {
-		return dto.CreateAdResponse{}, uc_errors.Wrap(
+		return dto.CreateAdOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCreateAdDB, err,
 		)
 	}
 
 	// Save images into database
 	if err := uc.media.Save(ctx, ad.ID(), ad.Images()); err != nil {
-		return dto.CreateAdResponse{}, uc_errors.Wrap(uc_errors.ErrSaveImagesDB, err)
+		return dto.CreateAdOutput{}, uc_errors.Wrap(uc_errors.ErrSaveImagesDB, err)
 	}
 
 	// Response
-	return dto.CreateAdResponse{AdID: ad.ID()}, nil
+	return dto.CreateAdOutput{AdID: ad.ID()}, nil
 }
