@@ -2,11 +2,11 @@ package dto
 
 import "github.com/google/uuid"
 
-type ValidateAccessToken struct {
+type ValidateAccessTokenInput struct {
 	AccessToken string
 }
 
-type ValidateAccessTokenResponse struct {
+type ValidateAccessTokenOutput struct {
 	AccountID uuid.UUID
 	Role      string
 }

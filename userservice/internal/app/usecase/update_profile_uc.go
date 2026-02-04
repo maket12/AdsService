@@ -10,8 +10,8 @@ import (
 )
 
 type UpdateProfileUC struct {
-	Profile        port.ProfileRepository
-	PhoneValidator port.PhoneValidator
+	profile        port.ProfileRepository
+	phoneValidator port.PhoneValidator
 }
 
 func NewUpdateProfileUC(
@@ -19,14 +19,14 @@ func NewUpdateProfileUC(
 	phoneValidator port.PhoneValidator,
 ) *UpdateProfileUC {
 	return &UpdateProfileUC{
-		Profile:        profile,
-		PhoneValidator: phoneValidator,
+		profile:        profile,
+		phoneValidator: phoneValidator,
 	}
 }
 
-func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfile) (dto.UpdateProfileOutput, error) {
+func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInput) (dto.UpdateProfileOutput, error) {
 	// Get from db
-	profile, err := uc.Profile.Get(ctx, in.AccountID)
+	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
 			return dto.UpdateProfileOutput{Success: false},
@@ -39,7 +39,7 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfile) (d
 	// Phone number validation
 	var validatedPhone *string
 	if in.Phone != nil {
-		normPhone, err := uc.PhoneValidator.Validate(ctx, *in.Phone)
+		normPhone, err := uc.phoneValidator.Validate(ctx, *in.Phone)
 		if err != nil {
 			return dto.UpdateProfileOutput{Success: false},
 				uc_errors.ErrInvalidPhoneNumber
@@ -59,7 +59,7 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfile) (d
 		return dto.UpdateProfileOutput{Success: false}, uc_errors.ErrInvalidProfileData
 	}
 
-	if err := uc.Profile.Update(ctx, profile); err != nil {
+	if err := uc.profile.Update(ctx, profile); err != nil {
 		return dto.UpdateProfileOutput{Success: false},
 			uc_errors.Wrap(uc_errors.ErrUpdateProfileDB, err)
 	}

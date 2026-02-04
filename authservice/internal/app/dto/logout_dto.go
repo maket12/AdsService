@@ -1,9 +1,9 @@
 package dto
 
-type Logout struct {
+type LogoutInput struct {
 	RefreshToken string
 }
 
-type LogoutResponse struct {
+type LogoutOutput struct {
 	Logout bool
 }

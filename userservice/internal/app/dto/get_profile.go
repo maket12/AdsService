@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type GetProfile struct {
+type GetProfileInput struct {
 	AccountID uuid.UUID
 }
 

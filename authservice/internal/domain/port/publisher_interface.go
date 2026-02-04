@@ -1,10 +1,11 @@
 package port
 
 import (
-	"ads/authservice/internal/domain/model"
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type AccountPublisher interface {
-	PublishAccountCreate(ctx context.Context, event *model.AccountCreatedEvent) error
+	PublishAccountCreate(ctx context.Context, accountID uuid.UUID) error
 }

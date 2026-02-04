@@ -11,21 +11,21 @@ import (
 )
 
 type CreateProfileUC struct {
-	Profile port.ProfileRepository
+	profile port.ProfileRepository
 }
 
 func NewCreateProfileUC(profile port.ProfileRepository) *CreateProfileUC {
-	return &CreateProfileUC{Profile: profile}
+	return &CreateProfileUC{profile: profile}
 }
 
-func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfile) error {
+func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfileInput) error {
 	// Create profile
 	profile, err := model.NewProfile(in.AccountID)
 	if err != nil {
 		return uc_errors.ErrInvalidAccountID
 	}
 
-	if err := uc.Profile.Create(ctx, profile); err != nil {
+	if err := uc.profile.Create(ctx, profile); err != nil {
 		if errors.Is(err, errs.ErrObjectAlreadyExists) {
 			return nil
 		}

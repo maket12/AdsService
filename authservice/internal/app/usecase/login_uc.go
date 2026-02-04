@@ -15,11 +15,11 @@ import (
 )
 
 type LoginUC struct {
-	Account        port.AccountRepository
-	AccountRole    port.AccountRoleRepository
-	RefreshSession port.RefreshSessionRepository
-	PasswordHasher port.PasswordHasher
-	TokenGenerator port.TokenGenerator
+	account        port.AccountRepository
+	accountRole    port.AccountRoleRepository
+	refreshSession port.RefreshSessionRepository
+	passwordHasher port.PasswordHasher
+	tokenGenerator port.TokenGenerator
 
 	refreshSessionTTL time.Duration
 }
@@ -33,67 +33,67 @@ func NewLoginUC(
 	refreshSessionTTL time.Duration,
 ) *LoginUC {
 	return &LoginUC{
-		Account:           account,
-		AccountRole:       accountRole,
-		RefreshSession:    refreshSession,
-		PasswordHasher:    passwordHasher,
-		TokenGenerator:    tokenGenerator,
+		account:           account,
+		accountRole:       accountRole,
+		refreshSession:    refreshSession,
+		passwordHasher:    passwordHasher,
+		tokenGenerator:    tokenGenerator,
 		refreshSessionTTL: refreshSessionTTL,
 	}
 }
 
-func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse, error) {
+func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOutput, error) {
 	// Find account
-	account, err := uc.Account.GetByEmail(ctx, in.Email)
+	account, err := uc.account.GetByEmail(ctx, in.Email)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.LoginResponse{}, uc_errors.ErrInvalidCredentials
+			return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
 		}
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetAccountByEmailDB, err,
 		)
 	}
 
-	if !uc.PasswordHasher.Compare(account.PasswordHash(), in.Password) {
-		return dto.LoginResponse{}, uc_errors.ErrInvalidCredentials
+	if !uc.passwordHasher.Compare(account.PasswordHash(), in.Password) {
+		return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
 	}
 
-	// Account validation
+	// account validation
 	if ok := account.CanLogin(); !ok {
-		return dto.LoginResponse{}, uc_errors.ErrCannotLogin
+		return dto.LoginOutput{}, uc_errors.ErrCannotLogin
 	}
 
-	// Update Account
+	// Update account
 	account.MarkLogin()
-	if err := uc.Account.MarkLogin(ctx, account); err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+	if err := uc.account.MarkLogin(ctx, account); err != nil {
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrUpdateAccountDB, err,
 		)
 	}
 
 	// Find an account role
-	accRole, err := uc.AccountRole.Get(ctx, account.ID())
+	accRole, err := uc.accountRole.Get(ctx, account.ID())
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(uc_errors.ErrGetAccountRoleDB, err)
+		return dto.LoginOutput{}, uc_errors.Wrap(uc_errors.ErrGetAccountRoleDB, err)
 	}
 
 	// Generate tokens
-	accessToken, err := uc.TokenGenerator.GenerateAccessToken(
+	accessToken, err := uc.tokenGenerator.GenerateAccessToken(
 		ctx, account.ID(), accRole.Role().String(),
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGenerateAccessToken, err,
 		)
 	}
 
 	var sessionID = uuid.New()
-	refreshToken, err := uc.TokenGenerator.GenerateRefreshToken(
+	refreshToken, err := uc.tokenGenerator.GenerateRefreshToken(
 		ctx, account.ID(), sessionID,
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGenerateRefreshToken, err,
 		)
 	}
@@ -106,19 +106,19 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.Login) (dto.LoginResponse
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
 	if err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 
-	if err := uc.RefreshSession.Create(ctx, refreshSession); err != nil {
-		return dto.LoginResponse{}, uc_errors.Wrap(
+	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
+		return dto.LoginOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCreateRefreshSessionDB, err,
 		)
 	}
 
 	// Output
-	return dto.LoginResponse{
+	return dto.LoginOutput{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

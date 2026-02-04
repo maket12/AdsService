@@ -10,8 +10,8 @@ import (
 )
 
 type ValidateAccessTokenUC struct {
-	Account        port.AccountRepository
-	TokenGenerator port.TokenGenerator
+	account        port.AccountRepository
+	tokenGenerator port.TokenGenerator
 }
 
 func NewValidateAccessTokenUC(
@@ -19,36 +19,36 @@ func NewValidateAccessTokenUC(
 	tokenGenerator port.TokenGenerator,
 ) *ValidateAccessTokenUC {
 	return &ValidateAccessTokenUC{
-		Account:        account,
-		TokenGenerator: tokenGenerator,
+		account:        account,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
-func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAccessToken) (dto.ValidateAccessTokenResponse, error) {
+func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAccessTokenInput) (dto.ValidateAccessTokenOutput, error) {
 	// Parse access token
-	accountID, role, err := uc.TokenGenerator.ValidateAccessToken(
+	accountID, role, err := uc.tokenGenerator.ValidateAccessToken(
 		ctx, in.AccessToken,
 	)
 	if err != nil {
-		return dto.ValidateAccessTokenResponse{}, uc_errors.ErrInvalidAccessToken
+		return dto.ValidateAccessTokenOutput{}, uc_errors.ErrInvalidAccessToken
 	}
 
 	// Get account and check if it is not active
-	account, err := uc.Account.GetByID(ctx, accountID)
+	account, err := uc.account.GetByID(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.ValidateAccessTokenResponse{}, uc_errors.ErrInvalidAccessToken
+			return dto.ValidateAccessTokenOutput{}, uc_errors.ErrInvalidAccessToken
 		}
-		return dto.ValidateAccessTokenResponse{}, uc_errors.Wrap(
+		return dto.ValidateAccessTokenOutput{}, uc_errors.Wrap(
 			uc_errors.ErrGetAccountByIDDB, err,
 		)
 	}
 	if !account.CanLogin() {
-		return dto.ValidateAccessTokenResponse{}, uc_errors.ErrCannotLogin
+		return dto.ValidateAccessTokenOutput{}, uc_errors.ErrCannotLogin
 	}
 
 	// Output
-	return dto.ValidateAccessTokenResponse{
+	return dto.ValidateAccessTokenOutput{
 		AccountID: accountID,
 		Role:      role,
 	}, nil

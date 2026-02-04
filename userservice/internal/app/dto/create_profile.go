@@ -2,6 +2,6 @@ package dto
 
 import "github.com/google/uuid"
 
-type CreateProfile struct {
+type CreateProfileInput struct {
 	AccountID uuid.UUID
 }

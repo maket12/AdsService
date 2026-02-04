@@ -2,8 +2,8 @@ package postgres_test
 
 import (
 	"ads/pkg/errs"
-	"ads/pkg/postgres"
-	"ads/userservice/internal/adapter/out/postgres"
+	pkgpostgres "ads/pkg/postgres"
+	adapterpostgres "ads/userservice/internal/adapter/out/postgres"
 	"ads/userservice/internal/domain/model"
 	"ads/userservice/migrations"
 	"context"
@@ -20,8 +20,8 @@ import (
 
 type AccountsRepoSuite struct {
 	suite.Suite
-	dbClient    *postgres.Client
-	repo        *postgres.ProfileRepository
+	dbClient    *pkgpostgres.Client
+	repo        *adapterpostgres.ProfileRepository
 	ctx         context.Context
 	migrate     *migrate.Migrate
 	testProfile *model.Profile
@@ -37,14 +37,14 @@ func TestAccountsRepoSuite(t *testing.T) {
 func (s *AccountsRepoSuite) setupDatabase() {
 	const targetVersion = 1
 
-	dbConfig := postgres.NewConfig(
+	dbConfig := pkgpostgres.NewConfig(
 		"localhost", 5432,
 		"test", "test", "testdb",
 		"disable", 25, 25, time.Minute*5,
 	)
 	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
 
-	dbClient, err := postgres.NewClient(dbConfig)
+	dbClient, err := pkgpostgres.NewClient(dbConfig)
 	s.Require().NoError(err)
 	s.dbClient = dbClient
 
@@ -89,7 +89,7 @@ func (s *AccountsRepoSuite) setupDatabase() {
 
 func (s *AccountsRepoSuite) SetupSuite() {
 	s.setupDatabase()
-	s.repo = postgres.NewProfileRepository(s.dbClient)
+	s.repo = adapterpostgres.NewProfileRepository(s.dbClient)
 	s.ctx = context.Background()
 	s.testProfile, _ = model.NewProfile(uuid.New())
 }

@@ -26,7 +26,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 
 	type testCase struct {
 		name    string
-		input   dto.RefreshSession
+		input   dto.RefreshSessionInput
 		prepare func(a adapter)
 		wantErr error
 	}
@@ -50,7 +50,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 	var tests = []testCase{
 		{
 			name: "Success - Token Rotation",
-			input: dto.RefreshSession{
+			input: dto.RefreshSessionInput{
 				OldRefreshToken: oldToken,
 				IP:              &ip,
 				UserAgent:       &ua,
@@ -81,7 +81,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Fail - IP Mismatch",
-			input: dto.RefreshSession{
+			input: dto.RefreshSessionInput{
 				OldRefreshToken: oldToken,
 				IP:              &anotherIP,
 				UserAgent:       &ua,
@@ -96,7 +96,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Fail - UserAgent Mismatch",
-			input: dto.RefreshSession{
+			input: dto.RefreshSessionInput{
 				OldRefreshToken: oldToken,
 				IP:              &ip,
 				UserAgent:       &anotherUA,
@@ -111,7 +111,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Fail - Old Token Hash Mismatch",
-			input: dto.RefreshSession{
+			input: dto.RefreshSessionInput{
 				OldRefreshToken: "wrong-token-for-this-session",
 				IP:              &ip,
 				UserAgent:       &ua,
@@ -126,7 +126,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Fail - Session Not Found",
-			input: dto.RefreshSession{OldRefreshToken: oldToken, IP: &ip, UserAgent: &ua},
+			input: dto.RefreshSessionInput{OldRefreshToken: oldToken, IP: &ip, UserAgent: &ua},
 			prepare: func(a adapter) {
 				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, oldToken).
 					Return(accountID, oldSessionID, nil)
