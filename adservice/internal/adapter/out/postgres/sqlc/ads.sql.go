@@ -155,6 +155,60 @@ func (q *Queries) ListAds(ctx context.Context, arg ListAdsParams) ([]Ad, error) 
 	return items, nil
 }
 
+const listSellerAds = `-- name: ListSellerAds :many
+SELECT
+    id,
+    seller_id,
+    title,
+    description,
+    price,
+    status,
+    created_at,
+    updated_at
+FROM ads
+WHERE seller_id = $1
+LIMIT $2
+    OFFSET $3
+`
+
+type ListSellerAdsParams struct {
+	SellerID uuid.UUID
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListSellerAds(ctx context.Context, arg ListSellerAdsParams) ([]Ad, error) {
+	rows, err := q.db.QueryContext(ctx, listSellerAds, arg.SellerID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Ad
+	for rows.Next() {
+		var i Ad
+		if err := rows.Scan(
+			&i.ID,
+			&i.SellerID,
+			&i.Title,
+			&i.Description,
+			&i.Price,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateAd = `-- name: UpdateAd :exec
 UPDATE ads
 SET

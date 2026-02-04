@@ -4,6 +4,8 @@ import (
 	"ads/adservice/internal/adapter/out/postgres/sqlc"
 	"ads/adservice/internal/domain/model"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 func MapSQLCToAd(rawAd sqlc.Ad) *model.Ad {
@@ -85,4 +87,12 @@ func MapSQLCToAdsList(rawAds []sqlc.Ad) []*model.Ad {
 		ads = append(ads, ad)
 	}
 	return ads
+}
+
+func MapToSQLCSellerList(sellerID uuid.UUID, limit, offset int) sqlc.ListSellerAdsParams {
+	return sqlc.ListSellerAdsParams{
+		SellerID: sellerID,
+		Limit:    int32(limit),
+		Offset:   int32(offset),
+	}
 }

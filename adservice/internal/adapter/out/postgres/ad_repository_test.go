@@ -222,7 +222,7 @@ func (s *AdRepoSuite) TestDeleteAllAds() {
 }
 
 func (s *AdRepoSuite) TestListAds() {
-	// Create ads in advance with same seller id
+	// Create ads in advance
 	anotherAd, _ := model.NewAd(
 		uuid.New(),
 		"New car",
@@ -264,4 +264,57 @@ func (s *AdRepoSuite) TestListAds() {
 	s.Require().NoError(err)
 	s.Require().NotNil(ads)
 	s.Require().Len(ads, 1)
+}
+
+func (s *AdRepoSuite) TestListSellerAds() {
+	var testSellerID = uuid.New()
+	// Create ads in advance
+	anotherAd1, _ := model.NewAd(
+		testSellerID,
+		"New car",
+		nil,
+		int64(300000),
+		nil,
+	)
+	anotherAd2, _ := model.NewAd(
+		testSellerID,
+		"New car",
+		nil,
+		int64(300000),
+		nil,
+	)
+
+	_ = s.repo.Create(s.ctx, s.testAd)
+	_ = s.repo.Create(s.ctx, anotherAd1)
+	_ = s.repo.Create(s.ctx, anotherAd2)
+
+	var (
+		testLimit  = 10
+		testOffset = 0
+	)
+
+	ads, err := s.repo.ListSellerAds(
+		s.ctx, testSellerID, testLimit, testOffset,
+	)
+	s.Require().NoError(err)
+	s.Require().NotNil(ads)
+	s.Require().Len(ads, 2)
+
+	var fstFound, sndFound bool
+	for i := range ads {
+		value := *ads[i]
+		s.Require().Equal(testSellerID, value.SellerID())
+		if value.ID() == anotherAd1.ID() {
+			fstFound = true
+		} else if value.ID() == anotherAd2.ID() {
+			sndFound = true
+		}
+	}
+
+	s.Require().Truef(fstFound, "expected account with id %v\n in %v",
+		anotherAd1.ID(), ads,
+	)
+	s.Require().Truef(sndFound, "expected account with id %v\n in %v",
+		anotherAd2.ID(), ads,
+	)
 }

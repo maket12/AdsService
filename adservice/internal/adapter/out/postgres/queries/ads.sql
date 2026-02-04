@@ -60,3 +60,18 @@ SELECT
 FROM ads
 LIMIT $1
 OFFSET $2;
+
+-- name: ListSellerAds :many
+SELECT
+    id,
+    seller_id,
+    title,
+    description,
+    price,
+    status,
+    created_at,
+    updated_at
+FROM ads
+WHERE seller_id = $1
+LIMIT $2
+OFFSET $3;

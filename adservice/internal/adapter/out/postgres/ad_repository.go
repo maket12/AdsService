@@ -69,3 +69,14 @@ func (r *AdRepository) ListAds(ctx context.Context, limit, offset int) ([]*model
 
 	return mapper.MapSQLCToAdsList(rawAds), nil
 }
+
+func (r *AdRepository) ListSellerAds(ctx context.Context, sellerID uuid.UUID, limit, offset int) ([]*model.Ad, error) {
+	params := mapper.MapToSQLCSellerList(sellerID, limit, offset)
+
+	rawAds, err := r.q.ListSellerAds(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.MapSQLCToAdsList(rawAds), nil
+}
