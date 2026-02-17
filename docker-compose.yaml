@@ -150,6 +150,29 @@ services:
       user-db:
         condition: service_healthy
 
+  ad-db:
+    image: postgres:15-alpine
+    container_name: ad-db
+    environment:
+      - POSTGRES_USER=${AD_DB_USER}
+      - POSTGRES_PASSWORD=${AD_DB_PASSWORD}
+      - POSTGRES_DB=${AD_DB_NAME}
+    ports:
+      - "${USER_DB_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AD_DB_USER} -d ${AD_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ad_pg_data:/var/lib/postgresql/data
+
+  ad-service:
+    build:
+      context: .
+      dockerfile: .adservice/Dockerfile
+    container_name: ad-service
+
   gateway:
     build:
       context: .
