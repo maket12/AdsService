@@ -67,4 +67,15 @@ type Mutation {
         avatarUrl: String
         bio: String
     ): Boolean!
+
+    # --- Ad Service methods ---
+
+    # rpc UpdateAd
+    updateAd(
+        adId: ID!
+        title: String
+        description: String
+        price: Float
+        images: [String]!
+    ): Boolean!
 }
