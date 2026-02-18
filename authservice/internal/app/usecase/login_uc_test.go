@@ -26,7 +26,7 @@ func TestLoginUC_Execute(t *testing.T) {
 
 	type testCase struct {
 		name    string
-		input   dto.Login
+		input   dto.LoginInput
 		prepare func(a adapter)
 		wantErr error
 	}
@@ -42,7 +42,7 @@ func TestLoginUC_Execute(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:  "Success",
-			input: dto.Login{Email: email, Password: pass, IP: nil, UserAgent: nil},
+			input: dto.LoginInput{Email: email, Password: pass, IP: nil, UserAgent: nil},
 			prepare: func(a adapter) {
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
 				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
@@ -58,8 +58,8 @@ func TestLoginUC_Execute(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:  "Fail - Account Not Found",
-			input: dto.Login{Email: "unknown@test.com", Password: pass},
+			name:  "Fail - account Not Found",
+			input: dto.LoginInput{Email: "unknown@test.com", Password: pass},
 			prepare: func(a adapter) {
 				a.account.On("GetByEmail", mock.Anything, "unknown@test.com").
 					Return(nil, errs.ErrObjectNotFound)
@@ -68,7 +68,7 @@ func TestLoginUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Fail - Password Mismatch",
-			input: dto.Login{Email: email, Password: "wrong_password"},
+			input: dto.LoginInput{Email: email, Password: "wrong_password"},
 			prepare: func(a adapter) {
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
 				a.passwordHasher.On("Compare", "hashed_db", "wrong_password").Return(false)
@@ -76,8 +76,8 @@ func TestLoginUC_Execute(t *testing.T) {
 			wantErr: uc_errors.ErrInvalidCredentials,
 		},
 		{
-			name:  "Fail - Account Banned",
-			input: dto.Login{Email: email, Password: pass},
+			name:  "Fail - account Banned",
+			input: dto.LoginInput{Email: email, Password: pass},
 			prepare: func(a adapter) {
 				bannedAcc, _ := model.NewAccount(email, "hashed_db")
 				bannedAcc.Block()
@@ -89,7 +89,7 @@ func TestLoginUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Fail - Token Generation Error",
-			input: dto.Login{Email: email, Password: pass},
+			input: dto.LoginInput{Email: email, Password: pass},
 			prepare: func(a adapter) {
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
 				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)

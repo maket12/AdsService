@@ -10,8 +10,8 @@ import (
 	"ads/authservice/internal/app/usecase"
 	"ads/pkg/generated/auth_v1"
 
-	"ads/pkg/postgres"
-	"ads/pkg/rabbitmq"
+	pkgpostgres "ads/pkg/postgres"
+	pkgrabbitmq "ads/pkg/rabbitmq"
 	"context"
 	"fmt"
 	"log"
@@ -47,14 +47,14 @@ func newLogger(level string) *slog.Logger {
 	}))
 }
 
-func newPostgresClient(cfg *config.Config) (*postgres.Client, error) {
-	pgConfig := postgres.NewConfig(
+func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
+	pgConfig := pkgpostgres.NewConfig(
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
 		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
 		cfg.DBIdleConn, cfg.DBConnLifeTime,
 	)
 
-	pgClient, err := postgres.NewClient(pgConfig)
+	pgClient, err := pkgpostgres.NewClient(pgConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func newPostgresClient(cfg *config.Config) (*postgres.Client, error) {
 func closePostgresClient(
 	ctx context.Context,
 	logger *slog.Logger,
-	pgClient *postgres.Client,
+	pgClient *pkgpostgres.Client,
 ) {
 	logger.InfoContext(ctx, "closing postgres connection...")
 	if err := pgClient.Close(); err != nil {
@@ -75,8 +75,8 @@ func closePostgresClient(
 	}
 }
 
-func newRabbitMQClient(cfg *config.Config) (*rabbitmq.RabbitClient, error) {
-	rabbitConfig := rabbitmq.NewRabbitConfig(
+func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
+	rabbitConfig := pkgrabbitmq.NewRabbitConfig(
 		cfg.RabbitHost,
 		cfg.RabbitPort,
 		cfg.RabbitUser,
@@ -85,7 +85,7 @@ func newRabbitMQClient(cfg *config.Config) (*rabbitmq.RabbitClient, error) {
 		cfg.RabbitAttempts,
 	)
 
-	rabbitClient, err := rabbitmq.NewRabbitClient(rabbitConfig)
+	rabbitClient, err := pkgrabbitmq.NewRabbitClient(rabbitConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func newRabbitMQClient(cfg *config.Config) (*rabbitmq.RabbitClient, error) {
 func closeRabbitMQClient(
 	ctx context.Context,
 	logger *slog.Logger,
-	rabbitClient *rabbitmq.RabbitClient,
+	rabbitClient *pkgrabbitmq.RabbitClient,
 ) {
 	logger.InfoContext(ctx, "closing rabbitmq connection...")
 	if err := rabbitClient.Close(); err != nil {
@@ -107,7 +107,7 @@ func closeRabbitMQClient(
 }
 
 func newAccountPublisher(
-	cfg *config.Config, rabbitClient *rabbitmq.RabbitClient,
+	cfg *config.Config, rabbitClient *pkgrabbitmq.RabbitClient,
 ) (*adaptermq.AccountPublisher, error) {
 	publisherConfig := adaptermq.NewPublisherConfig(
 		cfg.ExchangeName, cfg.RoutingKey,

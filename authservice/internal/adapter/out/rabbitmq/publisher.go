@@ -1,12 +1,12 @@
 package rabbitmq
 
 import (
-	"ads/authservice/internal/domain/model"
 	"ads/pkg/rabbitmq"
 	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -57,10 +57,10 @@ func NewAccountPublisher(
 	}, nil
 }
 
-func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, event *model.AccountCreatedEvent) error {
-	eventJson := rabbitmq.AccountCreatedEvent{AccountID: event.AccountID}
+func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, accountID uuid.UUID) error {
+	event := rabbitmq.AccountCreatedEvent{AccountID: accountID}
 
-	body, err := json.Marshal(eventJson)
+	body, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}

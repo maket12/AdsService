@@ -1,13 +1,13 @@
 package dto
 
-type Login struct {
+type LoginInput struct {
 	Email     string
 	Password  string
 	IP        *string
 	UserAgent *string
 }
 
-type LoginResponse struct {
+type LoginOutput struct {
 	AccessToken  string
 	RefreshToken string
 }

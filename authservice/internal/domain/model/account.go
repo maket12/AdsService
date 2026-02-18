@@ -15,7 +15,7 @@ const (
 	AccountDeleted AccountStatus = "deleted"
 )
 
-// ================ Rich model for Account ================
+// ================ Rich model for account ================
 
 type Account struct {
 	id            uuid.UUID

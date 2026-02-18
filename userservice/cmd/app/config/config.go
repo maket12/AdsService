@@ -52,13 +52,13 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("DB_HOST is required")
 	}
 	if cfg.DBUser == "" {
-		return nil, fmt.Errorf("DBUser is required")
+		return nil, fmt.Errorf("PgUser is required")
 	}
 	if cfg.DBPassword == "" {
-		return nil, fmt.Errorf("DBPassword is required")
+		return nil, fmt.Errorf("PgPassword is required")
 	}
 	if cfg.DBName == "" {
-		return nil, fmt.Errorf("DBName is required")
+		return nil, fmt.Errorf("PgDBName is required")
 	}
 
 	if cfg.RabbitHost == "" {

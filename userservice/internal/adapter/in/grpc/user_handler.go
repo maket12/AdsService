@@ -48,7 +48,7 @@ func (h *UserHandler) GetProfile(ctx context.Context, _ *user_v1.GetProfileReque
 	}
 
 	ucResp, err := h.getProfileUC.Execute(
-		ctx, dto.GetProfile{AccountID: accountID},
+		ctx, dto.GetProfileInput{AccountID: accountID},
 	)
 
 	if err != nil {

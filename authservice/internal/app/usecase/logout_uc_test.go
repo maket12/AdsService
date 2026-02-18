@@ -33,7 +33,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 
 	type testCase struct {
 		name    string
-		input   dto.Logout
+		input   dto.LogoutInput
 		prepare func(a adapter)
 		wantErr error
 	}
@@ -41,7 +41,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 	var tests = []testCase{
 		{
 			name: "Success",
-			input: dto.Logout{
+			input: dto.LogoutInput{
 				RefreshToken: token,
 			},
 			prepare: func(a adapter) {
@@ -59,7 +59,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Fail - Invalid Token Format",
-			input: dto.Logout{RefreshToken: "invalid"},
+			input: dto.LogoutInput{RefreshToken: "invalid"},
 			prepare: func(a adapter) {
 				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, "invalid").
 					Return(uuid.Nil, uuid.Nil, uc_errors.ErrInvalidRefreshToken)
@@ -68,7 +68,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Fail - Session Already Inactive",
-			input: dto.Logout{RefreshToken: token},
+			input: dto.LogoutInput{RefreshToken: token},
 			prepare: func(a adapter) {
 				reason := "prev logout"
 				inactiveSession, _ := model.NewRefreshSession(sessionID, accountID, hashedToken, nil, nil, nil, time.Hour)
@@ -83,7 +83,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Fail - Token Hash Mismatch",
-			input: dto.Logout{RefreshToken: "another-token"},
+			input: dto.LogoutInput{RefreshToken: "another-token"},
 			prepare: func(a adapter) {
 				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, "another-token").
 					Return(accountID, sessionID, nil)

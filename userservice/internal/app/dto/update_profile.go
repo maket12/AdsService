@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type UpdateProfile struct {
+type UpdateProfileInput struct {
 	AccountID uuid.UUID
 	FirstName *string
 	LastName  *string

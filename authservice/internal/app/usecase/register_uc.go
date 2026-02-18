@@ -11,10 +11,10 @@ import (
 )
 
 type RegisterUC struct {
-	Account          port.AccountRepository
-	AccountRole      port.AccountRoleRepository
-	PasswordHasher   port.PasswordHasher
-	AccountPublisher port.AccountPublisher
+	account          port.AccountRepository
+	accountRole      port.AccountRoleRepository
+	passwordHasher   port.PasswordHasher
+	accountPublisher port.AccountPublisher
 }
 
 func NewRegisterUC(
@@ -24,18 +24,18 @@ func NewRegisterUC(
 	accountPublisher port.AccountPublisher,
 ) *RegisterUC {
 	return &RegisterUC{
-		Account:          account,
-		AccountRole:      accountRole,
-		PasswordHasher:   passwordHasher,
-		AccountPublisher: accountPublisher,
+		account:          account,
+		accountRole:      accountRole,
+		passwordHasher:   passwordHasher,
+		accountPublisher: accountPublisher,
 	}
 }
 
-func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.RegisterResponse, error) {
+func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.RegisterOutput, error) {
 	// Hashing the password
-	hashedPassword, err := uc.PasswordHasher.Hash(in.Password)
+	hashedPassword, err := uc.passwordHasher.Hash(in.Password)
 	if err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(
+		return dto.RegisterOutput{}, uc_errors.Wrap(
 			uc_errors.ErrHashPassword, err,
 		)
 	}
@@ -43,39 +43,38 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.Register) (dto.Registe
 	// Creating rich-models with validation
 	account, err := model.NewAccount(in.Email, hashedPassword)
 	if err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(
+		return dto.RegisterOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 	accountRole, err := model.NewAccountRole(account.ID())
 	if err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(
+		return dto.RegisterOutput{}, uc_errors.Wrap(
 			uc_errors.ErrInvalidInput, err,
 		)
 	}
 
 	// Save all into database
-	if err := uc.Account.Create(ctx, account); err != nil {
+	if err := uc.account.Create(ctx, account); err != nil {
 		if errors.Is(err, errs.ErrObjectAlreadyExists) {
-			return dto.RegisterResponse{}, uc_errors.ErrAccountAlreadyExists
+			return dto.RegisterOutput{}, uc_errors.ErrAccountAlreadyExists
 		}
-		return dto.RegisterResponse{}, uc_errors.Wrap(
+		return dto.RegisterOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCreateAccountDB, err,
 		)
 	}
-	if err := uc.AccountRole.Create(ctx, accountRole); err != nil {
-		return dto.RegisterResponse{}, uc_errors.Wrap(
+	if err := uc.accountRole.Create(ctx, accountRole); err != nil {
+		return dto.RegisterOutput{}, uc_errors.Wrap(
 			uc_errors.ErrCreateAccountRoleDB, err,
 		)
 	}
 
 	// Send even to rabbitmq (create profile)
-	event := model.NewAccountCreatedEvent(account.ID())
-	if err := uc.AccountPublisher.PublishAccountCreate(ctx, event); err != nil {
-		return dto.RegisterResponse{},
+	if err := uc.accountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
+		return dto.RegisterOutput{},
 			uc_errors.Wrap(uc_errors.ErrPublishEvent, err)
 	}
 
 	// Response
-	return dto.RegisterResponse{AccountID: account.ID()}, nil
+	return dto.RegisterOutput{AccountID: account.ID()}, nil
 }
