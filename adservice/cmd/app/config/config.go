@@ -10,7 +10,7 @@ import (
 type Config struct {
 	// Postgres
 	PgHost     string `env:"PG_HOST,required"`
-	PgPort     int    `env:"PG_PORT" envDefault:"5432"`
+	PgPort     int    `env:"PG_PORT" envDefault:"5433"`
 	PgUser     string `env:"PG_USER,required"`
 	PgPassword string `env:"PG_PASSWORD,required"`
 	PgDBName   string `env:"PG_DB_NAME,required"`
@@ -18,7 +18,7 @@ type Config struct {
 
 	PgOpenConn     int           `env:"PG_OPEN_CONNECTIONS" envDefault:"25"`
 	PgIdleConn     int           `env:"PG_IDLE_CONNECTIONS" envDefault:"25"`
-	PgConnLifeTime time.Duration `env:"DB_CONNECTION_LIFETIME" envDefault:"5m"`
+	PgConnLifeTime time.Duration `env:"PG_CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// Mongo
 	MongoHost     string `env:"MONGO_HOST,required"`
