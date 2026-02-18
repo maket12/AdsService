@@ -13,10 +13,12 @@ func gRPCError(err error) (codes.Code, string, error) {
 		switch {
 		case errors.Is(w.Public, uc_errors.ErrSaveImagesDB),
 			errors.Is(w.Public, uc_errors.ErrGetImagesDB),
+			errors.Is(w.Public, uc_errors.ErrDeleteImagesDB),
 			errors.Is(w.Public, uc_errors.ErrCreateAdDB),
 			errors.Is(w.Public, uc_errors.ErrGetAdDB),
 			errors.Is(w.Public, uc_errors.ErrUpdateAdDB),
 			errors.Is(w.Public, uc_errors.ErrUpdateAdStatusDB),
+			errors.Is(w.Public, uc_errors.ErrDeleteAdDB),
 			errors.Is(w.Public, uc_errors.ErrDeleteAllAdsDB):
 			return codes.Internal, w.Public.Error(), w.Reason
 
