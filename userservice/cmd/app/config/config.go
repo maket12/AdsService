@@ -9,16 +9,16 @@ import (
 
 type Config struct {
 	// Database
-	DBHost     string `env:"DB_HOST,required"`
-	DBPort     int    `env:"DB_PORT" envDefault:"5432"`
-	DBUser     string `env:"DB_USER,required"`
-	DBPassword string `env:"DB_PASSWORD,required"`
-	DBName     string `env:"DB_NAME,required"`
-	DBSSLMode  string `env:"DB_SSL_MODE" envDefault:"prefer"`
+	PgHost     string `env:"PG_HOST,required"`
+	PgPort     int    `env:"PG_PORT" envDefault:"5432"`
+	PgUser     string `env:"PG_USER,required"`
+	PgPassword string `env:"PG_PASSWORD,required"`
+	PgDBName   string `env:"PG_DB_NAME,required"`
+	PgSSLMode  string `env:"DB_SSL_MODE" envDefault:"prefer"`
 
-	DBOpenConn     int           `env:"DB_OPEN_CONNECTIONS" envDefault:"25"`
-	DBIdleConn     int           `env:"DB_IDLE_CONNECTIONS" envDefault:"25"`
-	DBConnLifeTime time.Duration `env:"DB_CONNECTION_LIFETIME" envDefault:"5m"`
+	PgOpenConn     int           `env:"PG_OPEN_CONNECTIONS" envDefault:"25"`
+	PgIdleConn     int           `env:"PG_IDLE_CONNECTIONS" envDefault:"25"`
+	PgConnLifeTime time.Duration `env:"PG_CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// RabbitMQ
 	RabbitHost     string `env:"RABBIT_HOST,required"`
@@ -48,37 +48,37 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
 
-	if cfg.DBHost == "" {
-		return nil, fmt.Errorf("DB_HOST is required")
+	if cfg.PgHost == "" {
+		return nil, fmt.Errorf("PG_HOST is required")
 	}
-	if cfg.DBUser == "" {
-		return nil, fmt.Errorf("PgUser is required")
+	if cfg.PgUser == "" {
+		return nil, fmt.Errorf("PG_USER is required")
 	}
-	if cfg.DBPassword == "" {
-		return nil, fmt.Errorf("PgPassword is required")
+	if cfg.PgPassword == "" {
+		return nil, fmt.Errorf("PG_PASSWORD is required")
 	}
-	if cfg.DBName == "" {
-		return nil, fmt.Errorf("PgDBName is required")
+	if cfg.PgDBName == "" {
+		return nil, fmt.Errorf("PG_DB_NAME is required")
 	}
 
 	if cfg.RabbitHost == "" {
-		return nil, fmt.Errorf("RabbitUser is required")
+		return nil, fmt.Errorf("RABBIT_HOST is required")
 	}
 	if cfg.RabbitUser == "" {
-		return nil, fmt.Errorf("RabbitUser is required")
+		return nil, fmt.Errorf("RABBIT_USER is required")
 	}
 	if cfg.RabbitPassword == "" {
-		return nil, fmt.Errorf("RabbitPassword is required")
+		return nil, fmt.Errorf("RABBIT_PASSWORD is required")
 	}
 
 	if cfg.RoutingKey == "" {
-		return nil, fmt.Errorf("RoutingKey is required")
+		return nil, fmt.Errorf("ROUTING_KEY is required")
 	}
 
 	fmt.Printf("Config loaded successfully\n")
 	fmt.Printf("   Environment: %s\n", cfg.Environment)
 	fmt.Printf("   Log Level: %s\n", cfg.LogLevel)
-	fmt.Printf("   DB Host: %s\n", cfg.DBHost)
+	fmt.Printf("   Postgres Host: %s\n", cfg.PgHost)
 	fmt.Printf("   RabbitMQ Host: %s\n", cfg.RabbitHost)
 	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
 

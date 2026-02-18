@@ -49,9 +49,9 @@ func newLogger(level string) *slog.Logger {
 
 func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
 	pgConfig := pkgpostgres.NewConfig(
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
-		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
-		cfg.DBIdleConn, cfg.DBConnLifeTime,
+		cfg.PgHost, cfg.PgPort, cfg.PgUser, cfg.PgPassword,
+		cfg.PgDBName, cfg.PgSSLMode, cfg.PgOpenConn,
+		cfg.PgIdleConn, cfg.PgConnLifeTime,
 	)
 
 	pgClient, err := pkgpostgres.NewClient(pgConfig)
