@@ -3,6 +3,7 @@ package main
 import (
 	"ads/gateway/cmd/app/config"
 	"ads/gateway/graph"
+	"ads/pkg/generated/ad_v1"
 	"ads/pkg/generated/auth_v1"
 	"ads/pkg/generated/user_v1"
 	"ads/pkg/utils"
@@ -71,6 +72,16 @@ func closeUserConnection(userConn *grpc.ClientConn) {
 	}
 }
 
+func closeAdConnection(adConn *grpc.ClientConn) {
+	log.Printf("Gateway: Closing Ad Service Connection...")
+	if err := adConn.Close(); err != nil {
+		log.Printf(
+			"Gateway: ERROR - could not close Ad Service Connection: %v",
+			err,
+		)
+	}
+}
+
 func main() {
 	// Load Config
 	cfg, err := config.Load()
@@ -91,10 +102,17 @@ func main() {
 	}
 	defer closeUserConnection(userConn)
 
+	addConn, err := grpc.Dial(cfg.UserGRPCAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Printf("Gateway: WARNING - could not connect to Ad Service: %v", err)
+	}
+	defer closeAdConnection(addConn)
+
 	// Create resolver
 	resolver := &graph.Resolver{
 		AuthClient: auth_v1.NewAuthServiceClient(authConn),
 		UserClient: user_v1.NewUserServiceClient(userConn),
+		AdClient:   ad_v1.NewAdServiceClient(addConn),
 	}
 
 	// New GraphQL server

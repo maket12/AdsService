@@ -30,3 +30,7 @@ models:
   RefreshSessionResponse:
     model:
       - ads/pkg/generated/auth_v1.RefreshSessionResponse
+
+  Ad:
+    model:
+      - ads/pkg/generated/ad_v1.GetAdResponse

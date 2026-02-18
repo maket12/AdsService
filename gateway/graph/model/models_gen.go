@@ -2,8 +2,75 @@
 
 package model
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Mutation struct {
 }
 
 type Query struct {
+}
+
+// Ad Status
+type AdStatus string
+
+const (
+	AdStatusOnModeration AdStatus = "ON_MODERATION"
+	AdStatusPublished    AdStatus = "PUBLISHED"
+	AdStatusRejected     AdStatus = "REJECTED"
+	AdStatusDeleted      AdStatus = "DELETED"
+)
+
+var AllAdStatus = []AdStatus{
+	AdStatusOnModeration,
+	AdStatusPublished,
+	AdStatusRejected,
+	AdStatusDeleted,
+}
+
+func (e AdStatus) IsValid() bool {
+	switch e {
+	case AdStatusOnModeration, AdStatusPublished, AdStatusRejected, AdStatusDeleted:
+		return true
+	}
+	return false
+}
+
+func (e AdStatus) String() string {
+	return string(e)
+}
+
+func (e *AdStatus) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AdStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AdStatus", str)
+	}
+	return nil
+}
+
+func (e AdStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *AdStatus) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e AdStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

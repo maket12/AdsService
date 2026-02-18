@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"ads/pkg/generated/ad_v1"
 	"ads/pkg/generated/auth_v1"
 	"ads/pkg/generated/user_v1"
 )
@@ -13,4 +14,5 @@ import (
 type Resolver struct {
 	AuthClient auth_v1.AuthServiceClient
 	UserClient user_v1.UserServiceClient
+	AdClient   ad_v1.AdServiceClient
 }
