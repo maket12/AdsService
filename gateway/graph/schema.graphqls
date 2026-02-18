@@ -22,9 +22,33 @@ type RefreshSessionResponse {
     refreshToken: String!
 }
 
+""" Ad Status"""
+enum AdStatus {
+    ON_MODERATION
+    PUBLISHED
+    REJECTED
+    DELETED
+}
+
+""" Ad - full info """
+type Ad {
+    adId: ID!
+    sellerId: ID!
+    title: String!
+    description: String
+    price: Float!
+    status: AdStatus!
+    images: [String]!
+    createdAt: String
+    updatedAt: String
+}
+
 type Query {
     # rpc GetProfile
     me: User!
+
+    # rpc GetAd
+    ad(adId: ID!): Ad!
 }
 
 type Mutation {
@@ -70,6 +94,15 @@ type Mutation {
 
     # --- Ad Service methods ---
 
+    # rpc CreateAd
+    createAd(
+        sellerId: ID!
+        title: String!
+        description: String
+        price: Float!
+        images: [String]!
+    ): ID!
+
     # rpc UpdateAd
     updateAd(
         adId: ID!
@@ -77,5 +110,11 @@ type Mutation {
         description: String
         price: Float
         images: [String]!
+    ): Boolean!
+
+    # rpc PublishAd | RejectAd | DeleteAd
+    updateAdStatus(
+        adId: ID!
+        adStatus: AdStatus!
     ): Boolean!
 }

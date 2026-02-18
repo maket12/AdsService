@@ -3,6 +3,8 @@
 package graph
 
 import (
+	"ads/gateway/graph/model"
+	"ads/pkg/generated/ad_v1"
 	"ads/pkg/generated/auth_v1"
 	"ads/pkg/generated/user_v1"
 	"bytes"
@@ -40,6 +42,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Ad() AdResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	User() UserResolver
@@ -49,6 +52,18 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Ad struct {
+		AdId        func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		Images      func(childComplexity int) int
+		Price       func(childComplexity int) int
+		SellerId    func(childComplexity int) int
+		Status      func(childComplexity int) int
+		Title       func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
+	}
+
 	LoginResponse struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
@@ -56,14 +71,18 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AssignRole     func(childComplexity int, accountID string, role string) int
+		CreateAd       func(childComplexity int, sellerID string, title string, description *string, price float64, images []*string) int
 		Login          func(childComplexity int, email string, password string, ip *string, userAgent *string) int
 		Logout         func(childComplexity int, refreshToken string) int
 		RefreshSession func(childComplexity int, oldRefreshToken string, ip *string, userAgent *string) int
 		Register       func(childComplexity int, email string, password string) int
+		UpdateAd       func(childComplexity int, adID string, title *string, description *string, price *float64, images []*string) int
+		UpdateAdStatus func(childComplexity int, adID string, adStatus model.AdStatus) int
 		UpdateProfile  func(childComplexity int, firstName *string, lastName *string, phone *string, avatarURL *string, bio *string) int
 	}
 
 	Query struct {
+		Ad func(childComplexity int, adID string) int
 		Me func(childComplexity int) int
 	}
 
@@ -84,6 +103,13 @@ type ComplexityRoot struct {
 	}
 }
 
+type AdResolver interface {
+	Price(ctx context.Context, obj *ad_v1.GetAdResponse) (float64, error)
+	Status(ctx context.Context, obj *ad_v1.GetAdResponse) (model.AdStatus, error)
+
+	CreatedAt(ctx context.Context, obj *ad_v1.GetAdResponse) (*string, error)
+	UpdatedAt(ctx context.Context, obj *ad_v1.GetAdResponse) (*string, error)
+}
 type MutationResolver interface {
 	Register(ctx context.Context, email string, password string) (string, error)
 	Login(ctx context.Context, email string, password string, ip *string, userAgent *string) (*auth_v1.LoginResponse, error)
@@ -91,9 +117,13 @@ type MutationResolver interface {
 	RefreshSession(ctx context.Context, oldRefreshToken string, ip *string, userAgent *string) (*auth_v1.RefreshSessionResponse, error)
 	AssignRole(ctx context.Context, accountID string, role string) (bool, error)
 	UpdateProfile(ctx context.Context, firstName *string, lastName *string, phone *string, avatarURL *string, bio *string) (bool, error)
+	CreateAd(ctx context.Context, sellerID string, title string, description *string, price float64, images []*string) (string, error)
+	UpdateAd(ctx context.Context, adID string, title *string, description *string, price *float64, images []*string) (bool, error)
+	UpdateAdStatus(ctx context.Context, adID string, adStatus model.AdStatus) (bool, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*user_v1.GetProfileResponse, error)
+	Ad(ctx context.Context, adID string) (*ad_v1.GetAdResponse, error)
 }
 type UserResolver interface {
 	ID(ctx context.Context, obj *user_v1.GetProfileResponse) (string, error)
@@ -121,6 +151,61 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Ad.adId":
+		if e.complexity.Ad.AdId == nil {
+			break
+		}
+
+		return e.complexity.Ad.AdId(childComplexity), true
+	case "Ad.createdAt":
+		if e.complexity.Ad.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Ad.CreatedAt(childComplexity), true
+	case "Ad.description":
+		if e.complexity.Ad.Description == nil {
+			break
+		}
+
+		return e.complexity.Ad.Description(childComplexity), true
+	case "Ad.images":
+		if e.complexity.Ad.Images == nil {
+			break
+		}
+
+		return e.complexity.Ad.Images(childComplexity), true
+	case "Ad.price":
+		if e.complexity.Ad.Price == nil {
+			break
+		}
+
+		return e.complexity.Ad.Price(childComplexity), true
+	case "Ad.sellerId":
+		if e.complexity.Ad.SellerId == nil {
+			break
+		}
+
+		return e.complexity.Ad.SellerId(childComplexity), true
+	case "Ad.status":
+		if e.complexity.Ad.Status == nil {
+			break
+		}
+
+		return e.complexity.Ad.Status(childComplexity), true
+	case "Ad.title":
+		if e.complexity.Ad.Title == nil {
+			break
+		}
+
+		return e.complexity.Ad.Title(childComplexity), true
+	case "Ad.updatedAt":
+		if e.complexity.Ad.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Ad.UpdatedAt(childComplexity), true
+
 	case "LoginResponse.accessToken":
 		if e.complexity.LoginResponse.AccessToken == nil {
 			break
@@ -145,6 +230,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.AssignRole(childComplexity, args["accountId"].(string), args["role"].(string)), true
+	case "Mutation.createAd":
+		if e.complexity.Mutation.CreateAd == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createAd_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateAd(childComplexity, args["sellerId"].(string), args["title"].(string), args["description"].(*string), args["price"].(float64), args["images"].([]*string)), true
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -189,6 +285,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.Register(childComplexity, args["email"].(string), args["password"].(string)), true
+	case "Mutation.updateAd":
+		if e.complexity.Mutation.UpdateAd == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAd_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAd(childComplexity, args["adId"].(string), args["title"].(*string), args["description"].(*string), args["price"].(*float64), args["images"].([]*string)), true
+	case "Mutation.updateAdStatus":
+		if e.complexity.Mutation.UpdateAdStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAdStatus_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAdStatus(childComplexity, args["adId"].(string), args["adStatus"].(model.AdStatus)), true
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
 			break
@@ -201,6 +319,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.UpdateProfile(childComplexity, args["firstName"].(*string), args["lastName"].(*string), args["phone"].(*string), args["avatarUrl"].(*string), args["bio"].(*string)), true
 
+	case "Query.ad":
+		if e.complexity.Query.Ad == nil {
+			break
+		}
+
+		args, err := ec.field_Query_ad_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Ad(childComplexity, args["adId"].(string)), true
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -409,6 +538,37 @@ func (ec *executionContext) field_Mutation_assignRole_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createAd_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "sellerId", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["sellerId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "title", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["title"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "description", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["description"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "price", ec.unmarshalNFloat2float64)
+	if err != nil {
+		return nil, err
+	}
+	args["price"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "images", ec.unmarshalNString2ᚕᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["images"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -483,6 +643,53 @@ func (ec *executionContext) field_Mutation_register_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateAdStatus_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "adId", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["adId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "adStatus", ec.unmarshalNAdStatus2adsᚋgatewayᚋgraphᚋmodelᚐAdStatus)
+	if err != nil {
+		return nil, err
+	}
+	args["adStatus"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAd_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "adId", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["adId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "title", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["title"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "description", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["description"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "price", ec.unmarshalOFloat2ᚖfloat64)
+	if err != nil {
+		return nil, err
+	}
+	args["price"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "images", ec.unmarshalNString2ᚕᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["images"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateProfile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -522,6 +729,17 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_ad_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "adId", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["adId"] = arg0
 	return args, nil
 }
 
@@ -576,6 +794,267 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Ad_adId(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_adId,
+		func(ctx context.Context) (any, error) {
+			return obj.AdId, nil
+		},
+		nil,
+		ec.marshalNID2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_adId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_sellerId(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_sellerId,
+		func(ctx context.Context) (any, error) {
+			return obj.SellerId, nil
+		},
+		nil,
+		ec.marshalNID2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_sellerId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_title(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_title,
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_description(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_description,
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_price(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_price,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Ad().Price(ctx, obj)
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_price(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_status(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_status,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Ad().Status(ctx, obj)
+		},
+		nil,
+		ec.marshalNAdStatus2adsᚋgatewayᚋgraphᚋmodelᚐAdStatus,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AdStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_images(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_images,
+		func(ctx context.Context) (any, error) {
+			return obj.Images, nil
+		},
+		nil,
+		ec.marshalNString2ᚕstring,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_images(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_createdAt(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_createdAt,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Ad().CreatedAt(ctx, obj)
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ad_updatedAt(ctx context.Context, field graphql.CollectedField, obj *ad_v1.GetAdResponse) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Ad_updatedAt,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Ad().UpdatedAt(ctx, obj)
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Ad_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ad",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _LoginResponse_accessToken(ctx context.Context, field graphql.CollectedField, obj *auth_v1.LoginResponse) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
@@ -893,6 +1372,129 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createAd(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_createAd,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().CreateAd(ctx, fc.Args["sellerId"].(string), fc.Args["title"].(string), fc.Args["description"].(*string), fc.Args["price"].(float64), fc.Args["images"].([]*string))
+		},
+		nil,
+		ec.marshalNID2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createAd(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createAd_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateAd(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_updateAd,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().UpdateAd(ctx, fc.Args["adId"].(string), fc.Args["title"].(*string), fc.Args["description"].(*string), fc.Args["price"].(*float64), fc.Args["images"].([]*string))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateAd(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateAd_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateAdStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_updateAdStatus,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().UpdateAdStatus(ctx, fc.Args["adId"].(string), fc.Args["adStatus"].(model.AdStatus))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateAdStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateAdStatus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -936,6 +1538,67 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_ad(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_ad,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().Ad(ctx, fc.Args["adId"].(string))
+		},
+		nil,
+		ec.marshalNAd2ᚖadsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_ad(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "adId":
+				return ec.fieldContext_Ad_adId(ctx, field)
+			case "sellerId":
+				return ec.fieldContext_Ad_sellerId(ctx, field)
+			case "title":
+				return ec.fieldContext_Ad_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Ad_description(ctx, field)
+			case "price":
+				return ec.fieldContext_Ad_price(ctx, field)
+			case "status":
+				return ec.fieldContext_Ad_status(ctx, field)
+			case "images":
+				return ec.fieldContext_Ad_images(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Ad_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Ad_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Ad", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_ad_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -2792,6 +3455,200 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** object.gotpl ****************************
 
+var adImplementors = []string{"Ad"}
+
+func (ec *executionContext) _Ad(ctx context.Context, sel ast.SelectionSet, obj *ad_v1.GetAdResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Ad")
+		case "adId":
+			out.Values[i] = ec._Ad_adId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "sellerId":
+			out.Values[i] = ec._Ad_sellerId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "title":
+			out.Values[i] = ec._Ad_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._Ad_description(ctx, field, obj)
+		case "price":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ad_price(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "status":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ad_status(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "images":
+			out.Values[i] = ec._Ad_images(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createdAt":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ad_createdAt(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updatedAt":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ad_updatedAt(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var loginResponseImplementors = []string{"LoginResponse"}
 
 func (ec *executionContext) _LoginResponse(ctx context.Context, sel ast.SelectionSet, obj *auth_v1.LoginResponse) graphql.Marshaler {
@@ -2897,6 +3754,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createAd":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createAd(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateAd":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateAd(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateAdStatus":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateAdStatus(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2949,6 +3827,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_me(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "ad":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_ad(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -3517,6 +4417,30 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAd2adsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse(ctx context.Context, sel ast.SelectionSet, v ad_v1.GetAdResponse) graphql.Marshaler {
+	return ec._Ad(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAd2ᚖadsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse(ctx context.Context, sel ast.SelectionSet, v *ad_v1.GetAdResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Ad(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAdStatus2adsᚋgatewayᚋgraphᚋmodelᚐAdStatus(ctx context.Context, v any) (model.AdStatus, error) {
+	var res model.AdStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAdStatus2adsᚋgatewayᚋgraphᚋmodelᚐAdStatus(ctx context.Context, sel ast.SelectionSet, v model.AdStatus) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3531,6 +4455,22 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
@@ -3591,6 +4531,54 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstring(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstring(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNString2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNUser2adsᚋpkgᚋgeneratedᚋuser_v1ᚐGetProfileResponse(ctx context.Context, sel ast.SelectionSet, v user_v1.GetProfileResponse) graphql.Marshaler {
@@ -3887,6 +4875,35 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = sel
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalString(v)
 	return res
 }
 
