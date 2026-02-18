@@ -85,3 +85,25 @@ func (s *MediaRepoSuite) TestGet_NotFound() {
 	s.Require().NoError(err)
 	s.Require().Empty(images)
 }
+
+func (s *MediaRepoSuite) TestDelete() {
+	// Prepare test data
+	var (
+		testAdID   = uuid.New()
+		testImages = []string{
+			"https://storage.com/1.jpg",
+			"https://storage.com/2.jpg",
+		}
+	)
+
+	// Save
+	_ = s.repo.Save(s.ctx, testAdID, testImages)
+
+	// Then delete
+	err := s.repo.Delete(s.ctx, testAdID)
+	s.Require().NoError(err)
+
+	// Check deletion was correct
+	images, _ := s.repo.Get(s.ctx, testAdID)
+	s.Require().Empty(images)
+}

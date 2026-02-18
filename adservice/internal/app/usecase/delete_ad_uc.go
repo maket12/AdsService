@@ -10,11 +10,12 @@ import (
 )
 
 type DeleteAdUC struct {
-	ad port.AdRepository
+	ad    port.AdRepository
+	media port.MediaRepository
 }
 
-func NewDeleteAdUC(ad port.AdRepository) *DeleteAdUC {
-	return &DeleteAdUC{ad: ad}
+func NewDeleteAdUC(ad port.AdRepository, media port.MediaRepository) *DeleteAdUC {
+	return &DeleteAdUC{ad: ad, media: media}
 }
 
 func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.DeleteAdOutput, error) {
@@ -29,18 +30,34 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 		)
 	}
 
-	// Update status (deleted)
-	err = ad.Delete()
-	if err != nil {
-		return dto.DeleteAdOutput{Success: false}, uc_errors.ErrCannotDelete
-	}
+	// Scenario №1: Delete status from database (if not published yet)
+	if ad.IsOnModeration() {
+		err = uc.ad.Delete(ctx, ad.ID())
+		if err != nil {
+			return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
+				uc_errors.ErrDeleteAdDB, err,
+			)
+		}
 
-	// Update status in db
-	err = uc.ad.UpdateStatus(ctx, ad)
-	if err != nil {
-		return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrUpdateAdStatusDB, err,
-		)
+		err = uc.media.Delete(ctx, ad.ID())
+		if err != nil {
+			return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
+				uc_errors.ErrDeleteImagesDB, err,
+			)
+		}
+	} else {
+		// Scenario №2: Update status (deleted)
+		err = ad.Delete()
+		if err != nil {
+			return dto.DeleteAdOutput{Success: false}, uc_errors.ErrCannotDelete
+		} else {
+			err = uc.ad.UpdateStatus(ctx, ad)
+			if err != nil {
+				return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
+					uc_errors.ErrUpdateAdStatusDB, err,
+				)
+			}
+		}
 	}
 
 	// Response

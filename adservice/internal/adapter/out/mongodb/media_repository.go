@@ -70,3 +70,12 @@ func (r *MediaRepository) Get(ctx context.Context, adID uuid.UUID) ([]string, er
 	}
 	return doc.Images, nil
 }
+
+// Delete method delete images related with given ad_id
+func (r *MediaRepository) Delete(ctx context.Context, adID uuid.UUID) error {
+	_, err := r.collection.DeleteOne(ctx, bson.M{"ad_id": adID.String()})
+	if err != nil {
+		return err
+	}
+	return nil
+}

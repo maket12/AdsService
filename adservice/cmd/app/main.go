@@ -141,7 +141,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	updateAdUC := usecase.NewUpdateAdUC(adRepo, mediaRepo)
 	publishAdUC := usecase.NewPublishAdUC(adRepo)
 	rejectAdUC := usecase.NewRejectAdUC(adRepo)
-	deleteAdUC := usecase.NewDeleteAdUC(adRepo)
+	deleteAdUC := usecase.NewDeleteAdUC(adRepo, mediaRepo)
 	deleteAllAdsUC := usecase.NewDeleteAllAdsUC(adRepo)
 
 	// Handler
