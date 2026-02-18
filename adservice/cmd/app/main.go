@@ -1,15 +1,13 @@
-package app
+package main
 
 import (
 	"ads/adservice/cmd/app/config"
 	adaptergrpc "ads/adservice/internal/adapter/in/grpc"
-	adapterpg "ads/adservice/internal/adapter/out/postgres"
 	adaptermongo "ads/adservice/internal/adapter/out/mongodb"
+	adapterpg "ads/adservice/internal/adapter/out/postgres"
 	"ads/adservice/internal/app/usecase"
-	adapterph "ads/authservice/internal/adapter/out/hasher"
-	adaptertg "ads/authservice/internal/adapter/out/jwt"
-	adapterdb "ads/authservice/internal/adapter/out/postgres"
 	"ads/pkg/generated/ad_v1"
+	pkgmongodb "ads/pkg/mongodb"
 	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"fmt"
@@ -48,9 +46,9 @@ func newLogger(level string) *slog.Logger {
 
 func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
 	pgConfig := pkgpostgres.NewConfig(
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword,
-		cfg.DBName, cfg.DBSSLMode, cfg.DBOpenConn,
-		cfg.DBIdleConn, cfg.DBConnLifeTime,
+		cfg.PgHost, cfg.PgPort, cfg.PgUser, cfg.PgPassword,
+		cfg.PgDBName, cfg.PgSSLMode, cfg.PgOpenConn,
+		cfg.PgIdleConn, cfg.PgConnLifeTime,
 	)
 
 	pgClient, err := pkgpostgres.NewClient(pgConfig)
@@ -74,6 +72,40 @@ func closePostgresClient(
 	}
 }
 
+func newMongoClient(ctx context.Context, cfg *config.Config) (*pkgmongodb.Client, error) {
+	mongoConfig := pkgmongodb.NewConfig(
+		cfg.MongoHost, cfg.MongoPort, cfg.MongoUser,
+		cfg.MongoPassword, cfg.MongoDBName,
+	)
+
+	mongoClient, err := pkgmongodb.NewClient(ctx, mongoConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return mongoClient, nil
+}
+
+func closeMongoClient(
+	ctx context.Context,
+	logger *slog.Logger,
+	mongoClient *pkgmongodb.Client,
+) {
+	logger.InfoContext(ctx, "closing mongo connection...")
+	if err := mongoClient.Close(ctx); err != nil {
+		logger.ErrorContext(ctx, "failed to close mongo",
+			slog.Any("error", err),
+		)
+	}
+}
+
+func newMediaRepositoryConfig(cfg *config.Config, client *pkgmongodb.Client) *adaptermongo.MediaRepositoryConfig {
+	return adaptermongo.NewMediaRepositoryConfig(
+		client,
+		cfg.MongoCollectionName,
+	)
+}
+
 func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
 	pgClient, err := newPostgresClient(cfg)
@@ -84,9 +116,24 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	// Close Postgres
 	defer closePostgresClient(ctx, logger, pgClient)
 
+	// Mongo client
+	mongoClient, err := newMongoClient(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to init mongo client: %w", err)
+	}
+
+	// Close Mongo
+	defer closeMongoClient(ctx, logger, mongoClient)
+
+	// Media repository config
+	mediaRepoCfg := adaptermongo.NewMediaRepositoryConfig(
+		mongoClient,
+		cfg.MongoCollectionName,
+	)
+
 	// Repositories
 	adRepo := adapterpg.NewAdRepository(pgClient)
-	mediaRepo := adaptermongo.NewMediaRepository(pgClient)
+	mediaRepo := adaptermongo.NewMediaRepository(mediaRepoCfg)
 
 	// Use-cases
 	createAdUC := usecase.NewCreateAdUC(adRepo, mediaRepo)
@@ -158,10 +205,10 @@ func main() {
 
 	if err := runServer(ctx, cfg, logger); err != nil {
 		logger.ErrorContext(
-			ctx, "authservice failed", slog.Any("error", err),
+			ctx, "adservice failed", slog.Any("error", err),
 		)
 		os.Exit(1)
 	}
 
-	logger.Info("authservice stopped successfully")
+	logger.Info("adservice stopped successfully")
 }
