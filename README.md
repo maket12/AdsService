@@ -108,29 +108,28 @@ open http://localhost:8080/playground
 ### **GraphQL Gateway** (порт `8080`)
 
 ```graphql
-# Пример запроса
-query {
-  ads(filter: {category: "electronics", price: {max: 1000}}) {
-    id
-    title
-    price
-    user {
-      name
-      phone
+# Примеры запросов
+query GetProfile {
+    me {
+        id
+        role
+        firstName
+        lastName
+        phone
+        avatarUrl
+        bio
+        updatedAt
     }
-  }
 }
 
-mutation {
-  createAd(input: {
-    title: "iPhone 13",
-    description: "Excellent condition",
-    price: 50000,
-    category: "electronics"
-  }) {
-    id
-    status
-  }
+mutation UpdateProfile {
+    updateProfile(
+        firstName: "Jane",
+        lastName: "Smith",
+        phone: "+9876543210",
+        avatarUrl: "https://storage.example.com/avatars/new.jpg",
+        bio: "Updated bio"
+    )
 }
 ```
 
@@ -211,7 +210,7 @@ select {
 
 ## 📄 **Лицензия**
 
-Проект распространяется под лицензией MIT. См. файл [LICENSE](LICENSE).
+Проект распространяется под лицензией Apache-2.0. См. файл [LICENSE](LICENSE).
 
 ---
 
