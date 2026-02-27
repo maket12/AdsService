@@ -98,7 +98,7 @@ cp .env.example .env
 docker compose up --build
 
 # 4. Открыть GraphQL playground
-open http://localhost:8080/playground
+http://localhost:8080/graphql
 ```
 
 ---
