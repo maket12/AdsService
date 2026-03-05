@@ -148,3 +148,271 @@ func TestAH_Login(t *testing.T) {
 		})
 	}
 }
+
+func TestAH_Logout(t *testing.T) {
+	type testCase struct {
+		name      string
+		request   *auth_v1.LogoutRequest
+		setupMock func(m *mocks.LogoutUseCase)
+		wantCode  codes.Code
+		wantResp  *auth_v1.LogoutResponse
+	}
+	testCases := []testCase{
+		{
+			name: "Success logout",
+			request: &auth_v1.LogoutRequest{
+				RefreshToken: "refresh-token",
+			},
+			setupMock: func(m *mocks.LogoutUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.LogoutOutput{
+						Logout: true,
+					}, nil)
+			},
+			wantCode: codes.OK,
+			wantResp: &auth_v1.LogoutResponse{
+				Logout: true,
+			},
+		},
+		{
+			name: "Failure - unauthenticated",
+			request: &auth_v1.LogoutRequest{
+				RefreshToken: "no-valid",
+			},
+			setupMock: func(m *mocks.LogoutUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.LogoutOutput{
+						Logout: false,
+					}, ucerrs.ErrInvalidRefreshToken)
+			},
+			wantCode: codes.Unauthenticated,
+			wantResp: &auth_v1.LogoutResponse{
+				Logout: false,
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			mockLogout := mocks.NewLogoutUseCase(t)
+			if tt.setupMock != nil {
+				tt.setupMock(mockLogout)
+			}
+
+			handler := grpc.NewAuthHandler(
+				slog.Default(), nil, nil,
+				mockLogout, nil, nil,
+				nil,
+			)
+
+			resp, err := handler.Logout(context.Background(), tt.request)
+
+			if tt.wantCode == codes.OK {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantResp, resp)
+			}
+		})
+	}
+}
+
+func TestAH_RefreshSession(t *testing.T) {
+	type testCase struct {
+		name      string
+		request   *auth_v1.RefreshSessionRequest
+		setupMock func(m *mocks.RefreshSessionUseCase)
+		wantCode  codes.Code
+		wantResp  *auth_v1.RefreshSessionResponse
+	}
+	testCases := []testCase{
+		{
+			name: "Success refresh",
+			request: &auth_v1.RefreshSessionRequest{
+				OldRefreshToken: "refresh-token",
+			},
+			setupMock: func(m *mocks.RefreshSessionUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.RefreshSessionOutput{
+						AccessToken:  "new-access-token",
+						RefreshToken: "new-refresh-token",
+					}, nil)
+			},
+			wantCode: codes.OK,
+			wantResp: &auth_v1.RefreshSessionResponse{
+				AccessToken:  "new-access-token",
+				RefreshToken: "new-refresh-token",
+			},
+		},
+		{
+			name: "Failure - internal error",
+			request: &auth_v1.RefreshSessionRequest{
+				OldRefreshToken: "refresh-token",
+			},
+			setupMock: func(m *mocks.RefreshSessionUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.RefreshSessionOutput{}, ucerrs.ErrRevokeRefreshSessionDB)
+			},
+			wantCode: codes.Internal,
+			wantResp: &auth_v1.RefreshSessionResponse{
+				AccessToken:  "",
+				RefreshToken: "",
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRefresh := mocks.NewRefreshSessionUseCase(t)
+			if tt.setupMock != nil {
+				tt.setupMock(mockRefresh)
+			}
+
+			handler := grpc.NewAuthHandler(
+				slog.Default(), nil, nil,
+				nil, mockRefresh, nil,
+				nil,
+			)
+
+			resp, err := handler.RefreshSession(context.Background(), tt.request)
+
+			if tt.wantCode == codes.OK {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantResp, resp)
+			}
+		})
+	}
+}
+
+func TestAH_ValidateAccessToken(t *testing.T) {
+	testUID := uuid.New()
+
+	type testCase struct {
+		name      string
+		request   *auth_v1.ValidateAccessTokenRequest
+		setupMock func(m *mocks.ValidateAccessTokenUseCase)
+		wantCode  codes.Code
+		wantResp  *auth_v1.ValidateAccessTokenResponse
+	}
+	testCases := []testCase{
+		{
+			name: "Success validation",
+			request: &auth_v1.ValidateAccessTokenRequest{
+				AccessToken: "access-token",
+			},
+			setupMock: func(m *mocks.ValidateAccessTokenUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.ValidateAccessTokenOutput{
+						AccountID: testUID,
+						Role:      "user",
+					}, nil)
+			},
+			wantCode: codes.OK,
+			wantResp: &auth_v1.ValidateAccessTokenResponse{
+				AccountId: testUID.String(),
+				Role:      "user",
+			},
+		},
+		{
+			name: "Failure - internal error",
+			request: &auth_v1.ValidateAccessTokenRequest{
+				AccessToken: "no-valid",
+			},
+			setupMock: func(m *mocks.ValidateAccessTokenUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.ValidateAccessTokenOutput{}, ucerrs.ErrInvalidAccessToken)
+			},
+			wantCode: codes.Unauthenticated,
+			wantResp: &auth_v1.ValidateAccessTokenResponse{
+				AccountId: "",
+				Role:      "",
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			mockValidate := mocks.NewValidateAccessTokenUseCase(t)
+			if tt.setupMock != nil {
+				tt.setupMock(mockValidate)
+			}
+
+			handler := grpc.NewAuthHandler(
+				slog.Default(), nil, nil,
+				nil, nil, mockValidate,
+				nil,
+			)
+
+			resp, err := handler.ValidateAccessToken(context.Background(), tt.request)
+
+			if tt.wantCode == codes.OK {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantResp, resp)
+			}
+		})
+	}
+}
+
+func TestAH_AssignRole(t *testing.T) {
+	type testCase struct {
+		name      string
+		request   *auth_v1.AssignRoleRequest
+		setupMock func(m *mocks.AssignRoleUseCase)
+		wantCode  codes.Code
+		wantResp  *auth_v1.AssignRoleResponse
+	}
+	testCases := []testCase{
+		{
+			name: "Success logout",
+			request: &auth_v1.AssignRoleRequest{
+				AccountId: uuid.New().String(),
+			},
+			setupMock: func(m *mocks.AssignRoleUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.AssignRoleOutput{
+						Assign: true,
+					}, nil)
+			},
+			wantCode: codes.OK,
+			wantResp: &auth_v1.AssignRoleResponse{
+				Assign: true,
+			},
+		},
+		{
+			name: "Failure - precondition",
+			request: &auth_v1.AssignRoleRequest{
+				AccountId: uuid.New().String(),
+			},
+			setupMock: func(m *mocks.AssignRoleUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.AssignRoleOutput{
+						Assign: false,
+					}, ucerrs.ErrCannotAssign)
+			},
+			wantCode: codes.FailedPrecondition,
+			wantResp: &auth_v1.AssignRoleResponse{
+				Assign: false,
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			mockAssign := mocks.NewAssignRoleUseCase(t)
+			if tt.setupMock != nil {
+				tt.setupMock(mockAssign)
+			}
+
+			handler := grpc.NewAuthHandler(
+				slog.Default(), nil, nil,
+				nil, nil, nil,
+				mockAssign,
+			)
+
+			resp, err := handler.AssignRole(context.Background(), tt.request)
+
+			if tt.wantCode == codes.OK {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantResp, resp)
+			}
+		})
+	}
+}
